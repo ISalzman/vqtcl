@@ -1,6 +1,8 @@
 ifeq ($(ARCHSUFFIX),)
 	dll = .so
 	dyn = -shared
+	# find Tcl headers on Ubuntu Linux:
+	CFLAGS += -I/usr/include/tcl8.4
 	CFLAGS += -fPIC
 endif
 ifeq ($(ARCHSUFFIX),.macosx)
