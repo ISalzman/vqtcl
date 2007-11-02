@@ -368,35 +368,32 @@ static Tcl_Obj *MetaTableAsList (vq_Table meta) {
 static Tcl_Obj *TableAsList (vq_Table table) {
     vq_Table meta = vq_meta(table);
     int c, rows = vCount(table), cols = vCount(meta);
-    Tcl_Obj *result;
-    struct vq_Buffer_s buffer;
-    InitBuffer(&buffer);
+    Tcl_Obj *result = Tcl_NewListObj(0, 0);
 
     if (meta == vq_meta(meta)) {
         if (rows > 0) {
-            ADD_PTR_TO_BUF(buffer, Tcl_NewStringObj("mdef", 4));
-            ADD_PTR_TO_BUF(buffer, MetaTableAsList(table));
+            Tcl_ListObjAppendElement(0, result, Tcl_NewStringObj("mdef", 4));
+            Tcl_ListObjAppendElement(0, result, MetaTableAsList(table));
         }
     } else if (cols == 0) {
-        ADD_PTR_TO_BUF(buffer, Tcl_NewIntObj(rows));
+        Tcl_ListObjAppendElement(0, result, Tcl_NewIntObj(rows));
     } else {
-        ADD_PTR_TO_BUF(buffer, Tcl_NewStringObj("data", 4));
-        ADD_PTR_TO_BUF(buffer, MetaTableAsList(meta));
-        ADD_PTR_TO_BUF(buffer, Tcl_NewIntObj(rows));
+        Tcl_ListObjAppendElement(0, result, Tcl_NewStringObj("data", 4));
+        Tcl_ListObjAppendElement(0, result, MetaTableAsList(meta));
+        Tcl_ListObjAppendElement(0, result, Tcl_NewIntObj(rows));
         if (rows > 0)
             for (c = 0; c < cols; ++c) {
                 int length;
                 Tcl_Obj *list = ColumnAsList(table[c], rows, 1);
-                ADD_PTR_TO_BUF(buffer, list);
+                Tcl_ListObjAppendElement(0, result, list);
                 Tcl_ListObjLength(0, list, &length);
-                if (length != 0 && length != rows)
-                    ADD_PTR_TO_BUF(buffer, ColumnAsList(table[c], rows, 0));
+                if (length != 0 && length != rows) {
+                    list = ColumnAsList(table[c], rows, 0);
+                    Tcl_ListObjAppendElement(0, result, list);
+                }
             }
     }
 
-    result = Tcl_NewListObj(BufferFill(&buffer) / sizeof(Tcl_Obj*),
-                                BufferAsPtr(&buffer, 1));
-    ReleaseBuffer(&buffer, 0);
     return result;
 }
 static Tcl_Obj *ItemAsObj (vq_Type type, vq_Item item) {
