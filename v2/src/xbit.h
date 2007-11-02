@@ -15,21 +15,21 @@ L const char bits[256] = {
 L I topbit(UQ v) {
 #define Vn(x) (v < (1<<x))
   return Vn(16) ? Vn( 8) ? Vn( 4) ? Vn( 2) ? Vn( 1) ? (I)v-1 : 1
-                              					   : Vn( 3) ?  2 :  3
-                        				  : Vn( 6) ? Vn( 5) ?  4 :  5
-                              					   : Vn( 7) ?  6 :  7
-                  			 : Vn(12) ? Vn(10) ? Vn( 9) ?  8 :  9
-                              					   : Vn(11) ? 10 : 11
-                        				  : Vn(14) ? Vn(13) ? 12 : 13
-                              					   : Vn(15) ? 14 : 15
-            		: Vn(24) ? Vn(20) ? Vn(18) ? Vn(17) ? 16 : 17
-                              					   : Vn(19) ? 18 : 19
-                        				  : Vn(22) ? Vn(21) ? 20 : 21
-                              					   : Vn(23) ? 22 : 23
-                  			 : Vn(28) ? Vn(26) ? Vn(25) ? 24 : 25
-                              					   : Vn(27) ? 26 : 27
-                        				  : Vn(30) ? Vn(29) ? 28 : 29
-                              					   : Vn(31) ? 30 : 31;
+					   : Vn( 3) ?  2 :  3
+				  : Vn( 6) ? Vn( 5) ?  4 :  5
+					   : Vn( 7) ?  6 :  7
+			 : Vn(12) ? Vn(10) ? Vn( 9) ?  8 :  9
+					   : Vn(11) ? 10 : 11
+				  : Vn(14) ? Vn(13) ? 12 : 13
+					   : Vn(15) ? 14 : 15
+		: Vn(24) ? Vn(20) ? Vn(18) ? Vn(17) ? 16 : 17
+					   : Vn(19) ? 18 : 19
+				  : Vn(22) ? Vn(21) ? 20 : 21
+					   : Vn(23) ? 22 : 23
+			 : Vn(28) ? Vn(26) ? Vn(25) ? 24 : 25
+					   : Vn(27) ? 26 : 27
+				  : Vn(30) ? Vn(29) ? 28 : 29
+					   : Vn(31) ? 30 : 31;
 #undef Vn
 }
 
@@ -65,13 +65,13 @@ L I bitExt(P p, I c) {
       S v0 = strAt(*t), v = v0, e = v + lenAt(*t);
       I x = t->i, r = -1;
       while (v<e) {
-      	i += bits[(UC)*v++];
-      	if (i > x) {
-      	  I f = 0x100;
-      	  r = 8*(v-v0); 
-      	  do { --r; if (v[-1] & (f>>=1)) --i; } while (i>x);
-      	  break;
-      	}
+	i += bits[(UC)*v++];
+	if (i > x) {
+	  I f = 0x100;
+	  r = 8*(v-v0); 
+	  do { --r; if (v[-1] & (f>>=1)) --i; } while (i>x);
+	  break;
+	}
       }
       t->i = r;
       break;
@@ -87,10 +87,10 @@ L I bitExt(P p, I c) {
       *((M)r) = l<<7;
       r[Adr].i = 1;
       while (i<n) {
-      	if (((v[i>>3]>>(i&7))&1) == l)
-      	  ++c;
-      	else { emitbits(r,c); c = 1; l ^= 1; }
-      	++i;
+	if (((v[i>>3]>>(i&7))&1) == l)
+	  ++c;
+	else { emitbits(r,c); c = 1; l ^= 1; }
+	++i;
       }
       if (c) emitbits(r,c);
       t->p = r; /* put r on stack to prevent gc during next alloc */
@@ -106,9 +106,9 @@ L I bitExt(P p, I c) {
       I r = 8-(p[Adr].i&7);
       t->i = 0;
       for (;;) {
-      	++i;
-      	if (*q & (1<<(r-1))) break;
-      	if (--r <= 0) { if (++q >= s+p[Cnt].i) return 0; else r=8; }
+	++i;
+	if (*q & (1<<(r-1))) break;
+	if (--r <= 0) { if (++q >= s+p[Cnt].i) return 0; else r=8; }
       }
       while (i>=r) { t->i <<= r; t->i |= (*q++&((1<<r)-1)); i-=r; r=8; }
       t->i <<= i;
@@ -126,42 +126,42 @@ L I bitExt(P p, I c) {
     case 6: { /* convert v32s to smaller ints ( s n - s ) */
       I n = Wpopd.i;
       if (0 <= n && n <= 5) { 
-      	I m = n == 0 ? 0 : lenAt(Wtopd);
-      	Q *v = (Q*) strAt(Wtopd), *e = v + m;
-      	P b = newBuffer(w,0,n<0?0:((m<<n)+14)>>4);
-      	switch (n) {
-      	  case 0: /* 0 bits */
-      	    break;
-      	  case 1: { /* 1 bit, 8/byte */
-      	    C *o = (C*)b;
-      	    while (v < e) { *o |= (*v++&1) << i; ++i; o += i>>3; i &= 7; }
-      	    break;
-      	  }
-      	  case 2: { /* 2 bits, 4/byte */
-      	    C *o = (C*)b;
-      	    while (v < e) { *o |= (*v++&3) << i; i += 2; o += i>>3; i &= 7; }
-      	    break;
-      	  }
-      	  case 3: { /* 4 bits, 2/byte */
-      	    C *o = (C*)b;
-      	    while (v < e) { *o |= (*v++&15) << i; i += 4; o += i>>3; i &= 7; }
-      	    break;
-      	  }
-      	  case 4: { /* 1-byte (char) */
-      	    C *o = (C*)b;
-      	    while (v < e) *o++ = (C)*v++;
-      	    break;
-      	  }
-      	  case 5: { /* 2-byte (short) */
-      	    H *o = (H*)b;
-      	    while (v < e) *o++ = (H)*v++;
-      	    break;
-      	  }
-      	}
-      	Wtopd.p = b;
-      	Length(b) = m;
+	I m = n == 0 ? 0 : lenAt(Wtopd);
+	Q *v = (Q*) strAt(Wtopd), *e = v + m;
+	P b = newBuffer(w,0,n<0?0:((m<<n)+14)>>4);
+	switch (n) {
+	  case 0: /* 0 bits */
+	    break;
+	  case 1: { /* 1 bit, 8/byte */
+	    C *o = (C*)b;
+	    while (v < e) { *o |= (*v++&1) << i; ++i; o += i>>3; i &= 7; }
+	    break;
+	  }
+	  case 2: { /* 2 bits, 4/byte */
+	    C *o = (C*)b;
+	    while (v < e) { *o |= (*v++&3) << i; i += 2; o += i>>3; i &= 7; }
+	    break;
+	  }
+	  case 3: { /* 4 bits, 2/byte */
+	    C *o = (C*)b;
+	    while (v < e) { *o |= (*v++&15) << i; i += 4; o += i>>3; i &= 7; }
+	    break;
+	  }
+	  case 4: { /* 1-byte (char) */
+	    C *o = (C*)b;
+	    while (v < e) *o++ = (C)*v++;
+	    break;
+	  }
+	  case 5: { /* 2-byte (short) */
+	    H *o = (H*)b;
+	    while (v < e) *o++ = (H)*v++;
+	    break;
+	  }
+	}
+	Wtopd.p = b;
+	Length(b) = m;
       } else
-      	n = 6;
+	n = 6;
       Wtopd.i = n;
       break;
     }
