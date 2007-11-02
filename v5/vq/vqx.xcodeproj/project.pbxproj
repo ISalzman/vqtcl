@@ -11,9 +11,7 @@
 		11D2FB3E0CB3A80F007C57D0 /* vq4c.h in Headers */ = {isa = PBXBuildFile; fileRef = 111FCE110CA5DC2100C4FBEA /* vq4c.h */; };
 		11D2FB3F0CB3A810007C57D0 /* vqdefs.h in Headers */ = {isa = PBXBuildFile; fileRef = 11E080930CA710910000CF5A /* vqdefs.h */; };
 		11D2FC7A0CB3B5C8007C57D0 /* vqcore.c in Headers */ = {isa = PBXBuildFile; fileRef = 111FCE0E0CA5DBFD00C4FBEA /* vqcore.c */; };
-		11D2FC8B0CB3B607007C57D0 /* vqwrap.c in Headers */ = {isa = PBXBuildFile; fileRef = 11E07E760CA706E90000CF5A /* vqwrap.c */; };
 		11D2FC8C0CB3B608007C57D0 /* vqnew.c in Headers */ = {isa = PBXBuildFile; fileRef = 11CB54A40CB2C7C200343AE4 /* vqnew.c */; };
-		11D2FC8D0CB3B608007C57D0 /* vqmem.c in Headers */ = {isa = PBXBuildFile; fileRef = 11E0829D0CA715020000CF5A /* vqmem.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,9 +20,7 @@
 		11CB54A40CB2C7C200343AE4 /* vqnew.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = vqnew.c; path = src/vqnew.c; sourceTree = "<group>"; };
 		11D2FB220CB3A74B007C57D0 /* vqtcl.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = vqtcl.c; path = src/vqtcl.c; sourceTree = "<group>"; };
 		11D2FB350CB3A7CB007C57D0 /* libvq5.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libvq5.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		11E07E760CA706E90000CF5A /* vqwrap.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = vqwrap.c; path = src/vqwrap.c; sourceTree = "<group>"; };
 		11E080930CA710910000CF5A /* vqdefs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = vqdefs.h; path = src/vqdefs.h; sourceTree = "<group>"; };
-		11E0829D0CA715020000CF5A /* vqmem.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = vqmem.c; path = src/vqmem.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,10 +49,8 @@
 				111FCE110CA5DC2100C4FBEA /* vq4c.h */,
 				11E080930CA710910000CF5A /* vqdefs.h */,
 				111FCE0E0CA5DBFD00C4FBEA /* vqcore.c */,
-				11E0829D0CA715020000CF5A /* vqmem.c */,
 				11CB54A40CB2C7C200343AE4 /* vqnew.c */,
 				11D2FB220CB3A74B007C57D0 /* vqtcl.c */,
-				11E07E760CA706E90000CF5A /* vqwrap.c */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -79,9 +73,7 @@
 				11D2FB3E0CB3A80F007C57D0 /* vq4c.h in Headers */,
 				11D2FB3F0CB3A810007C57D0 /* vqdefs.h in Headers */,
 				11D2FC7A0CB3B5C8007C57D0 /* vqcore.c in Headers */,
-				11D2FC8B0CB3B607007C57D0 /* vqwrap.c in Headers */,
 				11D2FC8C0CB3B608007C57D0 /* vqnew.c in Headers */,
-				11D2FC8D0CB3B608007C57D0 /* vqmem.c in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -111,9 +103,11 @@
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "vqx" */;
+			compatibilityVersion = "Xcode 2.4";
 			hasScannedForEncodings = 1;
 			mainGroup = 08FB7794FE84155DC02AAC07 /* vqx */;
 			projectDirPath = "";
+			projectRoot = "";
 			targets = (
 				11D2FB340CB3A7CB007C57D0 /* vq5 dylib */,
 			);

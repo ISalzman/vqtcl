@@ -170,10 +170,10 @@ static vq_Type SizeCmd_T (vq_Item a[]) {
 #pragma mark - GENERIC OPERATORS -
 
 CmdDispatch f_commands[] = {
-    { "at",      "O:TIIO", AtCmd_TIIO      },
-    { "debug",   "O:OX",   Debug_OX         },
-    { "meta",    "T:T",    MetaCmd_T       },
-    { "new",     "T:T",    NewCmd_T        },
-    { "size",    "T:T",    SizeCmd_T       },
+    { "at",      "O:TIIO", AtCmd_TIIO   },
+    { "debug",   "O:OX",   Debug_OX     },
+    { "meta",    "T:T",    MetaCmd_T    },
+    { "new",     "T:T",    NewCmd_T     },
+    { "size",    "T:T",    SizeCmd_T    },
     { 0, 0, 0 }
 };  
