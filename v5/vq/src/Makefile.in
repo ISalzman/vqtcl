@@ -18,7 +18,7 @@ CFLAGS += -DDEBUG -g -O0
 TARGET = libvq5$(dll)
 
 SRC = ../src/vqtcl.c ../src/vq4c.h ../src/vqdefs.h \
-	../src/vqcore.c ../src/vqwrap.c ../src/vqmem.c ../src/vqnew.c
+	../src/vqcore.c ../src/vqnew.c
 		
 all: $(TARGET)
 

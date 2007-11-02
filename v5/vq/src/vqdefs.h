@@ -7,6 +7,9 @@
 
 #include <assert.h>
 
+#define VQ_NULLABLE (1 << 4)
+#define VQ_TYPEMASK (VQ_NULLABLE - 1)
+
 typedef vq_Table Vector; /* every vq_Table is a Vector, but not vice-versa */
 
 #ifdef _TCL
@@ -35,44 +38,6 @@ typedef struct vq_Dispatch_s {
     void      (*setter)(vq_Table,int,int,const vq_Item*); /* setter function */
 } Dispatch;
     
-/* growable buffers */
-
-typedef struct vq_Buffer_s *Buffer_p;
-typedef struct Overflow *Overflow_p;
-
-struct vq_Buffer_s {
-    union { char *c; int *i; const void **p; } fill;
-    char       *limit;
-    Overflow_p  head;
-    intptr_t    saved;
-    intptr_t    used;
-    char       *ofill;
-    char       *result;
-    char        buf[64];
-    char        slack[8]; /* TODO: get rid of this */
-};
-
-#define ADD_ONEC_TO_BUF(b,x) (*(b).fill.c++ = (x))
-#define ADD_CHAR_TO_BUF(b,x) \
-          { char _c = (x); \
-            if ((b).fill.c < (b).limit) *(b).fill.c++ = _c; \
-              else AddToBuffer(&(b), &_c, sizeof _c); }
-#define ADD_INT_TO_BUF(b,x) \
-          { int _i = (x); \
-            if ((b).fill.c < (b).limit) *(b).fill.i++ = _i; \
-              else AddToBuffer(&(b), &_i, sizeof _i); }
-#define ADD_PTR_TO_BUF(b,x) \
-          { const void *_p = (x); \
-            if ((b).fill.c < (b).limit) *(b).fill.p++ = _p; \
-              else AddToBuffer(&(b), &_p, sizeof _p); }
-#define BufferFill(b) ((b)->saved + ((b)->fill.c - (b)->buf))
-
-void        (AddToBuffer) (Buffer_p bp, const void *data, intptr_t len);
-void       *(BufferAsPtr) (Buffer_p bp, int fast);
-void         (InitBuffer) (Buffer_p bp);
-int          (NextBuffer) (Buffer_p bp, char **firstp, int *countp);
-void      (ReleaseBuffer) (Buffer_p bp, int keep);
-
 /* memory management */
 
 Vector      (AllocVector) (Dispatch *vtab, int bytes);
@@ -86,15 +51,9 @@ void          (ObjDecRef) (Object_p obj);
 Object_p      (DebugCode) (Object_p cmd, int objc, Object_p objv[]);
 vq_Table (EmptyMetaTable) (void);
 vq_Type         (GetItem) (int row, vq_Item *item);
-vq_Table      (IotaTable) (int rows, const char *name);
-int           (IsMutable) (vq_Table t);
-void      (MutVecReplace) (vq_Table t, int off, int cnt, vq_Table data);
-void          (MutVecSet) (Vector v, int row, int col, const vq_Item *item);
 vq_Table (ObjAsMetaTable) (Object_p obj);
 vq_Table     (ObjAsTable) (Object_p obj);
 int           (ObjToItem) (vq_Type type, vq_Item *item);
-void          (UpdateVar) (vq_Item info);
-vq_Table    (WrapMutable) (vq_Table t);
 
 /* operation dispatch table */
 

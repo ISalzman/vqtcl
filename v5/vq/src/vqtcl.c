@@ -12,9 +12,7 @@
 
 #include "vqdefs.h"
 #include "vqcore.c"
-#include "vqmem.c"
 #include "vqnew.c"
-#include "vqwrap.c"
 
 static Tcl_Interp *context; /* TODO: not threadsafe */
 
@@ -96,36 +94,6 @@ static void UpdateTableStrRep (Tcl_Obj *obj) {
     if (obj->internalRep.twoPtrValue.ptr2 == 0)
         ObjDecRef(list);
 }
-static void InvalidateNonTableReps (Tcl_Obj *obj) {
-    assert(obj->typePtr == &f_tableObjType);
-    if (obj->internalRep.twoPtrValue.ptr2 != 0) {
-        ObjDecRef(obj->internalRep.twoPtrValue.ptr2);
-        obj->internalRep.twoPtrValue.ptr2 = 0;
-    }
-    Tcl_InvalidateStringRep(obj);
-}
-static Tcl_Obj *MakeMutableObj (Tcl_Obj *obj) {
-    vq_Table t;
-    if (Tcl_IsShared(obj))
-        obj = Tcl_DuplicateObj(obj);
-    t = ObjAsTable(obj);
-    assert(obj->typePtr == &f_tableObjType);
-    if (!IsMutable(t) || vRefs(t) > 1)
-        t = WrapMutable(t);
-    if (t != obj->internalRep.twoPtrValue.ptr1) {
-        vq_release(obj->internalRep.twoPtrValue.ptr1);
-        obj->internalRep.twoPtrValue.ptr1 = vq_retain(t);
-    }
-    InvalidateNonTableReps(obj);
-    return obj;
-}
-void UpdateVar (vq_Item info) {
-    Tcl_Obj *obj = info.o.b.p;
-    const char *s = Tcl_GetString(info.o.a.p);
-    assert(s[0] == '@');
-    InvalidateNonTableReps(obj);
-    Tcl_SetVar2Ex(context, s+1, 0, obj, TCL_LEAVE_ERR_MSG | TCL_GLOBAL_ONLY);
-}
 static vq_Table RefAsTable (Tcl_Obj *obj) {
     Tcl_Obj *o;
     const char *s = Tcl_GetString(obj);
@@ -181,59 +149,6 @@ static Tcl_Obj *TableAsObj (vq_Table table) {
 
 #pragma mark - CONVERT FROM TCL OBJECTS -
 
-#if 0
-vq_Table ObjAsMetaTable (Tcl_Obj *obj) {
-    vq_Table emt, meta;
-    int r, rows, objc;
-    Tcl_Obj *entry, **objv;
-    const char *name, *sep, *type;
-    char *name2;
-
-    if (Tcl_ListObjLength(0, obj, &rows) != TCL_OK)
-        return 0;
-
-    emt = EmptyMetaTable();
-    meta = vq_new(vMeta(emt));
-    vCount(meta) = rows; /* no, use mutable! */
-    for (r = 0; r < rows; ++r) {
-        if (Tcl_ListObjIndex(0, obj, r, &entry) != TCL_OK
-                || Tcl_ListObjGetElements(0, entry, &objc, &objv) != TCL_OK
-                || objc < 1 || objc > 2)
-            return 0;
-
-        name = Tcl_GetString(objv[0]);
-        fprintf(stderr,"n: %s\n", name);
-        sep = strchr(name, ':');
-        type = objc > 1 ? "T" : "S";
-
-        if (sep != 0) {
-            if (sep[1] != 0) {
-                if (strchr("BDFLISVT", sep[1]) == 0)
-                    return 0;
-                type = sep + 1;
-            }
-            /* TODO: fix this crummy string truncate logic */
-            name2 = strcpy(malloc(strlen(name)+1), name);
-            name2[sep-name] = 0;
-            Vq_setString(meta, r, 0, name2);
-            free(name2);
-        } else
-            Vq_setString(meta, r, 0, name);
-        
-        Vq_setInt(meta, r, 1, StringAsType(type));
-        
-        if (objc > 1) {
-            vq_Table sub = ObjAsMetaTable(objv[1]);
-            if (sub == 0)
-                return 0;
-            Vq_setTable(meta, r, 2, sub);
-        } else
-            Vq_setTable(meta, r, 2, emt);
-    }
-    return meta;
-}
-#endif
-
 vq_Table ObjAsTable (Object_p obj) {
     return Tcl_ConvertToType(context, obj, &f_tableObjType) == TCL_OK ?
                 ((Tcl_Obj*) obj)->internalRep.twoPtrValue.ptr1 : 0;
@@ -271,36 +186,9 @@ int ObjToItem (vq_Type type, vq_Item *item) {
 }
 static int CastObjToItem (const char *type, vq_Item *item) {
     switch (*type) {
-        case 'M': {
-            Tcl_Obj *o;
-            const char *s = Tcl_GetString(item->o.a.p);
-            assert(s[0] == '@');
-            o = Tcl_GetVar2Ex(context, s+1, 0,
-                                TCL_LEAVE_ERR_MSG | TCL_GLOBAL_ONLY);
-            if (o != 0)
-                o = MakeMutableObj(o);
-            item->o.b.p = o; /* TODO: check for leaks when o is a duplicate */
-            return o != 0;
-        }
         default:
             return ObjToItem(StringAsType(type) & VQ_TYPEMASK, item);
     }
-}
-static Vector ListAsIntVec (Tcl_Obj *obj) {
-    Vector v;
-    int i, n, *ivec;
-    if (Tcl_ListObjLength(context, obj, &n) != TCL_OK)
-        return 0;
-    v = vq_retain(AllocDataVec(VQ_int, n)); /* FIXME: crashes with vq_hold */
-    vCount(v) = n;
-    ivec = (int*) v;
-    for (i = 0; i < n; ++i) {
-        Tcl_Obj *entry;
-        Tcl_ListObjIndex(0, obj, i, &entry);
-        if (Tcl_GetIntFromObj(context, entry, ivec + i) != TCL_OK)
-            return 0;
-    }
-    return v;
 }
 
 #pragma mark - CONVERT TO TCL OBJECTS -
@@ -311,17 +199,6 @@ static Tcl_Obj *ColumnAsList (vq_Item colref, int rows, int mode) {
     vq_Item item;
     int i;
     Tcl_Obj *list = Tcl_NewListObj(0, 0);
-    if (mode == 0) {
-        Vector ranges = 0;
-        for (i = 0; i < rows; ++i) {
-            item = colref;
-            if (GetItem(i, &item) == VQ_nil)
-                RangeFlip(&ranges, i, 1);
-        }
-        mode = -1;
-        rows = vCount(ranges);
-        colref.o.a.m = ranges;
-    }
     for (i = 0; i < rows; ++i) {
         item = colref;
         type = GetItem(i, &item);
@@ -470,73 +347,18 @@ static vq_Table CmdAsTable (Tcl_Obj *obj) {
 #pragma mark - TCL COMMAND INTERFACE -
 
 Object_p DebugCode (Object_p cmd, int objc, Object_p objv[]) {
-#ifdef NDEBUG
-    return 0;
-#else
+#ifndef NDEBUG
     static const char *cmds[] = {
-        "rflip", "rlocate", "rinsert", "rdelete", "version", 0 
+        "version", 0 
     };
     int index;
-    if (Tcl_GetIndexFromObj(context, cmd, cmds, "option", 0, &index) != TCL_OK)
-        return 0;
-    switch (index) {
-        case 0: /* rflip */ {
-            vq_Item item;
-            int offset, count;
-            item.o.a.m = ListAsIntVec(objv[0]);
-            if (item.o.a.m == 0)
-                return 0;
-            if (Tcl_GetIntFromObj(context, objv[1], &offset) != TCL_OK
-                    || Tcl_GetIntFromObj(context, objv[2], &count) != TCL_OK)
-                return 0;
-            RangeFlip(&item.o.a.m, offset, count);
-            return ColumnAsList(item, vCount(item.o.a.m), -1);
+    if (Tcl_GetIndexFromObj(context, cmd, cmds, "option", 0, &index) == TCL_OK)
+        switch (index) {
+            case 0: /* version */
+                return Tcl_NewStringObj(VQ_VERSION, -1);
         }
-        case 1: /* rlocate */ {
-            Tcl_Obj *result;
-            int offset, pos;
-            Vector v = ListAsIntVec(objv[0]);
-            if (v == 0)
-                return 0;
-            if (Tcl_GetIntFromObj(context, objv[1], &offset) != TCL_OK)
-                return 0;
-            pos = RangeLocate(v, offset, &offset);
-            result = Tcl_NewListObj(0, 0);
-            Tcl_ListObjAppendElement(context, result, Tcl_NewIntObj(pos));
-            Tcl_ListObjAppendElement(context, result, Tcl_NewIntObj(offset));
-            return result;
-        }
-        case 2: /* rinsert */ {
-            vq_Item item;
-            int offset, count, mode;
-            item.o.a.m = ListAsIntVec(objv[0]);
-            if (item.o.a.m == 0)
-                return 0;
-            if (Tcl_GetIntFromObj(context, objv[1], &offset) != TCL_OK
-                    || Tcl_GetIntFromObj(context, objv[2], &count) != TCL_OK
-                    || Tcl_GetIntFromObj(context, objv[3], &mode) != TCL_OK)
-                return 0;
-            RangeInsert(&item.o.a.m, offset, count, mode);
-            return ColumnAsList(item, vCount(item.o.a.m), -1);
-        }
-        case 3: /* rdelete */ {
-            vq_Item item;
-            int offset, count;
-            item.o.a.m = ListAsIntVec(objv[0]);
-            if (item.o.a.m == 0)
-                return 0;
-            if (Tcl_GetIntFromObj(context, objv[1], &offset) != TCL_OK
-                    || Tcl_GetIntFromObj(context, objv[2], &count) != TCL_OK)
-                return 0;
-            RangeDelete(&item.o.a.m, offset, count);
-            return ColumnAsList(item, vCount(item.o.a.m), -1);
-        }
-        case 4: /* version */
-            return Tcl_NewStringObj(VQ_VERSION, -1);
-    }
-    assert(0);
-    return 0;
 #endif
+    return 0;
 }
 
 static int VqObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {

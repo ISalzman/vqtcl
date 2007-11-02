@@ -6,8 +6,6 @@
 #define VQ_VERSION "5.0"
 
 #define VQ_TYPES "NILFDSBTO"
-#define VQ_NULLABLE (1 << 4)
-#define VQ_TYPEMASK (VQ_NULLABLE - 1)
 
 typedef enum { 
     VQ_nil, 
@@ -22,7 +20,7 @@ typedef enum {
 } vq_Type;
 
 typedef union vq_Item_u *vq_Table;
-typedef struct vq_Buffer_s *vq_Pool;
+typedef vq_Table *vq_Pool;
 
 typedef union vq_Item_u {
     struct {
@@ -63,23 +61,10 @@ void    (vq_release) (vq_Table t);
 vq_Table    (vq_new) (vq_Table t);
 vq_Table   (vq_meta) (vq_Table t);
 int        (vq_size) (vq_Table t);
-int       (vq_empty) (vq_Table t, int row, int col);
 vq_Item     (vq_get) (vq_Table t, int row, int col, vq_Type type, vq_Item def);
-void        (vq_set) (vq_Table t, int row, int col, vq_Type type, vq_Item val);
-void    (vq_replace) (vq_Table t, int start, int count, vq_Table data);
-
-/* generic operator interface */
-
-int      (vq_lookup) (const char *opname);
-vq_Type      (vq_op) (int opcode, vq_Item args[]);
 
 /* wrappers */
 
 int            (Vq_getInt) (vq_Table t, int row, int col, int def);
 const char *(Vq_getString) (vq_Table t, int row, int col, const char *def);
 vq_Table     (Vq_getTable) (vq_Table t, int row, int col, vq_Table def);
-
-void         (Vq_setEmpty) (vq_Table t, int row, int col);
-void           (Vq_setInt) (vq_Table t, int row, int col, int val);
-void        (Vq_setString) (vq_Table t, int row, int col, const char *val);
-void         (Vq_setTable) (vq_Table t, int row, int col, vq_Table val);
