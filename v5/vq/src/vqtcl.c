@@ -351,9 +351,9 @@ Object_p DebugCode (Object_p cmd, int objc, Object_p objv[]) {
     static const char *cmds[] = {
         "version", 0 
     };
-    int index;
-    if (Tcl_GetIndexFromObj(context, cmd, cmds, "option", 0, &index) == TCL_OK)
-        switch (index) {
+    int idx;
+    if (Tcl_GetIndexFromObj(context, cmd, cmds, "option", 0, &idx) == TCL_OK)
+        switch (idx) {
             case 0: /* version */
                 return Tcl_NewStringObj(VQ_VERSION, -1);
         }
@@ -362,12 +362,12 @@ Object_p DebugCode (Object_p cmd, int objc, Object_p objv[]) {
 }
 
 static int VqObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
-    int i, index, ok = TCL_ERROR;
+    int i, idx, ok = TCL_ERROR;
     vq_Type type;
     Tcl_Obj *result;
     vq_Item stack [20];
     const char *args;
-    char buf[2];
+    char typebuf[2];
     vq_Pool mypool = vq_addpool();
     
     if (objc <= 1) {
@@ -376,13 +376,13 @@ static int VqObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *con
     }
 
     if (Tcl_GetIndexFromObjStruct(interp, objv[1], f_commands,
-            sizeof *f_commands, "command", TCL_EXACT, &index) != TCL_OK)
+            sizeof *f_commands, "command", TCL_EXACT, &idx) != TCL_OK)
         goto FAIL;
 
     context = interp; /* TODO: not reentrant */
     
     objv += 2; objc -= 2;
-    args = f_commands[index].args + 2; /* skip return type and ':' */
+    args = f_commands[idx].args + 2; /* skip return type and ':' */
 
     /* TODO: error if there are too many args */
     for (i = 0; args[i] != 0; ++i) {
@@ -418,9 +418,9 @@ static int VqObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *con
             goto FAIL;
         }
         stack[i].o.a.p = objv[i];
-        buf[0] = args[i];
-        buf[1] = 0;
-        if (!CastObjToItem(buf, stack+i)) {
+        typebuf[0] = args[i];
+        typebuf[1] = 0;
+        if (!CastObjToItem(typebuf, stack+i)) {
             if (*Tcl_GetStringResult(interp) == 0) {
                 const char *s = "argument";
                 switch (args[i] & ~0x20) {
@@ -429,15 +429,15 @@ static int VqObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *con
                     case 'N': s = "column name"; break;
                     case 'T': s = "table"; break;
                 }
-                Tcl_AppendResult(interp, f_commands[index].name,
+                Tcl_AppendResult(interp, f_commands[idx].name,
                                             ": invalid ", s, 0);
             }
             goto FAIL; /* TODO: append info about which arg is bad */
         }
     }
     
-    type = f_commands[index].proc(stack);
-    if (f_commands[index].args[0] != 'V') {
+    type = f_commands[idx].proc(stack);
+    if (f_commands[idx].args[0] != 'V') {
         if (type == VQ_nil)
             goto FAIL;
         result = ItemAsObj(type, stack[0]);
