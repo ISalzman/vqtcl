@@ -154,14 +154,11 @@ int ObjToItem (vq_Type type, vq_Item *item) {
 #pragma mark - CONVERT TO TCL OBJECTS -
 
 static Tcl_Obj *ColumnAsList (vq_Item colref, int rows, int mode) {
-    /* TODO: return a custom type instead of converting to list right away */
-    vq_Type type;
-    vq_Item item;
     int i;
     Tcl_Obj *list = Tcl_NewListObj(0, 0);
     for (i = 0; i < rows; ++i) {
-        item = colref;
-        type = GetItem(i, &item);
+        vq_Item item = colref;
+        vq_Type type = GetItem(i, &item);
         if (mode < 0 || (mode > 0 && type != VQ_nil))
             Tcl_ListObjAppendElement(0, list, ItemAsObj(type, item));
         else if (mode == 0 && type == VQ_nil)

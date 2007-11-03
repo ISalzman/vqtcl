@@ -41,11 +41,12 @@ if {[lsearch $auto_path [workingDirectory]] < 0} {
     lappend auto_path [workingDirectory]
 }
 
+testConstraint 32bit            [expr {$tcl_platform(wordSize) == 4}]
 testConstraint 64bit            [expr {$tcl_platform(wordSize) == 8}]
 testConstraint bigendian        [expr {$tcl_platform(byteOrder) eq "bigEndian"}]
-#testConstraint kitten           [file exists [temporaryDirectory]/kitten.kit]
-#testConstraint metakit          [expr {![catch { package require Mk4tcl }]}]
+testConstraint kitten           [file exists [temporaryDirectory]/kitten.kit]
+testConstraint metakit          [expr {![catch { package require Mk4tcl }]}]
 testConstraint tcl$tcl_version  1
-#testConstraint vfs              [expr {![catch { package require vfs }]}]
+testConstraint vfs              [expr {![catch { package require vfs }]}]
 
 set testsInited 1

@@ -1,0 +1,29 @@
+#!/usr/bin/env tclkit
+# simple core tests
+# %renumber<^\s*test >%
+
+source [file join [file dir [info script]] initests.tcl]
+
+test 0 {load package} {
+    package require vq
+} $version
+
+test 1 {vq command} {
+    catch { vq ? } e
+    string match {bad command "?": must be *} $e
+} 1
+
+test 2 {missing argument} {
+    catch { vq size } e
+    set e
+} {wrong # args: should be "vq size table"}
+
+test 3 {} { vq size ""               } 0
+test 4 {} { vq size 123              } 123
+test 5 {} { vq size [vq meta ""]     } 3
+test 6 {} { vq size {meta ""}        } 3
+test 7 {} { vq at [vq meta ""] 0 0 ? } name
+test 8 {} { vq at {meta ""} 1 0 ?    } type
+test 9 {} { vq new ""                } 0
+
+::tcltest::cleanupTests
