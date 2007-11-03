@@ -7,12 +7,11 @@
 #if STATIC_BUILD
 #define MyInitStubs(x) 1
 #else
-#include "stubs.h"
+#include "tclstubs.h"
 #endif
 
-#include "vqdefs.h"
-#include "vqcore.c"
-#include "vqnew.c"
+#include "defs.h"
+#include "core.c"
 
 static Tcl_Interp *context; /* TODO: not threadsafe */
 
