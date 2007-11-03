@@ -80,6 +80,8 @@ extern CmdDispatch f_commands[];
 
 /* reader.c */
 
+Vector (OpenMappedFile) (const char *filename);
+const char* (AdjustMappedFile) (Vector map, int offset);
 Dispatch* (PickIntGetter) (int bits);
 Dispatch* (FixedGetter) (int bytes, int rows, int real, int flip);
 

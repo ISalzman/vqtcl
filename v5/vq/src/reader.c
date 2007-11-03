@@ -4,29 +4,93 @@
 
 #include <stdlib.h>
 
+#ifdef VQ_WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#else
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#endif
+
+static void MapCleaner (Vector map) {
+#ifdef VQ_WIN32
+    UnmapViewOfFile(map[1].o.a.p);
+#else
+    munmap(map[1].o.a.p, map[1].o.b.i);
+#endif
+}
+static Dispatch vmmap = { "mmap", 1, 0, 0, MapCleaner };
+Vector OpenMappedFile (const char *filename) {
+    Vector map;
+    const char *data = NULL;
+    int length = -1;
+
+#ifdef VQ_WIN32
+    {
+        DWORD n;
+        HANDLE h, f = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, 0,
+                                    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+        if (f != INVALID_HANDLE_VALUE) {
+            h = CreateFileMapping(f, 0, PAGE_READONLY, 0, 0, 0);
+            if (h != INVALID_HANDLE_VALUE) {
+                n = GetFileSize(f, 0);
+                data = MapViewOfFile(h, FILE_MAP_READ, 0, 0, n);
+                if (data != NULL)
+                    length = n;
+                CloseHandle(h);
+            }
+            CloseHandle(f);
+        }
+    }
+#else
+    {
+        struct stat sb;
+        int fd = open(filename, O_RDONLY);
+        if (fd != -1) {
+            if (fstat(fd, &sb) == 0) {
+                data = mmap(0, sb.st_size, PROT_READ, MAP_SHARED, fd, 0);
+                if (data != MAP_FAILED)
+                    length = sb.st_size;
+            }
+            close(fd);
+        }
+    }
+#endif
+
+    if (length < 0)
+        return NULL;
+
+    map = AllocVector(&vmmap, 2 * sizeof(vq_Item));
+    map[0].o.a.s = map[1].o.a.s = (void*) data;
+    map[0].o.b.i = map[1].o.b.i = length;
+    return map;
+}
+const char *AdjustMappedFile (Vector map, int offset) {
+    map[0].o.a.s += offset;
+    map[0].o.b.i -= offset;
+    return map[0].o.a.s;
+}
+
 static vq_Type Rgetter_i0 (int row, vq_Item *item) {
     item->o.a.i = 0;
     return VQ_int;
 }
-
 static vq_Type Rgetter_i1 (int row, vq_Item *item) {
     const char *ptr = vData(item->o.a.m);
     item->o.a.i = (ptr[row>>3] >> (row&7)) & 1;
     return VQ_int;
 }
-
 static vq_Type Rgetter_i2 (int row, vq_Item *item) {
     const char *ptr = vData(item->o.a.m);
     item->o.a.i = (ptr[row>>2] >> 2*(row&3)) & 3;
     return VQ_int;
 }
-
 static vq_Type Rgetter_i4 (int row, vq_Item *item) {
     const char *ptr = vData(item->o.a.m);
     item->o.a.i = (ptr[row>>1] >> 4*(row&1)) & 15;
     return VQ_int;
 }
-
 static vq_Type Rgetter_i8 (int row, vq_Item *item) {
     const char *ptr = vData(item->o.a.m);
     item->o.a.i = (int8_t) ptr[row];
@@ -45,7 +109,6 @@ static vq_Type Rgetter_i16 (int row, vq_Item *item) {
 #endif
     return VQ_int;
 }
-
 static vq_Type Rgetter_i32 (int row, vq_Item *item) {
     const char *ptr = (const char*) vData(item->o.a.m) + row * 4;
     int i;
@@ -53,7 +116,6 @@ static vq_Type Rgetter_i32 (int row, vq_Item *item) {
         item->b[i] = ptr[i];
     return VQ_int;
 }
-
 static vq_Type Rgetter_i64 (int row, vq_Item *item) {
     const char *ptr = (const char*) vData(item->o.a.m) + row * 8;
     int i;
@@ -61,12 +123,10 @@ static vq_Type Rgetter_i64 (int row, vq_Item *item) {
         item->b[i] = ptr[i];
     return VQ_wide;
 }
-
 static vq_Type Rgetter_f32 (int row, vq_Item *item) {
     Rgetter_i32(row, item);
     return VQ_float;
 }
-
 static vq_Type Rgetter_f64 (int row, vq_Item *item) {
     Rgetter_i64(row, item);
     return VQ_double;
@@ -79,25 +139,21 @@ static vq_Type Rgetter_i16 (int row, vq_Item *item) {
     item->o.a.i = ((short*) ptr)[row];
     return VQ_int;
 }
-
 static vq_Type Rgetter_i32 (int row, vq_Item *item) {
     const char *ptr = vData(item->o.a.m);
     item->o.a.i = ((const int*) ptr)[row];
     return VQ_int;
 }
-
 static vq_Type Rgetter_i64 (int row, vq_Item *item) {
     const char *ptr = vData(item->o.a.m);
     item->w = ((const int64_t*) ptr)[row];
     return VQ_long;
 }
-
 static vq_Type Rgetter_f32 (int row, vq_Item *item) {
     const char *ptr = vData(item->o.a.m);
     item->o.a.f = ((const float*) ptr)[row];
     return VQ_float;
 }
-
 static vq_Type Rgetter_f64 (int row, vq_Item *item) {
     const char *ptr = vData(item->o.a.m);
     item->d = ((const double*) ptr)[row];
@@ -116,7 +172,6 @@ static vq_Type Rgetter_i16r (int row, vq_Item *item) {
 #endif
     return VQ_int;
 }
-
 static vq_Type Rgetter_i32r (int row, vq_Item *item) {
     const char *ptr = (const char*) vData(item->o.a.m) + row * 4;
     int i;
@@ -124,7 +179,6 @@ static vq_Type Rgetter_i32r (int row, vq_Item *item) {
         item->r[i] = ptr[3-i];
     return VQ_int;
 }
-
 static vq_Type Rgetter_i64r (int row, vq_Item *item) {
     const char *ptr = (const char*) vData(item->o.a.m) + row * 8;
     int i;
@@ -132,12 +186,10 @@ static vq_Type Rgetter_i64r (int row, vq_Item *item) {
         item->r[i] = ptr[7-i];
     return VQ_long;
 }
-
 static vq_Type Rgetter_f32r (int row, vq_Item *item) {
     Rgetter_i32r(row, item);
     return VQ_float;
 }
-
 static vq_Type Rgetter_f64r (int row, vq_Item *item) {
     Rgetter_i64r(row, item);
     return VQ_double;
@@ -178,7 +230,6 @@ Dispatch* PickIntGetter (int bits) {
     assert(0);
     return 0;
 }
-
 Dispatch* FixedGetter (int bytes, int rows, int real, int flip) {
     static char widths[8][7] = {
         {0,-1,-1,-1,-1,-1,-1},
