@@ -18,18 +18,19 @@ CFLAGS += -DDEBUG -g -O0
 
 TARGET = libvq5$(dll)
 
-SRC = ../src/vqtcl.c ../src/vq4c.h ../src/defs.h ../src/core.c
+HDR = ../src/vqtcl.c ../src/vq4c.h ../src/defs.h ../src/core.c
+SRC = ../src/reader.c ../src/vqtcl.c
 		
 all: $(TARGET)
 
-$(TARGET): $(SRC)
+$(TARGET): $(HDR) $(SRC)
 	@echo Compiling $(TARGET)
-	@$(CC) $(CFLAGS) $(dyn) -o $(TARGET) ../src/vqtcl.c
+	@$(CC) $(CFLAGS) $(dyn) -o $(TARGET) $(SRC)
 	@echo OK
 
-release: $(SRC)
+release: $(HDR) $(SRC)
 	@echo Compiling $(TARGET) - RELEASE
-	@$(CC) $(CFLAGS_REL) $(dyn) -o $(TARGET) ../src/vqtcl.c
+	@$(CC) $(CFLAGS_REL) $(dyn) -o $(TARGET) $(SRC)
 	@echo OK
 	strip -x $(TARGET)
 

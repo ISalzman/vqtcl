@@ -12,11 +12,7 @@
 
 typedef vq_Table Vector; /* every vq_Table is a Vector, but not vice-versa */
 
-#ifdef _TCL
-typedef struct Tcl_Obj *Object_p;
-#else
-typedef void *Object_p;
-#endif
+/* table prefix fields and type dispatch */
 
 #define vType(vecptr)   ((vecptr)[-1].o.a.h)
 #define vRefs(vecptr)   ((vecptr)[-1].o.b.i)
@@ -38,28 +34,42 @@ typedef struct vq_Dispatch_s {
     void      (*setter)(vq_Table,int,int,const vq_Item*); /* setter function */
 } Dispatch;
     
-/* memory management */
+/* host language functions */
 
-Vector       (AllocVector) (Dispatch *vtab, int bytes);
-void          (FreeVector) (Vector v);
+#ifdef _TCL
+typedef struct Tcl_Obj *Object_p;
+#else
+typedef void           *Object_p;
+#endif
 
 Object_p       (ObjIncRef) (Object_p obj);
 void           (ObjDecRef) (Object_p obj);
 
-/* non-static internal functions */
-
 Object_p       (DebugCode) (Object_p cmd, int objc, Object_p objv[]);
-vq_Table  (EmptyMetaTable) (void);
-vq_Type          (GetItem) (int row, vq_Item *item);
 vq_Table  (ObjAsMetaTable) (Object_p obj);
 vq_Table      (ObjAsTable) (Object_p obj);
 int            (ObjToItem) (vq_Type type, vq_Item *item);
+
+/* memory management in core.c */
+
+Vector       (AllocVector) (Dispatch *vtab, int bytes);
+void          (FreeVector) (Vector v);
+
+/* core table functions in core.c */
+
+vq_Type          (GetItem) (int row, vq_Item *item);
+
+/* table creation in core.c */
+
+vq_Table  (EmptyMetaTable) (void);
+
+/* utility wrappers in core.c */
 
 int           (CharAsType) (char c);
 int         (StringAsType) (const char *str);
 const char* (TypeAsString) (int type, char *buf);
 
-/* operation dispatch table */
+/* operator dispatch in core.c */
 
 typedef struct {
     const char *name, *args;
@@ -67,5 +77,10 @@ typedef struct {
 } CmdDispatch;
 
 extern CmdDispatch f_commands[];
+
+/* reader.c */
+
+Dispatch* (PickIntGetter) (int bits);
+Dispatch* (FixedGetter) (int bytes, int rows, int real, int flip);
 
 #endif

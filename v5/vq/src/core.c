@@ -429,7 +429,7 @@ static vq_Type SizeCmd_T (vq_Item a[]) {
     return VQ_table;
 }
 
-#pragma mark - GENERIC OPERATORS -
+#pragma mark - OPERATOR DISPATCH -
 
 CmdDispatch f_commands[] = {
     { "at",      "O:TIIO", AtCmd_TIIO   },

@@ -7,15 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		114FBAE90CDCBFBD000B5611 /* core.c in Headers */ = {isa = PBXBuildFile; fileRef = 111FCE0E0CA5DBFD00C4FBEA /* core.c */; };
+		1198A2110CDCBD23008D4837 /* reader.c in Sources */ = {isa = PBXBuildFile; fileRef = 1198A2100CDCBD23008D4837 /* reader.c */; };
 		11D2FB380CB3A7E3007C57D0 /* vqtcl.c in Sources */ = {isa = PBXBuildFile; fileRef = 11D2FB220CB3A74B007C57D0 /* vqtcl.c */; };
 		11D2FB3E0CB3A80F007C57D0 /* vq4c.h in Headers */ = {isa = PBXBuildFile; fileRef = 111FCE110CA5DC2100C4FBEA /* vq4c.h */; };
 		11D2FB3F0CB3A810007C57D0 /* defs.h in Headers */ = {isa = PBXBuildFile; fileRef = 11E080930CA710910000CF5A /* defs.h */; };
-		11D2FC7A0CB3B5C8007C57D0 /* core.c in Headers */ = {isa = PBXBuildFile; fileRef = 111FCE0E0CA5DBFD00C4FBEA /* core.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		111FCE0E0CA5DBFD00C4FBEA /* core.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = core.c; path = src/core.c; sourceTree = "<group>"; };
 		111FCE110CA5DC2100C4FBEA /* vq4c.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = vq4c.h; path = src/vq4c.h; sourceTree = "<group>"; };
+		1198A2100CDCBD23008D4837 /* reader.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = reader.c; path = src/reader.c; sourceTree = "<group>"; };
 		11D2FB220CB3A74B007C57D0 /* vqtcl.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = vqtcl.c; path = src/vqtcl.c; sourceTree = "<group>"; };
 		11D2FB350CB3A7CB007C57D0 /* libvq5.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libvq5.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		11E080930CA710910000CF5A /* defs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = defs.h; path = src/defs.h; sourceTree = "<group>"; };
@@ -47,6 +49,7 @@
 				111FCE110CA5DC2100C4FBEA /* vq4c.h */,
 				11E080930CA710910000CF5A /* defs.h */,
 				111FCE0E0CA5DBFD00C4FBEA /* core.c */,
+				1198A2100CDCBD23008D4837 /* reader.c */,
 				11D2FB220CB3A74B007C57D0 /* vqtcl.c */,
 			);
 			name = Source;
@@ -69,7 +72,7 @@
 			files = (
 				11D2FB3E0CB3A80F007C57D0 /* vq4c.h in Headers */,
 				11D2FB3F0CB3A810007C57D0 /* defs.h in Headers */,
-				11D2FC7A0CB3B5C8007C57D0 /* core.c in Headers */,
+				114FBAE90CDCBFBD000B5611 /* core.c in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -116,6 +119,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				11D2FB380CB3A7E3007C57D0 /* vqtcl.c in Sources */,
+				1198A2110CDCBD23008D4837 /* reader.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

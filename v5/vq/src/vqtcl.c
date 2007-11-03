@@ -22,6 +22,8 @@ static Tcl_Obj *(TableAsList) (vq_Table table);
 static vq_Table (CmdAsTable) (Tcl_Obj *obj);
 EXTERN int Vq_Init (Tcl_Interp *interp);
 
+#pragma mark - TCL REFERENCE COUNTS -
+
 Object_p ObjIncRef (Object_p obj) {
     if (obj != 0) {
         Tcl_IncrRefCount(obj);
