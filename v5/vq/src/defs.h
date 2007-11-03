@@ -85,4 +85,8 @@ const char* (AdjustMappedFile) (Vector map, int offset);
 Dispatch* (PickIntGetter) (int bits);
 Dispatch* (FixedGetter) (int bytes, int rows, int real, int flip);
 
+/* mkload.c */
+
+vq_Table MappedToTable (Vector map, vq_Table base);
+
 #endif
