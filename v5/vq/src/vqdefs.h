@@ -40,20 +40,24 @@ typedef struct vq_Dispatch_s {
     
 /* memory management */
 
-Vector      (AllocVector) (Dispatch *vtab, int bytes);
-void         (FreeVector) (Vector v);
+Vector       (AllocVector) (Dispatch *vtab, int bytes);
+void          (FreeVector) (Vector v);
 
-Object_p      (ObjIncRef) (Object_p obj);
-void          (ObjDecRef) (Object_p obj);
+Object_p       (ObjIncRef) (Object_p obj);
+void           (ObjDecRef) (Object_p obj);
 
 /* non-static internal functions */
 
-Object_p      (DebugCode) (Object_p cmd, int objc, Object_p objv[]);
-vq_Table (EmptyMetaTable) (void);
-vq_Type         (GetItem) (int row, vq_Item *item);
-vq_Table (ObjAsMetaTable) (Object_p obj);
-vq_Table     (ObjAsTable) (Object_p obj);
-int           (ObjToItem) (vq_Type type, vq_Item *item);
+Object_p       (DebugCode) (Object_p cmd, int objc, Object_p objv[]);
+vq_Table  (EmptyMetaTable) (void);
+vq_Type          (GetItem) (int row, vq_Item *item);
+vq_Table  (ObjAsMetaTable) (Object_p obj);
+vq_Table      (ObjAsTable) (Object_p obj);
+int            (ObjToItem) (vq_Type type, vq_Item *item);
+
+int           (CharAsType) (char c);
+int         (StringAsType) (const char *str);
+const char* (TypeAsString) (int type, char *buf);
 
 /* operation dispatch table */
 

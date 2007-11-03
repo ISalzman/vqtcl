@@ -23,39 +23,6 @@ static Tcl_Obj *(TableAsList) (vq_Table table);
 static vq_Table (CmdAsTable) (Tcl_Obj *obj);
 EXTERN int Vq_Init (Tcl_Interp *interp);
 
-static int StringAsType (const char *str) {
-    int type = 0;
-    switch (*str & ~0x20) {
-        default:    assert(0);
-        case 'N':   type = VQ_nil;    break;
-        case 'I':   type = VQ_int;    break;
-        case 'L':   type = VQ_long;   break;
-        case 'F':   type = VQ_float;  break;
-        case 'D':   type = VQ_double; break;
-        case 'S':   type = VQ_string; break;
-        case 'B':   type = VQ_bytes;  break;
-        case 'T':   type = VQ_table;  break;
-        case 'O':   type = VQ_object; break;
-    }
-    if (*str & 0x20)
-        type |= VQ_NULLABLE;
-    while (*++str != 0)
-        if ('a' <= *str && *str <= 'z')
-        type |= 1 << (*str - 'a' + 5);
-    return type;
-}
-static const char* TypeAsString (int type, char *buf) {
-    char c, *p = buf; /* buffer should have room for at least 28 bytes */
-    *p++ = VQ_TYPES[type&VQ_TYPEMASK];
-    if (type & VQ_NULLABLE)
-        p[-1] |= 0x20;
-    for (c = 'a'; c <= 'z'; ++c)
-        if (type & (1 << (c - 'a' + 5)))
-            *p++ = c;
-    *p = 0;
-    return buf;
-}
-
 Object_p ObjIncRef (Object_p obj) {
     if (obj != 0) {
         Tcl_IncrRefCount(obj);
@@ -114,7 +81,7 @@ static int SetTableFromAnyRep (Tcl_Interp *interp, Tcl_Obj *obj) {
         table = EmptyMetaTable();
     else if (nargs == 1) {
         if (Tcl_GetIntFromObj(interp, obj, &rows) == TCL_OK && rows >= 0) {
-            table = vq_new(0);
+            table = vq_new(0, 0);
             vCount(table) = rows;
         } else
             table = RefAsTable(obj);
@@ -183,12 +150,6 @@ int ObjToItem (vq_Type type, vq_Item *item) {
             return 0;
     }
     return 1;
-}
-static int CastObjToItem (const char *type, vq_Item *item) {
-    switch (*type) {
-        default:
-            return ObjToItem(StringAsType(type) & VQ_TYPEMASK, item);
-    }
 }
 
 #pragma mark - CONVERT TO TCL OBJECTS -
@@ -367,7 +328,6 @@ static int VqObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *con
     Tcl_Obj *result;
     vq_Item stack [20];
     const char *args;
-    char typebuf[2];
     vq_Pool mypool = vq_addpool();
     
     if (objc <= 1) {
@@ -418,9 +378,7 @@ static int VqObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *con
             goto FAIL;
         }
         stack[i].o.a.p = objv[i];
-        typebuf[0] = args[i];
-        typebuf[1] = 0;
-        if (!CastObjToItem(typebuf, stack+i)) {
+        if (!ObjToItem(CharAsType(args[i]) & VQ_TYPEMASK, stack+i)) {
             if (*Tcl_GetStringResult(interp) == 0) {
                 const char *s = "argument";
                 switch (args[i] & ~0x20) {

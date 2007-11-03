@@ -199,39 +199,38 @@ static void TableCleaner (Vector v) {
 }
 static Dispatch vtab = { "table", 2, sizeof(vq_Item), 0, TableCleaner };
 
-vq_Table vq_new (vq_Table meta) {
+vq_Table vq_new (vq_Table meta, int bytes) {
     vq_Table t;
     if (meta == 0)
         meta = EmptyMetaTable();
-    t = vq_hold(AllocVector(&vtab, 0));
+    t = vq_hold(AllocVector(&vtab, bytes));
     vMeta(t) = vq_retain(meta);
     return t;
 }
 
 vq_Table EmptyMetaTable (void) {
-    static vq_Table emt = 0;
-    if (emt == 0) {
+    static vq_Table meta = 0;
+    if (meta == 0) {
         vq_Item item;
         vq_Table mm = AllocVector(&vtab, 3 * sizeof *mm);
         vMeta(mm) = vq_retain(mm); /* circular */
         vCount(mm) = 3;
-        /* can't use normal set calls because they insist on a mutable table */
         mm[0].o.a.m = vq_retain(AllocDataVec(VQ_string, 3));
         mm[1].o.a.m = vq_retain(AllocDataVec(VQ_int, 3));
         mm[2].o.a.m = vq_retain(AllocDataVec(VQ_table, 3));
         vCount(mm[0].o.a.m) = 3;
         vCount(mm[1].o.a.m) = 3;
         vCount(mm[2].o.a.m) = 3;
-        item.o.a.s = "name";   StringVecSetter(mm[0].o.a.m, 0, 0, &item);
-        item.o.a.s = "type";   StringVecSetter(mm[0].o.a.m, 1, 0, &item);
-        item.o.a.s = "subt";   StringVecSetter(mm[0].o.a.m, 2, 0, &item);
-        item.o.a.i = VQ_string;   IntVecSetter(mm[1].o.a.m, 0, 0, &item);
-        item.o.a.i = VQ_int;      IntVecSetter(mm[1].o.a.m, 1, 0, &item);
-        item.o.a.i = VQ_table;    IntVecSetter(mm[1].o.a.m, 2, 0, &item);
-        emt = vq_retain(vq_new(mm)); /* retain forever */
-        item.o.a.m = emt;       TableVecSetter(mm[2].o.a.m, 0, 0, &item);
-        item.o.a.m = emt;       TableVecSetter(mm[2].o.a.m, 1, 0, &item);
+        item.o.a.s = "name";    StringVecSetter(mm[0].o.a.m, 0, 0, &item);
+        item.o.a.s = "type";    StringVecSetter(mm[0].o.a.m, 1, 0, &item);
+        item.o.a.s = "subt";    StringVecSetter(mm[0].o.a.m, 2, 0, &item);
+        item.o.a.i = VQ_string; IntVecSetter(mm[1].o.a.m, 0, 0, &item);
+        item.o.a.i = VQ_int;    IntVecSetter(mm[1].o.a.m, 1, 0, &item);
+        item.o.a.i = VQ_table;  IntVecSetter(mm[1].o.a.m, 2, 0, &item);
+        meta = vq_new(mm, 0); /* circular, retained forever */
+        item.o.a.m = meta;      TableVecSetter(mm[2].o.a.m, 0, 0, &item);
+        item.o.a.m = meta;      TableVecSetter(mm[2].o.a.m, 1, 0, &item);
         item.o.a.m = mm; /*c*/  TableVecSetter(mm[2].o.a.m, 2, 0, &item);
     }
-    return emt;
+    return meta;
 }

@@ -136,6 +136,34 @@ vq_Table Vq_getTable (vq_Table t, int row, int col, vq_Table def) {
     return item.o.a.m;
 }
 
+#pragma mark - TYPE DESCRIPTORS -
+
+int CharAsType (char c) {
+    const char *p = strchr(VQ_TYPES, c & ~0x20);
+    int type = p != 0 ? p - VQ_TYPES : VQ_nil;
+    if (c & 0x20)
+        type |= VQ_NULLABLE;
+    return type;
+}
+int StringAsType (const char *str) {
+    int type = CharAsType(*str);
+    while (*++str != 0)
+        if ('a' <= *str && *str <= 'z')
+        type |= 1 << (*str - 'a' + 5);
+    return type;
+}
+const char* TypeAsString (int type, char *buf) {
+    char c, *p = buf; /* buffer should have room for at least 28 bytes */
+    *p++ = VQ_TYPES[type&VQ_TYPEMASK];
+    if (type & VQ_NULLABLE)
+        p[-1] |= 0x20;
+    for (c = 'a'; c <= 'z'; ++c)
+        if (type & (1 << (c - 'a' + 5)))
+            *p++ = c;
+    *p = 0;
+    return buf;
+}
+
 #pragma mark - OPERATOR WRAPPERS -
 
 static vq_Type AtCmd_TIIO (vq_Item a[]) {
@@ -157,11 +185,11 @@ static vq_Type MetaCmd_T (vq_Item a[]) {
     return VQ_table;
 }
 static vq_Type NewCmd_T (vq_Item a[]) {
-    a->o.a.m = vq_new(a[0].o.a.m);
+    a->o.a.m = vq_new(a[0].o.a.m, 0);
     return VQ_table;
 }
 static vq_Type SizeCmd_T (vq_Item a[]) {
-    vq_Table t = vq_new(0);
+    vq_Table t = vq_new(0, 0);
     vCount(t) = vq_size(a[0].o.a.m);
     a->o.a.m = t;
     return VQ_table;
