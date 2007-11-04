@@ -314,7 +314,7 @@ vq_Table EmptyMetaTable (void) {
         item.o.a.i = VQ_string; IntVecSetter(mm[1].o.a.m, 0, 0, &item);
         item.o.a.i = VQ_int;    IntVecSetter(mm[1].o.a.m, 1, 0, &item);
         item.o.a.i = VQ_table;  IntVecSetter(mm[1].o.a.m, 2, 0, &item);
-        meta = vq_new(mm, 0); /* circular, retained forever */
+        meta = vq_retain(vq_new(mm, 0)); /* circular, retained forever */
         item.o.a.m = meta;      TableVecSetter(mm[2].o.a.m, 0, 0, &item);
         item.o.a.m = meta;      TableVecSetter(mm[2].o.a.m, 1, 0, &item);
         item.o.a.m = mm; /*c*/  TableVecSetter(mm[2].o.a.m, 2, 0, &item);
