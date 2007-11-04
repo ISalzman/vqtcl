@@ -3,6 +3,10 @@
 #ifndef VQ_DEFS_H
 #define VQ_DEFS_H
 
+/* modules included */
+
+#define VQ_MOD_MKLOAD 1
+
 #include "vq4c.h"
 
 #include <assert.h>
@@ -45,7 +49,6 @@ typedef void           *Object_p;
 Object_p       (ObjIncRef) (Object_p obj);
 void           (ObjDecRef) (Object_p obj);
 
-Object_p       (DebugCode) (Object_p cmd, int objc, Object_p objv[]);
 vq_Table  (ObjAsMetaTable) (Object_p obj);
 vq_Table      (ObjAsTable) (Object_p obj);
 int            (ObjToItem) (vq_Type type, vq_Item *item);
@@ -58,6 +61,10 @@ void          (FreeVector) (Vector v);
 /* core table functions in core.c */
 
 vq_Type          (GetItem) (int row, vq_Item *item);
+
+/* data vectors in core.c */
+
+Vector      (AllocDataVec) (vq_Type type, int rows);
 
 /* table creation in core.c */
 
@@ -87,6 +94,7 @@ Dispatch* (FixedGetter) (int bytes, int rows, int real, int flip);
 
 /* mkload.c */
 
-vq_Table MappedToTable (Vector map, vq_Table base);
+vq_Table DescToMeta (const char *desc, int length);
+vq_Table MapToTable (Vector map);
 
 #endif

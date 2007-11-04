@@ -26,4 +26,6 @@ test 7 {} { vq at [vq meta ""] 0 0 ? } name
 test 8 {} { vq at {meta ""} 1 0 ?    } type
 test 9 {} { vq new ""                } 0
 
+test 10 {} { vq version } $version
+
 ::tcltest::cleanupTests

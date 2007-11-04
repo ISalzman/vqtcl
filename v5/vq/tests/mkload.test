@@ -1,0 +1,24 @@
+#!/usr/bin/env tclkit
+# simple core tests
+# %renumber<^\s*test >%
+
+source [file join [file dir [info script]] initests.tcl]
+
+test 0 {load package} {
+    package require vq
+} $version
+
+test 1 {vq command} {
+    catch { vq ? } e
+    string match {bad command "?": must be *} $e
+} 1
+
+test 2 {} {
+    vq desc2meta {A:S,B:I,C:F}
+} {mdef {A B:I C:F}}
+
+test 3 {} {
+    vq desc2meta {A:S,B[C:I,D:F],E:T,F:L}
+} {mdef {A {B {C:I D:F}} {E {}} F:L}}
+
+::tcltest::cleanupTests

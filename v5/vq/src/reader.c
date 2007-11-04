@@ -100,8 +100,7 @@ static vq_Type Rgetter_i8 (int row, vq_Item *item) {
 #ifdef VQ_MUSTALIGN
 
 static vq_Type Rgetter_i16 (int row, vq_Item *item) {
-    const unsigned char *ptr = 
-            (const unsigned char*) vData(item->o.a.m) + row * 2;
+    const uint8_t *ptr = (const uint8_t*) vData(item->o.a.m) + row * 2;
 #ifdef VQ_BIGENDIAN
     item->o.a.i = (((int8_t) ptr[0]) << 8) | ptr[1];
 #else
@@ -163,8 +162,7 @@ static vq_Type Rgetter_f64 (int row, vq_Item *item) {
 #endif
 
 static vq_Type Rgetter_i16r (int row, vq_Item *item) {
-    const unsigned char *ptr = 
-            (const unsigned char*) vData(item->o.a.m) + row * 2;
+    const uint8_t *ptr = (const uint8_t*) vData(item->o.a.m) + row * 2;
 #ifdef VQ_BIGENDIAN
     item->o.a.i = (((int8_t) ptr[1]) << 8) | ptr[0];
 #else

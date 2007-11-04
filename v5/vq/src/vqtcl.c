@@ -305,21 +305,6 @@ static vq_Table CmdAsTable (Tcl_Obj *obj) {
 
 #pragma mark - TCL COMMAND INTERFACE -
 
-Object_p DebugCode (Object_p cmd, int objc, Object_p objv[]) {
-#ifndef NDEBUG
-    static const char *cmds[] = {
-        "version", 0 
-    };
-    int idx;
-    if (Tcl_GetIndexFromObj(context, cmd, cmds, "option", 0, &idx) == TCL_OK)
-        switch (idx) {
-            case 0: /* version */
-                return Tcl_NewStringObj(VQ_VERSION, -1);
-        }
-#endif
-    return 0;
-}
-
 static int VqObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
     int i, idx, ok = TCL_ERROR;
     vq_Type type;

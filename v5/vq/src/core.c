@@ -248,7 +248,7 @@ static Dispatch ovtab = {
     ObjectVecCleaner, ObjectVecGetter, ObjectVecSetter
 };
 
-static Vector AllocDataVec (vq_Type type, int rows) {
+Vector AllocDataVec (vq_Type type, int rows) {
     int bytes;
     Vector v;
     Dispatch *vtab;
@@ -338,13 +338,17 @@ vq_Table vq_meta (vq_Table t) {
 int vq_size (vq_Table t) {
     return t != 0 ? vCount(t) : 0;
 }
-
 vq_Item vq_get (vq_Table t, int row, int column, vq_Type type, vq_Item def) {
     vq_Item item;
     if (row < 0 || row >= vCount(t) || column < 0 || column >= vCount(vMeta(t)))
         return def;
     item = t[column];
     return GetItem(row, &item) != VQ_nil ? item : def;
+}
+void vq_set (vq_Table t, int row, int col, vq_Type type, vq_Item val) {
+    Vector v = t[col].o.a.m;
+    assert(vType(v)->setter != 0);
+    vType(v)->setter(v, row, col, &val);
 }
 
 #pragma mark - UTILITY WRAPPERS -
@@ -355,19 +359,33 @@ int Vq_getInt (vq_Table t, int row, int col, int def) {
     item = vq_get(t, row, col, VQ_int, item);
     return item.o.a.i;
 }
-
 const char *Vq_getString (vq_Table t, int row, int col, const char *def) {
     vq_Item item;
     item.o.a.s = def;
     item = vq_get(t, row, col, VQ_string, item);
     return item.o.a.s;
 }
-
 vq_Table Vq_getTable (vq_Table t, int row, int col, vq_Table def) {
     vq_Item item;
     item.o.a.m = def;
     item = vq_get(t, row, col, VQ_table, item);
     return item.o.a.m;
+}
+
+void Vq_setInt (vq_Table t, int row, int col, int val) {
+    vq_Item item;
+    item.o.a.i = val;
+    vq_set(t, row, col, VQ_int, item);
+}
+void Vq_setString (vq_Table t, int row, int col, const char *val) {
+    vq_Item item;
+    item.o.a.s = val;
+    vq_set(t, row, col, val != 0 ? VQ_string : VQ_nil, item);
+}
+void Vq_setTable (vq_Table t, int row, int col, vq_Table val) {
+    vq_Item item;
+    item.o.a.m = val;
+    vq_set(t, row, col, val != 0 ? VQ_table : VQ_nil, item);
 }
 
 #pragma mark - TYPE DESCRIPTORS -
@@ -410,10 +428,6 @@ static vq_Type AtCmd_TIIO (vq_Item a[]) {
     *a = a[3];
     return VQ_object;
 }
-static vq_Type Debug_OX (vq_Item a[]) {
-    a->o.a.p = DebugCode(a[0].o.a.p, a[1].o.b.i, a[1].o.a.p);
-    return VQ_object;
-}
 static vq_Type MetaCmd_T (vq_Item a[]) {
     a->o.a.m = vq_meta(a[0].o.a.m);
     return VQ_table;
@@ -428,14 +442,28 @@ static vq_Type SizeCmd_T (vq_Item a[]) {
     a->o.a.m = t;
     return VQ_table;
 }
+static vq_Type VersionCmd_ (vq_Item a[]) {
+    a->o.a.s = VQ_VERSION;
+    return VQ_string;
+}
+
+#if VQ_MOD_MKLOAD
+static vq_Type Desc2MetaCmd_S (vq_Item a[]) {
+    a->o.a.m = DescToMeta(a[0].o.a.s, -1);
+    return VQ_table;
+}
+#endif
 
 #pragma mark - OPERATOR DISPATCH -
 
 CmdDispatch f_commands[] = {
-    { "at",      "O:TIIO", AtCmd_TIIO   },
-    { "debug",   "O:OX",   Debug_OX     },
-    { "meta",    "T:T",    MetaCmd_T    },
-    { "new",     "T:T",    NewCmd_T     },
-    { "size",    "T:T",    SizeCmd_T    },
+    { "at",         "O:TIIO",   AtCmd_TIIO      },
+    { "meta",       "T:T",      MetaCmd_T       },
+    { "new",        "T:T",      NewCmd_T        },
+    { "size",       "T:T",      SizeCmd_T       },
+    { "version",    "S:",       VersionCmd_     },
+#if VQ_MOD_MKLOAD
+    { "desc2meta",  "T:S",      Desc2MetaCmd_S  },
+#endif
     { 0, 0, 0 }
 };  

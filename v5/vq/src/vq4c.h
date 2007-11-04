@@ -28,7 +28,7 @@ typedef union vq_Item_u {
             int                    i;
             float                  f;
             const char            *s;
-            const unsigned char   *b;
+            const uint8_t   *b;
             void                  *p;
             union vq_Item_u       *m;
             void                 (*c)(void*);
@@ -62,9 +62,14 @@ vq_Table    (vq_new) (vq_Table t, int bytes);
 vq_Table   (vq_meta) (vq_Table t);
 int        (vq_size) (vq_Table t);
 vq_Item     (vq_get) (vq_Table t, int row, int col, vq_Type type, vq_Item def);
+void        (vq_set) (vq_Table t, int row, int col, vq_Type type, vq_Item val);
 
 /* wrappers */
 
 int            (Vq_getInt) (vq_Table t, int row, int col, int def);
 const char *(Vq_getString) (vq_Table t, int row, int col, const char *def);
 vq_Table     (Vq_getTable) (vq_Table t, int row, int col, vq_Table def);
+
+void           (Vq_setInt) (vq_Table t, int row, int col, int val);
+void        (Vq_setString) (vq_Table t, int row, int col, const char *val);
+void         (Vq_setTable) (vq_Table t, int row, int col, vq_Table val);
