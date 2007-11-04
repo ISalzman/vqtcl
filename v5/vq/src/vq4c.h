@@ -72,6 +72,7 @@ int            (Vq_getInt) (vq_Table t, int row, int col, int def);
 const char *(Vq_getString) (vq_Table t, int row, int col, const char *def);
 vq_Table     (Vq_getTable) (vq_Table t, int row, int col, vq_Table def);
 
+void         (Vq_setEmpty) (vq_Table t, int row, int col);
 void           (Vq_setInt) (vq_Table t, int row, int col, int val);
 void        (Vq_setString) (vq_Table t, int row, int col, const char *val);
 void         (Vq_setTable) (vq_Table t, int row, int col, vq_Table val);

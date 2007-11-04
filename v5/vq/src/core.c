@@ -420,6 +420,10 @@ vq_Table Vq_getTable (vq_Table t, int row, int col, vq_Table def) {
     return item.o.a.m;
 }
 
+void Vq_setEmpty (vq_Table t, int row, int col) {
+    vq_Item item;
+    vq_set(t, row, col, VQ_nil, item);
+}
 void Vq_setInt (vq_Table t, int row, int col, int val) {
     vq_Item item;
     item.o.a.i = val;

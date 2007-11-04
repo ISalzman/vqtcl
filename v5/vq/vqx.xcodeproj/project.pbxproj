@@ -25,7 +25,7 @@
 		114FBC340CDE301E000B5611 /* mutable.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mutable.c; path = src/mutable.c; sourceTree = "<group>"; };
 		1198A2100CDCBD23008D4837 /* reader.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = reader.c; path = src/reader.c; sourceTree = "<group>"; };
 		11D2FB220CB3A74B007C57D0 /* vqtcl.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = vqtcl.c; path = src/vqtcl.c; sourceTree = "<group>"; };
-		11D2FB350CB3A7CB007C57D0 /* liblibvq5.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liblibvq5.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		11D2FB350CB3A7CB007C57D0 /* libvq5.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libvq5.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		11E080930CA710910000CF5A /* defs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = defs.h; path = src/defs.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -67,7 +67,7 @@
 		1AB674ADFE9D54B511CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				11D2FB350CB3A7CB007C57D0 /* liblibvq5.dylib */,
+				11D2FB350CB3A7CB007C57D0 /* libvq5.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -102,7 +102,7 @@
 			);
 			name = "vq5 dylib";
 			productName = libvq5;
-			productReference = 11D2FB350CB3A7CB007C57D0 /* liblibvq5.dylib */;
+			productReference = 11D2FB350CB3A7CB007C57D0 /* libvq5.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 /* End PBXNativeTarget section */
