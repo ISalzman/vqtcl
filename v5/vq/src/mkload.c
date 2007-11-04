@@ -44,7 +44,7 @@ static vq_Table ParseDesc (char **desc, const char **nbuf, int *tbuf, vq_Table *
     
     *desc = ptr;
 
-    result = vq_new(vMeta(empty), 3 * sizeof(void*));
+    result = vq_new(vMeta(empty), 3 * sizeof(vq_Item));
     vCount(result) = cols;
     result[0].o.a.m = vq_retain(AllocDataVec(VQ_string, cols));
     result[1].o.a.m = vq_retain(AllocDataVec(VQ_int, cols));
@@ -93,7 +93,6 @@ vq_Table DescToMeta (const char *desc, int length) {
 #define MF_Data(x) ((x)->o.a.s)
 #define MF_Length(x) ((x)->o.b.i)
 
-#if 0
 static int IsReversedEndian(Vector map) {
 #ifdef VQ_BIG_ENDIAN
     return *MF_Data(map) == 'J';
@@ -116,7 +115,6 @@ static int GetVarPair (const char **nextp) {
         *nextp += n;
     return n;
 }
-#endif
 
 #pragma mark - METAKIT DATA READER -
 
