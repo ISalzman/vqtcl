@@ -26,6 +26,8 @@ void FreeVector (Vector v) {
 
 #pragma mark - MEMORY POOLS -
 
+/* TODO: don't push a new chunk just to stack pools, track position instead */
+
 static vq_Pool NewPoolChunk (vq_Pool prev) {
     vq_Pool pool = malloc(POOL_CHUNK * sizeof(void*));
     pool[0] = (void*) prev;
@@ -42,7 +44,7 @@ vq_Pool vq_addpool (void) {
     return currentPool;
 }
 void vq_losepool (vq_Pool pool) {
-    /* TODO: deal with pool != currentPool */
+    assert(pool == currentPool);
     do {
         vq_Pool next = (void*) pool[0];
         void **rover = (void*) pool[1];
@@ -62,15 +64,15 @@ Vector vq_hold (Vector v) {
     return v;
 }
 static void HoldCleaner (Vector v) {
-    v[0].o.a.c(v[0].o.b.p);
+    v->o.a.c(v->o.b.p);
     FreeVector(v);
 }
-Vector vq_holdf (void *p, void (*f)(void*)) {
+void* vq_holdf (void *p, void (*f)(void*)) {
     static Dispatch vtab = { "hold", 1, 0, 0, HoldCleaner };
     Vector v = vq_hold(AllocVector(&vtab, sizeof *v));
-    v[0].o.a.c = f;
-    v[0].o.b.p = p;
-    return v;
+    v->o.a.c = f;
+    v->o.b.p = p;
+    return p;
 }
 /* the above code doesn't need to know anything about reference counting */
 Vector vq_retain (Vector v) {

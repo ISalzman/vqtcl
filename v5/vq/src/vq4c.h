@@ -52,7 +52,7 @@ typedef union vq_Item_u {
 vq_Pool (vq_addpool) (void);
 void   (vq_losepool) (vq_Pool pool);
 vq_Table   (vq_hold) (vq_Table t);
-vq_Table  (vq_holdf) (void *p, void (*f)(void*));
+void*     (vq_holdf) (void *p, void (*f)(void*));
 vq_Table (vq_retain) (vq_Table t);
 void    (vq_release) (vq_Table t);
 

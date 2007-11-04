@@ -443,17 +443,17 @@ static int VqObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *con
     Tcl_Obj *result;
     vq_Item stack [20];
     const char *args;
-    vq_Pool mypool = vq_addpool();
+    vq_Pool mypool;
     
     if (objc <= 1) {
         Tcl_WrongNumArgs(interp, 1, objv, "command ...");
-        goto FAIL;
+        return TCL_ERROR;
     }
-
     if (Tcl_GetIndexFromObjStruct(interp, objv[1], f_commands,
             sizeof *f_commands, "command", TCL_EXACT, &idx) != TCL_OK)
-        goto FAIL;
+        return TCL_ERROR;
 
+    mypool = vq_addpool();
     context = interp; /* TODO: not reentrant */
     
     objv += 2; objc -= 2;
