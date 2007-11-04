@@ -48,7 +48,7 @@ void vq_losepool (vq_Pool pool) {
     do {
         vq_Pool next = (void*) pool[0];
         void **rover = (void*) pool[1];
-        while (*--rover >= (void*) (pool + 2))
+        while ((void*) --rover >= (void*) (pool + 2))
             vq_release(*rover);
         free(pool);
         pool = next;

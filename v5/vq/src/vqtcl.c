@@ -367,6 +367,7 @@ static vq_Table CmdAsTable (Tcl_Obj *obj) {
     Tcl_Obj **av, *cmd;
     Tcl_SavedResult state;
     vq_Table result = 0;
+    /* vq_Pool mypool = vq_addpool(); */
     
     Tcl_SaveResult(context, &state);
     
@@ -384,6 +385,8 @@ static vq_Table CmdAsTable (Tcl_Obj *obj) {
         Tcl_DiscardResult(&state);
     else
         Tcl_RestoreResult(context, &state);
+
+    /* vq_losepool(mypool); */
     return result;
 }
 
