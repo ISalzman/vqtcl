@@ -353,7 +353,7 @@ vq_Table IotaTable (int rows, const char *name) {
     Vq_setString(meta, 0, 0, name);
     Vq_setInt(meta, 0, 1, VQ_int);
     Vq_setTable(meta, 0, 2, EmptyMetaTable());
-    t = vq_retain(IndirectTable(meta, &iotatab, 0)); /* FIXME: extra retain */
+    t = IndirectTable(meta, &iotatab, 0);
     vCount(t) = rows;
     return t;
 }

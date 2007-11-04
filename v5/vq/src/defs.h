@@ -57,7 +57,6 @@ void (UpdateVar) (const char *s, Object_p obj);
 vq_Table (ObjAsMetaTable) (Object_p obj);
 vq_Table (ObjAsTable) (Object_p obj);
 int (ObjToItem) (vq_Type type, vq_Item *item);
-Vector (ListAsIntVec) (Object_p obj);
 Object_p (MutableObject) (const char* s);
 
 /* memory management in core.c */

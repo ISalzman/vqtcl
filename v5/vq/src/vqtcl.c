@@ -198,7 +198,7 @@ int ObjToItem (vq_Type type, vq_Item *item) {
     }
     return 1;
 }
-Vector ListAsIntVec (Tcl_Obj *obj) {
+static Vector ListAsIntVec (Tcl_Obj *obj) {
     Vector v;
     int i, n, *ivec;
     if (Tcl_ListObjLength(context, obj, &n) != TCL_OK)
