@@ -39,8 +39,10 @@ void ObjDecRef (Object_p obj) {
 #pragma mark - CUSTOM TABLE OBJECT TYPE -
 
 static void FreeTableIntRep (Tcl_Obj *obj) {
+    vq_Pool mypool = vq_addpool();
     vq_release(obj->internalRep.twoPtrValue.ptr1);
     ObjDecRef(obj->internalRep.twoPtrValue.ptr2);
+    vq_losepool(mypool);
 }
 static void DupTableIntRep (Tcl_Obj *src, Tcl_Obj *obj) {
     obj->internalRep = src->internalRep;
@@ -52,6 +54,7 @@ static void UpdateTableStrRep (Tcl_Obj *obj) {
     int len;
     const char *str;
     Tcl_Obj *list = obj->internalRep.twoPtrValue.ptr2;
+    vq_Pool mypool = vq_addpool();
 
     if (list == 0)
         list = TableAsList(obj->internalRep.twoPtrValue.ptr1);
@@ -61,6 +64,8 @@ static void UpdateTableStrRep (Tcl_Obj *obj) {
     obj->length = len;
     if (obj->internalRep.twoPtrValue.ptr2 == 0)
         ObjDecRef(list);
+
+    vq_losepool(mypool);
 }
 static vq_Table RefAsTable (Tcl_Obj *obj) {
     Tcl_Obj *o;
@@ -74,10 +79,13 @@ static int SetTableFromAnyRep (Tcl_Interp *interp, Tcl_Obj *obj) {
     int nargs, rows;
     Tcl_Obj *list;
     vq_Table table = 0;
+    vq_Pool mypool;
     
     if (Tcl_ListObjLength(interp, obj, &nargs) != TCL_OK)
         return TCL_ERROR;
         
+    mypool = vq_addpool();
+
     if (nargs == 0)
         table = EmptyMetaTable();
     else if (nargs == 1) {
@@ -100,6 +108,8 @@ static int SetTableFromAnyRep (Tcl_Interp *interp, Tcl_Obj *obj) {
     obj->internalRep.twoPtrValue.ptr1 = vq_retain(table);
     obj->internalRep.twoPtrValue.ptr2 = ObjIncRef(list);
     obj->typePtr = &f_tableObjType;
+
+    vq_losepool(mypool);
     return TCL_OK;
 }
 Tcl_ObjType f_tableObjType = {
