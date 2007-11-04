@@ -61,8 +61,10 @@ void    (vq_release) (vq_Table t);
 vq_Table    (vq_new) (vq_Table t, int bytes);
 vq_Table   (vq_meta) (vq_Table t);
 int        (vq_size) (vq_Table t);
+int       (vq_empty) (vq_Table t, int row, int col);
 vq_Item     (vq_get) (vq_Table t, int row, int col, vq_Type type, vq_Item def);
 void        (vq_set) (vq_Table t, int row, int col, vq_Type type, vq_Item val);
+void    (vq_replace) (vq_Table t, int start, int count, vq_Table data);
 
 /* wrappers */
 

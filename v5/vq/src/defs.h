@@ -6,6 +6,7 @@
 /* modules included */
 
 #define VQ_MOD_MKLOAD 1
+#define VQ_MOD_MUTABLE 1
 #define VQ_MOD_NULLABLE 1
 
 #include "vq4c.h"
@@ -51,10 +52,12 @@ typedef void           *Object_p;
 Object_p (ObjIncRef) (Object_p obj);
 void (ObjDecRef) (Object_p obj);
 
+void (UpdateVar) (const char *s, Object_p obj);
 vq_Table (ObjAsMetaTable) (Object_p obj);
 vq_Table (ObjAsTable) (Object_p obj);
 int (ObjToItem) (vq_Type type, vq_Item *item);
 Vector (ListAsIntVec) (Object_p obj);
+Object_p (MutableObject) (const char* s);
 
 /* memory management in core.c */
 
@@ -72,6 +75,7 @@ Vector (AllocDataVec) (vq_Type type, int rows);
 /* table creation in core.c */
 
 vq_Table (EmptyMetaTable) (void);
+vq_Table (IndirectTable) (vq_Table meta, Dispatch *vtab, int extra);
 
 /* utility wrappers in core.c */
 
@@ -102,6 +106,9 @@ vq_Table (MapToTable) (Vector map);
 
 /* nullable.c */
 
+void* (VecInsert) (Vector *vecp, int off, int cnt);
+void* (VecDelete) (Vector *vecp, int off, int cnt);
+
 void* (RangeFlip) (Vector *vecp, int off, int count);
 int (RangeLocate) (Vector v, int off, int *offp);
 void (RangeInsert) (Vector *vecp, int off, int count, int mode);
@@ -111,5 +118,12 @@ vq_Type (RflipCmd_OII) (vq_Item a[]);
 vq_Type (RlocateCmd_OI) (vq_Item a[]);
 vq_Type (RinsertCmd_OIII) (vq_Item a[]);
 vq_Type (RdeleteCmd_OII) (vq_Item a[]);
+
+/* mutable.c */
+
+void (MutVecSet) (Vector v, int row, int col, const vq_Item *item);
+void (MutVecReplace) (vq_Table t, int offset, int delrows, vq_Table data);
+int (IsMutable) (vq_Table t);
+vq_Table (WrapMutable) (vq_Table t);
 
 #endif

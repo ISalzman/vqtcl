@@ -1,13 +1,12 @@
-/* Load views from a Metakit-format memory map */
+/* Support for ranges and missing values */
 
 #include "defs.h"
 
-#include <stdlib.h>
 #include <string.h>
 
 #pragma mark - RANGE OPERATIONS -
 
-static void *VecInsert (Vector *vecp, int off, int cnt) {
+void *VecInsert (Vector *vecp, int off, int cnt) {
     Vector v = *vecp, v2;
     int unit = vType(v)->unit, limit = vLimit(v);
     char *cvec = (char*) v, *cvec2;
@@ -35,7 +34,7 @@ static void *VecInsert (Vector *vecp, int off, int cnt) {
     vCount(v) += cnt;
     return v;
 } 
-static void *VecDelete (Vector *vecp, int off, int cnt) {
+void *VecDelete (Vector *vecp, int off, int cnt) {
     /* TODO: shrink when less than half full and > 10 elements */
     Vector v = *vecp;
     int unit = vType(v)->unit;
@@ -85,23 +84,6 @@ int RangeLocate (Vector v, int off, int *offp) {
     *offp = fill + off - last;
     assert(*offp >= 0);
     return i;
-}
-static int RangeSpan (Vector v, int offset, int count, int *startp, int miss) {
-    int rs, ps = RangeLocate(v, offset, &rs);
-    int re, pe = RangeLocate(v, offset + count, &re);
-    if ((ps ^ miss) & 1)
-        rs = offset - rs;
-    if ((pe ^ miss) & 1)
-        re = offset + count - re;
-    *startp = rs;
-    return re - rs;
-}
-static int RangeExpand (Vector v, int off) {
-    int i;
-    const int *ivec = (const int*) v;
-    for (i = 0; i < vCount(v) && ivec[i] <= off; i += 2)
-        off += ivec[i+1] - ivec[i];
-    return off;
 }
 void RangeInsert (Vector *vecp, int off, int count, int mode) {
     Vector v = *vecp;

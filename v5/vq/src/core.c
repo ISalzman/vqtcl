@@ -322,6 +322,18 @@ vq_Table EmptyMetaTable (void) {
     return meta;
 }
 
+vq_Table IndirectTable (vq_Table meta, Dispatch *vtab, int extra) {
+    int i, cols = vCount(meta);
+    vq_Table t = vq_hold(AllocVector(vtab, cols * sizeof *t + extra));
+    vMeta(t) = vq_retain(meta);
+    vData(t) = t + cols;
+    for (i = 0; i < cols; ++i) {
+        t[i].o.a.m = t;
+        t[i].o.b.i = i;
+    }
+    return t;
+}
+
 #pragma mark - CORE TABLE FUNCTIONS -
 
 vq_Type GetItem (int row, vq_Item *item) {
@@ -338,6 +350,13 @@ vq_Table vq_meta (vq_Table t) {
 int vq_size (vq_Table t) {
     return t != 0 ? vCount(t) : 0;
 }
+int vq_empty (vq_Table t, int row, int column) {
+    vq_Item item;
+    if (column < 0 || column >= vCount(vMeta(t)))
+        return 1;
+    item = t[column];
+    return GetItem(row, &item) == VQ_nil;
+}
 vq_Item vq_get (vq_Table t, int row, int column, vq_Type type, vq_Item def) {
     vq_Item item;
     if (row < 0 || row >= vCount(t) || column < 0 || column >= vCount(vMeta(t)))
@@ -347,9 +366,23 @@ vq_Item vq_get (vq_Table t, int row, int column, vq_Type type, vq_Item def) {
 }
 void vq_set (vq_Table t, int row, int col, vq_Type type, vq_Item val) {
     Vector v = t[col].o.a.m;
-    assert(vType(v)->setter != 0);
+#if VQ_MOD_MUTABLE
+    if (IsMutable(t)) {
+        MutVecSet(v, row, t[col].o.b.i, type != VQ_nil ? &val : 0);
+        return;
+    }
+#endif
+    assert(v != 0 && vType(v)->setter != 0);
     vType(v)->setter(v, row, col, &val);
 }
+
+#if VQ_MOD_MUTABLE
+void vq_replace (vq_Table t, int start, int count, vq_Table data) {
+    assert(IsMutable(t));
+    assert(start >= 0 && count >= 0 && start + count <= vCount(t));
+    MutVecReplace(t, start, count, data);
+}
+#endif
 
 #pragma mark - UTILITY WRAPPERS -
 
@@ -428,6 +461,10 @@ static vq_Type AtCmd_TIIO (vq_Item a[]) {
     *a = a[3];
     return VQ_object;
 }
+static vq_Type EmptyCmd_TII (vq_Item a[]) {
+    a->o.a.i = vq_empty(a[0].o.a.m, a[1].o.a.i, a[2].o.a.i);
+    return VQ_int;
+}
 static vq_Type MetaCmd_T (vq_Item a[]) {
     a->o.a.m = vq_meta(a[0].o.a.m);
     return VQ_table;
@@ -461,10 +498,44 @@ static vq_Type OpenCmd_S (vq_Item a[]) {
 }
 #endif
 
+#if VQ_MOD_MUTABLE
+static vq_Type ReplaceCmd_SIIT (vq_Item a[]) {
+    Object_p obj = MutableObject(a[0].o.a.s);
+    vq_Table t = ObjAsTable(obj);
+    vq_replace(t, a[1].o.a.i, a[2].o.a.i, a[3].o.a.m);
+    UpdateVar(a[0].o.a.s, obj);
+    return VQ_nil;
+}
+static vq_Type SetCmd_SIIO (vq_Item a[]) {
+    Object_p obj = MutableObject(a[0].o.a.s);
+    vq_Table t = ObjAsTable(obj);
+    int row = a[1].o.a.i, column = a[2].o.a.i;
+    vq_Type type = Vq_getInt(vMeta(t), column, 1, VQ_nil) & VQ_TYPEMASK;
+    if (ObjToItem(type, a+3)) {
+        if (row >= vCount(t))
+            vCount(t) = row + 1;
+        vq_set(t, row, column, type, a[3]);
+        UpdateVar(a[0].o.a.s, obj);
+    }
+    return VQ_nil;
+}
+static vq_Type UnsetCmd_SII (vq_Item a[]) {
+    Object_p obj = MutableObject(a[0].o.a.s);
+    vq_Table t = ObjAsTable(obj);
+    int row = a[1].o.a.i, column = a[2].o.a.i;
+    if (row >= vCount(t))
+        vCount(t) = row + 1;
+    vq_set(t, row, column, VQ_nil, a[0]);
+    UpdateVar(a[0].o.a.s, obj);
+    return VQ_nil;
+}
+#endif
+
 #pragma mark - OPERATOR DISPATCH -
 
 CmdDispatch f_commands[] = {
     { "at",         "O:TIIO",   AtCmd_TIIO      },
+    { "empty",      "I:TII",    EmptyCmd_TII    },
     { "meta",       "T:T",      MetaCmd_T       },
     { "new",        "T:T",      NewCmd_T        },
     { "size",       "T:T",      SizeCmd_T       },
@@ -472,6 +543,11 @@ CmdDispatch f_commands[] = {
 #if VQ_MOD_MKLOAD
     { "desc2meta",  "T:S",      Desc2MetaCmd_S  },
     { "open",       "T:S",      OpenCmd_S       },
+#endif
+#if VQ_MOD_MUTABLE
+    { "replace",    "V:SIIT",   ReplaceCmd_SIIT },
+    { "set",        "V:SIIO",   SetCmd_SIIO     },
+    { "unset",      "V:SII",    UnsetCmd_SII    },
 #endif
 #if VQ_MOD_NULLABLE
     { "rflip",      "O:OII",    RflipCmd_OII    },
