@@ -21,4 +21,12 @@ test 3 {} {
     vq desc2meta {A:S,B[C:I,D:F],E:T,F:L}
 } {mdef {A {B {C:I D:F}} {E {}} F:L}}
 
+test 4 {} {
+    vq meta [vq open ../data/simple.db]
+} {mdef {{v abc:I}}}
+
+test 5 {} {
+    vq open ../data/simple.db
+} {data {{v abc:I}} 1 {{data abc:I 5 {1 22 333 4444 55555}}}}
+
 ::tcltest::cleanupTests

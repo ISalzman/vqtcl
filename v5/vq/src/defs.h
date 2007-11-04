@@ -23,6 +23,7 @@ typedef vq_Table Vector; /* every vq_Table is a Vector, but not vice-versa */
 #define vMeta(vecptr)   ((vecptr)[-2].o.a.m)
 #define vLimit(vecptr)  ((vecptr)[-2].o.a.i)
 #define vCount(vecptr)  ((vecptr)[-2].o.b.i)
+#define vExtra(vecptr)  ((vecptr)[-2].o.b.m)
 #define vOrig(vecptr)   ((vecptr)[-3].o.a.m)
 #define vData(vecptr)   ((vecptr)[-3].o.b.p)
 #define vInsv(vecptr)   ((vecptr)[-4].o.a.m)

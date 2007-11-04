@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* forward */
+static vq_Table MapSubtable (Vector map, int offset, vq_Table meta);
+
 #pragma mark - META DESCRIPTIONS -
 
 static vq_Table ParseDesc (char **desc, const char **nbuf, int *tbuf, vq_Table *sbuf) {
@@ -118,8 +121,147 @@ static int GetVarPair (const char **nextp) {
 
 #pragma mark - METAKIT DATA READER -
 
-static vq_Table MapSubview (Vector map, int offset, vq_Table meta) {
-    return 0;
+static void MappedViewCleaner (Vector v) {
+    const vq_Table *subs = (void*) v;
+    int i, count = vCount(v);
+    for (i = 0; i < count; ++i)
+        vq_release(subs[i]);
+    vq_release(vExtra(v));
+    vq_release(vMeta(v));
+    vq_release(vOrig(v));
+    FreeVector(v);
+}
+
+static vq_Type MappedViewGetter (int row, vq_Item *item) {
+    Vector v = item->o.a.m;
+    vq_Table *subs = (void*) v;
+    
+    if (subs[row] == NULL) {
+        const int *offsets = vData(v);
+        subs[row] = vq_retain(MapSubtable(vOrig(v), offsets[row], vMeta(v)));
+    }
+    
+    item->o.a.m = subs[row];
+    return VQ_table;
+}
+
+static Dispatch mvtab = {
+    "mappedview", 3, 0, 0, MappedViewCleaner, MappedViewGetter
+};
+
+static Vector MappedViewCol (Vector map, int rows, const char **nextp, vq_Table meta) {
+    int r, c, cols, subcols;
+    int colsize, colpos, *offsets;
+    const char *next;
+    Vector offvec, result;
+    
+    offvec = AllocDataVec(VQ_int, rows);
+    offsets = (void*) offvec;
+    
+    cols = vCount(meta);
+    
+    colsize = GetVarInt(nextp);
+    colpos = colsize > 0 ? GetVarInt(nextp) : 0;
+    next = MF_Data(map) + colpos;
+    
+    for (r = 0; r < rows; ++r) {
+        offsets[r] = next - MF_Data(map);
+        GetVarInt(&next);
+        if (cols == 0) {
+            int desclen = GetVarInt(&next);
+            meta = DescToMeta(next, desclen);
+            next += desclen;
+        }
+        if (GetVarInt(&next) > 0) {
+            subcols = vCount(meta);
+            for (c = 0; c < subcols; ++c)
+                switch (Vq_getInt(meta, c, 1, VQ_nil) & VQ_TYPEMASK) {
+                    case VQ_bytes: case VQ_string:
+                        if (GetVarPair(&next))
+                            GetVarPair(&next);
+                }
+                GetVarPair(&next);
+        }
+    }
+    
+    result = AllocVector(&mvtab, rows * sizeof(vq_Table*));
+    vCount(result) = rows;
+    vExtra(result) = vq_retain(offvec);
+    vData(result) = offsets;
+    vOrig(result) = vq_retain(map);
+    vMeta(result) = vq_retain(cols > 0 ? meta : EmptyMetaTable());    
+    /* TODO: could combine subview cache and offsets vector */
+    return result;
+}
+
+static Vector MappedFixedCol (Vector map, int rows, const char **nextp, int real) {
+    int bytes = GetVarInt(nextp);
+    int colpos = bytes > 0 ? GetVarInt(nextp) : 0;
+    Dispatch *vtab = FixedGetter(bytes, rows, real, IsReversedEndian(map));
+    Vector result = AllocVector(vtab, 0);    
+    vCount(result) = rows;
+    vData(result) = (void*) (MF_Data(map) + colpos);
+    vOrig(result) = vq_retain(map);
+    return result;
+}
+
+static vq_Table MapCols (Vector map, const char **nextp, vq_Table meta) {
+    int c, cols, r, rows;
+    vq_Table result, sub;
+    Vector vec;
+    
+    rows = GetVarInt(nextp);
+    cols = vCount(meta);
+    assert(cols > 0);
+    
+    result = vq_new(meta, cols * sizeof(vq_Item));
+    vCount(result) = rows;
+    
+    if (rows > 0)
+        for (c = 0; c < cols; ++c) {
+            r = rows;
+            switch (Vq_getInt(meta, c, 1, VQ_nil) & VQ_TYPEMASK) {
+                case VQ_int:
+                case VQ_long:
+                    vec = MappedFixedCol(map, r, nextp, 0); 
+                    break;
+                case VQ_float:
+                case VQ_double:
+                    vec = MappedFixedCol(map, r, nextp, 1);
+                    break;
+#if 0
+                case VQ_string:
+                    vec = MappedStringCol(map, r, nextp, 1); 
+                    break;
+                case VQ_bytes:
+                    vec = MappedStringCol(map, r, nextp, 0);
+                    break;
+#endif               
+                case VQ_table:
+                    sub = Vq_getTable(meta, c, 2, 0);
+                    vec = MappedViewCol(map, r, nextp, sub); 
+                    break;
+                default:
+                    assert(0);
+                    return result;
+            }
+            result[c].o.a.m = vq_retain(vec);
+        }
+
+    return result;
+}
+
+static vq_Table MapSubtable (Vector map, int offset, vq_Table meta) {
+    const char *next = MF_Data(map) + offset;
+    GetVarInt(&next);
+    
+    if (vCount(meta) == 0) {
+        int desclen = GetVarInt(&next);
+        meta = DescToMeta(next, desclen);
+        next += desclen;
+    }
+
+    return MapCols(map, &next, meta);
 }
 
 static int BigEndianInt32 (const char *p) {
@@ -148,5 +290,5 @@ vq_Table MapToTable (Vector map) {
     }
     
     AdjustMappedFile(map, MF_Length(map) - datalen);
-    return MapSubview(map, rootoff, EmptyMetaTable());
+    return MapSubtable(map, rootoff, EmptyMetaTable());
 }

@@ -194,7 +194,7 @@ static vq_Type Rgetter_f64r (int row, vq_Item *item) {
 }
 
 static void Rcleaner (Vector v) {
-    /* TODO: cleanup map ref */
+    vq_release(vOrig(v));
     FreeVector(v);
 }
 

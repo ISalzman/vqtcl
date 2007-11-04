@@ -326,7 +326,7 @@ vq_Table EmptyMetaTable (void) {
 
 vq_Type GetItem (int row, vq_Item *item) {
     Vector v = item->o.a.m;
-    assert(vType(v)->getter != 0);
+    assert(v != 0 && vType(v)->getter != 0);
     return vType(v)->getter(row, item);
 }
 
@@ -452,6 +452,13 @@ static vq_Type Desc2MetaCmd_S (vq_Item a[]) {
     a->o.a.m = DescToMeta(a[0].o.a.s, -1);
     return VQ_table;
 }
+static vq_Type OpenCmd_S (vq_Item a[]) {
+    Vector map = OpenMappedFile(a[0].o.a.s);
+    if (map == 0)
+        return VQ_nil;
+    a->o.a.m = MapToTable(map);
+    return VQ_table;
+}
 #endif
 
 #pragma mark - OPERATOR DISPATCH -
@@ -464,6 +471,7 @@ CmdDispatch f_commands[] = {
     { "version",    "S:",       VersionCmd_     },
 #if VQ_MOD_MKLOAD
     { "desc2meta",  "T:S",      Desc2MetaCmd_S  },
+    { "open",       "T:S",      OpenCmd_S       },
 #endif
     { 0, 0, 0 }
 };  
