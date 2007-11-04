@@ -1,6 +1,7 @@
 #!/usr/bin/env tclkit
-# simple core tests
 # %renumber<^\s*test >%
+
+# simple core tests
 
 source [file join [file dir [info script]] initests.tcl]
 

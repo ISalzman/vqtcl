@@ -28,7 +28,7 @@ typedef union vq_Item_u {
             int                    i;
             float                  f;
             const char            *s;
-            const uint8_t   *b;
+            const uint8_t         *b;
             void                  *p;
             union vq_Item_u       *m;
             void                 (*c)(void*);

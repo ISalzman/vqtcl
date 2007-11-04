@@ -1,6 +1,7 @@
 #!/usr/bin/env tclkit
-# simple core tests
 # %renumber<^\s*test >%
+
+# mkload module tests
 
 source [file join [file dir [info script]] initests.tcl]
 
@@ -8,32 +9,27 @@ test 0 {load package} {
     package require vq
 } $version
 
-test 1 {vq command} {
-    catch { vq ? } e
-    string match {bad command "?": must be *} $e
-} 1
-
-test 2 {} {
+test 1 {} {
     vq desc2meta {A:S,B:I,C:F}
 } {mdef {A B:I C:F}}
 
-test 3 {} {
+test 2 {} {
     vq desc2meta {A:S,B[C:I,D:F],E:T,F:L}
 } {mdef {A {B {C:I D:F}} {E {}} F:L}}
 
-test 4 {} {
+test 3 {} {
     vq meta [vq open ../data/simple.db]
 } {mdef {{v abc:I}}}
 
-test 5 {} {
+test 4 {} {
     vq open ../data/simple.db
 } {data {{v abc:I}} 1 {{data abc:I 5 {1 22 333 4444 55555}}}}
 
-test 6 {} {
+test 5 {} {
     vq meta [vq open ../data/alltypes.db]
 } {mdef {{v {i0:I i1:I i2:I i4:I i8:I i16:I i32:I l:L f:F d:D s b:B}}}}
 
-test 7 {} {
+test 6 {} {
     vq open ../data/alltypes.db
 } {data {{v {i0:I i1:I i2:I i4:I i8:I i16:I i32:I l:L f:F d:D s b:B}}} 1\
     {{data {i0:I i1:I i2:I i4:I i8:I i16:I i32:I l:L f:F d:D s b:B} 5\

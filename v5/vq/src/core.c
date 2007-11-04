@@ -473,5 +473,11 @@ CmdDispatch f_commands[] = {
     { "desc2meta",  "T:S",      Desc2MetaCmd_S  },
     { "open",       "T:S",      OpenCmd_S       },
 #endif
+#if VQ_MOD_NULLABLE
+    { "rflip",      "O:OII",    RflipCmd_OII    },
+    { "rlocate",    "O:OI",     RlocateCmd_OI   },
+    { "rinsert",    "O:OIII",   RinsertCmd_OIII },
+    { "rdelete",    "O:OII",    RdeleteCmd_OII  },
+#endif
     { 0, 0, 0 }
 };  

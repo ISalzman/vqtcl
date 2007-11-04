@@ -1,4 +1,4 @@
-#! /usr/bin/env tclkit
+#!/usr/bin/env tclkit
 
 # generate a simple Metakit data file
 

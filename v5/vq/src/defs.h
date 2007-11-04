@@ -6,6 +6,7 @@
 /* modules included */
 
 #define VQ_MOD_MKLOAD 1
+#define VQ_MOD_NULLABLE 1
 
 #include "vq4c.h"
 
@@ -47,34 +48,35 @@ typedef struct Tcl_Obj *Object_p;
 typedef void           *Object_p;
 #endif
 
-Object_p       (ObjIncRef) (Object_p obj);
-void           (ObjDecRef) (Object_p obj);
+Object_p (ObjIncRef) (Object_p obj);
+void (ObjDecRef) (Object_p obj);
 
-vq_Table  (ObjAsMetaTable) (Object_p obj);
-vq_Table      (ObjAsTable) (Object_p obj);
-int            (ObjToItem) (vq_Type type, vq_Item *item);
+vq_Table (ObjAsMetaTable) (Object_p obj);
+vq_Table (ObjAsTable) (Object_p obj);
+int (ObjToItem) (vq_Type type, vq_Item *item);
+Vector (ListAsIntVec) (Object_p obj);
 
 /* memory management in core.c */
 
-Vector       (AllocVector) (Dispatch *vtab, int bytes);
-void          (FreeVector) (Vector v);
+Vector (AllocVector) (Dispatch *vtab, int bytes);
+void (FreeVector) (Vector v);
 
 /* core table functions in core.c */
 
-vq_Type          (GetItem) (int row, vq_Item *item);
+vq_Type (GetItem) (int row, vq_Item *item);
 
 /* data vectors in core.c */
 
-Vector      (AllocDataVec) (vq_Type type, int rows);
+Vector (AllocDataVec) (vq_Type type, int rows);
 
 /* table creation in core.c */
 
-vq_Table  (EmptyMetaTable) (void);
+vq_Table (EmptyMetaTable) (void);
 
 /* utility wrappers in core.c */
 
-int           (CharAsType) (char c);
-int         (StringAsType) (const char *str);
+int (CharAsType) (char c);
+int (StringAsType) (const char *str);
 const char* (TypeAsString) (int type, char *buf);
 
 /* operator dispatch in core.c */
@@ -95,7 +97,19 @@ Dispatch* (FixedGetter) (int bytes, int rows, int real, int flip);
 
 /* mkload.c */
 
-vq_Table DescToMeta (const char *desc, int length);
-vq_Table MapToTable (Vector map);
+vq_Table (DescToMeta) (const char *desc, int length);
+vq_Table (MapToTable) (Vector map);
+
+/* nullable.c */
+
+void* (RangeFlip) (Vector *vecp, int off, int count);
+int (RangeLocate) (Vector v, int off, int *offp);
+void (RangeInsert) (Vector *vecp, int off, int count, int mode);
+void (RangeDelete) (Vector *vecp, int off, int count);
+
+vq_Type (RflipCmd_OII) (vq_Item a[]);
+vq_Type (RlocateCmd_OI) (vq_Item a[]);
+vq_Type (RinsertCmd_OIII) (vq_Item a[]);
+vq_Type (RdeleteCmd_OII) (vq_Item a[]);
 
 #endif

@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		114FBAE90CDCBFBD000B5611 /* core.c in Headers */ = {isa = PBXBuildFile; fileRef = 111FCE0E0CA5DBFD00C4FBEA /* core.c */; };
 		114FBB010CDCE53D000B5611 /* mkload.c in Sources */ = {isa = PBXBuildFile; fileRef = 114FBB000CDCE53D000B5611 /* mkload.c */; };
+		114FBBF60CDE1157000B5611 /* nullable.c in Sources */ = {isa = PBXBuildFile; fileRef = 114FBBF50CDE1157000B5611 /* nullable.c */; };
 		1198A2110CDCBD23008D4837 /* reader.c in Sources */ = {isa = PBXBuildFile; fileRef = 1198A2100CDCBD23008D4837 /* reader.c */; };
 		11D2FB380CB3A7E3007C57D0 /* vqtcl.c in Sources */ = {isa = PBXBuildFile; fileRef = 11D2FB220CB3A74B007C57D0 /* vqtcl.c */; };
 		11D2FB3E0CB3A80F007C57D0 /* vq4c.h in Headers */ = {isa = PBXBuildFile; fileRef = 111FCE110CA5DC2100C4FBEA /* vq4c.h */; };
@@ -19,6 +20,7 @@
 		111FCE0E0CA5DBFD00C4FBEA /* core.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = core.c; path = src/core.c; sourceTree = "<group>"; };
 		111FCE110CA5DC2100C4FBEA /* vq4c.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = vq4c.h; path = src/vq4c.h; sourceTree = "<group>"; };
 		114FBB000CDCE53D000B5611 /* mkload.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mkload.c; path = src/mkload.c; sourceTree = "<group>"; };
+		114FBBF50CDE1157000B5611 /* nullable.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = nullable.c; path = src/nullable.c; sourceTree = "<group>"; };
 		1198A2100CDCBD23008D4837 /* reader.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = reader.c; path = src/reader.c; sourceTree = "<group>"; };
 		11D2FB220CB3A74B007C57D0 /* vqtcl.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = vqtcl.c; path = src/vqtcl.c; sourceTree = "<group>"; };
 		11D2FB350CB3A7CB007C57D0 /* libvq5.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libvq5.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -52,6 +54,7 @@
 				11E080930CA710910000CF5A /* defs.h */,
 				111FCE0E0CA5DBFD00C4FBEA /* core.c */,
 				114FBB000CDCE53D000B5611 /* mkload.c */,
+				114FBBF50CDE1157000B5611 /* nullable.c */,
 				1198A2100CDCBD23008D4837 /* reader.c */,
 				11D2FB220CB3A74B007C57D0 /* vqtcl.c */,
 			);
@@ -124,6 +127,7 @@
 				11D2FB380CB3A7E3007C57D0 /* vqtcl.c in Sources */,
 				1198A2110CDCBD23008D4837 /* reader.c in Sources */,
 				114FBB010CDCE53D000B5611 /* mkload.c in Sources */,
+				114FBBF60CDE1157000B5611 /* nullable.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

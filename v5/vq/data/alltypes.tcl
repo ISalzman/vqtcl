@@ -1,4 +1,4 @@
-#! /usr/bin/env tclkit
+#!/usr/bin/env tclkit
 
 # generate a Metakit data file containing all possible data types
 
