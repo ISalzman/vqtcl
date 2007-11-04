@@ -6,6 +6,7 @@ package require Mk4tcl
 
 cd [file dirname [info script]]
 
+file delete simple.db
 mk::file open db simple.db
 mk::view layout db.v abc:I
 

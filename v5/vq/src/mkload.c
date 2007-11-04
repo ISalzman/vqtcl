@@ -205,6 +205,110 @@ static Vector MappedFixedCol (Vector map, int rows, const char **nextp, int real
     return result;
 }
 
+static void MappedStringCleaner (Vector v) {
+    vq_release(vExtra(v));
+    vq_release(vMeta(v));
+    vq_release(vOrig(v));
+    FreeVector(v);
+}
+
+static vq_Type MappedStringGetter (int row, vq_Item *item) {
+    Vector v = item->o.a.m;
+    const int *offsets = vData(v);
+    const char *data = MF_Data(vOrig(v));
+
+    if (offsets[row] == 0)
+        item->o.a.s = "";
+    else if (offsets[row] > 0)
+        item->o.a.s = data + offsets[row];
+    else {
+        const char *next = data - offsets[row];
+        if (GetVarInt(&next) > 0)
+            item->o.a.s = data + GetVarInt(&next);
+        else
+            item->o.a.s = "";
+    }
+
+    return VQ_string;
+}
+
+static Dispatch mstab = {
+    "mappedstring", 3, 0, 0, MappedStringCleaner, MappedStringGetter
+};
+
+static vq_Type MappedBytesGetter (int row, vq_Item *itemp) {
+    Vector v = itemp->o.a.m;
+    const int *offsets = vData(v);
+    const char *data = MF_Data(vOrig(v));
+    itemp->o.a.m = vMeta(v);
+    GetItem(row, itemp);
+    itemp->o.b.i = itemp->o.a.i;
+    
+    if (offsets[row] >= 0)
+        itemp->o.a.p = (char*) data + offsets[row];
+    else {
+        const char *next = data - offsets[row];
+        itemp->o.b.i = GetVarInt(&next);
+        itemp->o.a.p = (char*) data + GetVarInt(&next);
+    }
+
+    return VQ_bytes;
+}
+
+static Dispatch mbtab = {
+    "mappedstring", 3, 0, 0, MappedStringCleaner, MappedBytesGetter
+};
+
+static Vector MappedStringCol (Vector map, int rows, const char **nextp, int istext) {
+    int r;
+    int colsize, colpos, *offsets;
+    const char *next, *limit;
+    Vector offvec, result, sizes;
+    vq_Item item;
+
+    offvec = AllocDataVec(VQ_int, rows);
+    offsets = (void*) offvec;
+
+    colsize = GetVarInt(nextp);
+    colpos = colsize > 0 ? GetVarInt(nextp) : 0;
+
+    if (colsize > 0) {
+        sizes = MappedFixedCol(map, rows, nextp, 0);
+        for (r = 0; r < rows; ++r) {
+            item.o.a.m = sizes;
+            GetItem(r, &item);
+            if (item.o.a.i > 0) {
+                offsets[r] = colpos;
+                colpos += item.o.a.i;
+            }
+        }
+    } else
+        sizes = AllocVector(FixedGetter(0, rows, 0, 0), 0);
+    
+    colsize = GetVarInt(nextp);
+    next = MF_Data(map) + (colsize > 0 ? GetVarInt(nextp) : 0);
+    limit = next + colsize;
+    
+    /* negated offsets point to the size/pos pair in the map */
+    for (r = 0; next < limit; ++r) {
+        r += (int) GetVarInt(&next);
+        offsets[r] = MF_Data(map) - next; /* always < 0 */
+        GetVarPair(&next);
+    }
+
+    result = AllocVector(istext ? &mstab : &mbtab, 0);
+    vCount(result) = rows;
+    vExtra(result) = vq_retain(offvec);
+    vData(result) = offsets;
+    vOrig(result) = vq_retain(map);
+    if (istext)
+        vq_release(sizes);
+    else
+        vMeta(result) = vq_retain(sizes);
+
+    return result;
+}
+
 static vq_Table MapCols (Vector map, const char **nextp, vq_Table meta) {
     int c, cols, r, rows;
     vq_Table result, sub;
@@ -229,14 +333,12 @@ static vq_Table MapCols (Vector map, const char **nextp, vq_Table meta) {
                 case VQ_double:
                     vec = MappedFixedCol(map, r, nextp, 1);
                     break;
-#if 0
                 case VQ_string:
                     vec = MappedStringCol(map, r, nextp, 1); 
                     break;
                 case VQ_bytes:
                     vec = MappedStringCol(map, r, nextp, 0);
                     break;
-#endif               
                 case VQ_table:
                     sub = Vq_getTable(meta, c, 2, 0);
                     vec = MappedViewCol(map, r, nextp, sub); 

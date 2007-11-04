@@ -29,4 +29,25 @@ test 5 {} {
     vq open ../data/simple.db
 } {data {{v abc:I}} 1 {{data abc:I 5 {1 22 333 4444 55555}}}}
 
+test 6 {} {
+    vq meta [vq open ../data/alltypes.db]
+} {mdef {{v {i0:I i1:I i2:I i4:I i8:I i16:I i32:I l:L f:F d:D s b:B}}}}
+
+test 7 {} {
+    vq open ../data/alltypes.db
+} {data {{v {i0:I i1:I i2:I i4:I i8:I i16:I i32:I l:L f:F d:D s b:B}}} 1\
+    {{data {i0:I i1:I i2:I i4:I i8:I i16:I i32:I l:L f:F d:D s b:B} 5\
+        {0 0 0 0 0}\
+        {1 0 1 0 1}\
+        {1 2 1 0 3}\
+        {1 6 13 12 3}\
+        {-127 -106 -51 -36 -125}\
+        {-32767 -32746 -32435 -28324 22787}\
+        {1 22 333 4444 55555}\
+        {111 222222 333333333 444444444444 555555555555555}\
+        {1.5 22.5 333.5 4444.5 55555.5}\
+        {11.1 2222.1 333333.1 44444444.1 5555555555.1}\
+        {s1 s22 s333 s4444 s55555}\
+        {b11 b2222 b333333 b44444444 b5555555555}}}}
+
 ::tcltest::cleanupTests
