@@ -38,7 +38,8 @@ typedef struct vq_Dispatch_s {
     short       flags;                  /* TODO: unused */
     void      (*cleaner)(Vector);       /* destructor function */
     vq_Type   (*getter)(int,vq_Item*);  /* getter function */
-    void      (*setter)(vq_Table,int,int,const vq_Item*); /* setter function */
+    void      (*setter)(vq_Table,int,int,const vq_Item*);
+    void      (*replacer)(vq_Table,int,int,vq_Table);
 } Dispatch;
     
 /* host language functions */
@@ -76,6 +77,7 @@ Vector (AllocDataVec) (vq_Type type, int rows);
 
 vq_Table (EmptyMetaTable) (void);
 vq_Table (IndirectTable) (vq_Table meta, Dispatch *vtab, int extra);
+vq_Table (IotaTable) (int rows, const char *name);
 
 /* utility wrappers in core.c */
 
@@ -121,8 +123,6 @@ vq_Type (RdeleteCmd_OII) (vq_Item a[]);
 
 /* mutable.c */
 
-void (MutVecSet) (Vector v, int row, int col, const vq_Item *item);
-void (MutVecReplace) (vq_Table t, int offset, int delrows, vq_Table data);
 int (IsMutable) (vq_Table t);
 vq_Table (WrapMutable) (vq_Table t);
 

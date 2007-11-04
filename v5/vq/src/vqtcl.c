@@ -220,6 +220,19 @@ Vector ListAsIntVec (Tcl_Obj *obj) {
 static Tcl_Obj *ColumnAsList (vq_Item colref, int rows, int mode) {
     int i;
     Tcl_Obj *list = Tcl_NewListObj(0, 0);
+#if VQ_MOD_NULLABLE
+    if (mode == 0) {
+        Vector ranges = 0;
+        for (i = 0; i < rows; ++i) {
+            vq_Item item = colref;
+            if (GetItem(i, &item) == VQ_nil)
+                RangeFlip(&ranges, i, 1);
+        }
+        mode = -1;
+        rows = vCount(ranges);
+        colref.o.a.m = ranges;
+    }
+#endif
     for (i = 0; i < rows; ++i) {
         vq_Item item = colref;
         vq_Type type = GetItem(i, &item);

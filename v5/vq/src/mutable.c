@@ -55,7 +55,7 @@ static void InitMutVec (Vector v, int col) {
         vecp[2] = vq_retain(AllocDataVec(type, 2));
     }
 }
-void MutVecSet (Vector v, int row, int col, const vq_Item *item) {
+static void MutVecSetter (Vector v, int row, int col, const vq_Item *item) {
     int fill, miss;
     Vector *vecp = (Vector*) vData(v) + 3 * col;
     InitMutVec(v, col);
@@ -84,7 +84,7 @@ void MutVecSet (Vector v, int row, int col, const vq_Item *item) {
         }
     }
 }
-void MutVecReplace (vq_Table t, int offset, int delrows, vq_Table data) {
+static void MutVecReplacer (vq_Table t, int offset, int delrows, vq_Table data) {
     int c, r, cols = vCount(vMeta(t)), insrows = vCount(data);
     assert(offset >= 0 && delrows >= 0 && offset + delrows <= vCount(t));
     if (vInsv(t) == 0) {
@@ -101,7 +101,7 @@ void MutVecReplace (vq_Table t, int offset, int delrows, vq_Table data) {
             /* clear all entries to set up contiguous nil range */
             /* TODO: optimize and delete current values instead */
             for (r = 0; r < delrows; ++r)
-                MutVecSet(t, offset + r, c, 0);
+                MutVecSetter(t, offset + r, c, 0);
             if (len > 0)
                 RangeDelete(vecp+1, pos, len);
             RangeDelete(vecp, offset, delrows);
@@ -112,7 +112,7 @@ void MutVecReplace (vq_Table t, int offset, int delrows, vq_Table data) {
                 for (r = 0; r < insrows; ++r) {
                     vq_Item item = data[c];
                     if (GetItem(r, &item) == coltype)
-                        MutVecSet(t, offset + r, c, &item);
+                        MutVecSetter(t, offset + r, c, &item);
                 }
         }
     }
@@ -138,7 +138,8 @@ static void MutVecCleaner (Vector v) {
     FreeVector(v);
 }
 static Dispatch muvtab = {
-    "mutable", 4, sizeof(void*), 0, MutVecCleaner, MutVecGetter
+    "mutable", 4, sizeof(void*), 0,
+        MutVecCleaner, MutVecGetter, MutVecSetter, MutVecReplacer
 };
 int IsMutable (vq_Table t) {
     return vType(t) == &muvtab;

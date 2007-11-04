@@ -29,4 +29,6 @@ test 9 {} { vq new ""                } 0
 
 test 10 {} { vq version } $version
 
+test 11 {} { vq iota 7 N } {data N:I 7 {0 1 2 3 4 5 6}}
+
 ::tcltest::cleanupTests

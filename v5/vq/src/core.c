@@ -298,7 +298,6 @@ vq_Table vq_new (vq_Table meta, int bytes) {
 vq_Table EmptyMetaTable (void) {
     static vq_Table meta = 0;
     if (meta == 0) {
-        vq_Item item;
         vq_Table mm = AllocVector(&vtab, 3 * sizeof *mm);
         vMeta(mm) = vq_retain(mm); /* circular */
         vCount(mm) = 3;
@@ -308,29 +307,52 @@ vq_Table EmptyMetaTable (void) {
         vCount(mm[0].o.a.m) = 3;
         vCount(mm[1].o.a.m) = 3;
         vCount(mm[2].o.a.m) = 3;
-        item.o.a.s = "name";    StringVecSetter(mm[0].o.a.m, 0, 0, &item);
-        item.o.a.s = "type";    StringVecSetter(mm[0].o.a.m, 1, 0, &item);
-        item.o.a.s = "subt";    StringVecSetter(mm[0].o.a.m, 2, 0, &item);
-        item.o.a.i = VQ_string; IntVecSetter(mm[1].o.a.m, 0, 0, &item);
-        item.o.a.i = VQ_int;    IntVecSetter(mm[1].o.a.m, 1, 0, &item);
-        item.o.a.i = VQ_table;  IntVecSetter(mm[1].o.a.m, 2, 0, &item);
-        meta = vq_retain(vq_new(mm, 0)); /* circular, retained forever */
-        item.o.a.m = meta;      TableVecSetter(mm[2].o.a.m, 0, 0, &item);
-        item.o.a.m = meta;      TableVecSetter(mm[2].o.a.m, 1, 0, &item);
-        item.o.a.m = mm; /*c*/  TableVecSetter(mm[2].o.a.m, 2, 0, &item);
+        Vq_setString(mm, 0, 0, "name");
+        Vq_setString(mm, 1, 0, "type");
+        Vq_setString(mm, 2, 0, "subt");
+        Vq_setInt(mm, 0, 1, VQ_string);
+        Vq_setInt(mm, 1, 1, VQ_int);
+        Vq_setInt(mm, 2, 1, VQ_table);
+        meta = vq_new(mm, 0); /* circular, retained forever */
+        Vq_setTable(mm, 0, 2, meta);
+        Vq_setTable(mm, 1, 2, meta);
+        Vq_setTable(mm, 2, 2, mm); /* circular */
     }
     return meta;
 }
 
-vq_Table IndirectTable (vq_Table meta, Dispatch *vtab, int extra) {
+#pragma mark - IOTA VIRTUAL TABLE -
+
+vq_Table IndirectTable (vq_Table meta, Dispatch *vtabp, int extra) {
     int i, cols = vCount(meta);
-    vq_Table t = vq_hold(AllocVector(vtab, cols * sizeof *t + extra));
+    vq_Table t = vq_hold(AllocVector(vtabp, cols * sizeof *t + extra));
     vMeta(t) = vq_retain(meta);
     vData(t) = t + cols;
     for (i = 0; i < cols; ++i) {
         t[i].o.a.m = t;
         t[i].o.b.i = i;
     }
+    return t;
+}
+
+static vq_Type IotaVecGetter (int row, vq_Item *item) {
+    item->o.a.i = row;
+    return VQ_int;
+}
+static Dispatch iotatab = {
+    "iota", 3, 0, 0, FreeVector, IotaVecGetter
+};
+vq_Table IotaTable (int rows, const char *name) {
+    vq_Table t, meta = vq_new(vq_meta(0), 3 * sizeof(vq_Item));
+    vCount(meta) = 1;
+    meta[0].o.a.m = vq_retain(AllocDataVec(VQ_string, 1));
+    meta[1].o.a.m = vq_retain(AllocDataVec(VQ_int, 1));
+    meta[2].o.a.m = vq_retain(AllocDataVec(VQ_table, 1));
+    Vq_setString(meta, 0, 0, name);
+    Vq_setInt(meta, 0, 1, VQ_int);
+    Vq_setTable(meta, 0, 2, EmptyMetaTable());
+    t = vq_retain(IndirectTable(meta, &iotatab, 0)); /* FIXME: extra retain */
+    vCount(t) = rows;
     return t;
 }
 
@@ -366,23 +388,14 @@ vq_Item vq_get (vq_Table t, int row, int column, vq_Type type, vq_Item def) {
 }
 void vq_set (vq_Table t, int row, int col, vq_Type type, vq_Item val) {
     Vector v = t[col].o.a.m;
-#if VQ_MOD_MUTABLE
-    if (IsMutable(t)) {
-        MutVecSet(v, row, t[col].o.b.i, type != VQ_nil ? &val : 0);
-        return;
-    }
-#endif
     assert(v != 0 && vType(v)->setter != 0);
-    vType(v)->setter(v, row, col, &val);
+    vType(v)->setter(v, row, col, type != VQ_nil ? &val : 0);
 }
-
-#if VQ_MOD_MUTABLE
 void vq_replace (vq_Table t, int start, int count, vq_Table data) {
-    assert(IsMutable(t));
     assert(start >= 0 && count >= 0 && start + count <= vCount(t));
-    MutVecReplace(t, start, count, data);
+    assert(t != 0 && vType(t)->replacer != 0);
+    vType(t)->replacer(t, start, count, data);
 }
-#endif
 
 #pragma mark - UTILITY WRAPPERS -
 
@@ -465,6 +478,10 @@ static vq_Type EmptyCmd_TII (vq_Item a[]) {
     a->o.a.i = vq_empty(a[0].o.a.m, a[1].o.a.i, a[2].o.a.i);
     return VQ_int;
 }
+static vq_Type IotaCmd_TS (vq_Item a[]) {
+    a->o.a.m = IotaTable(vq_size(a[0].o.a.m), a[1].o.a.s);
+    return VQ_table;
+}
 static vq_Type MetaCmd_T (vq_Item a[]) {
     a->o.a.m = vq_meta(a[0].o.a.m);
     return VQ_table;
@@ -536,6 +553,7 @@ static vq_Type UnsetCmd_SII (vq_Item a[]) {
 CmdDispatch f_commands[] = {
     { "at",         "O:TIIO",   AtCmd_TIIO      },
     { "empty",      "I:TII",    EmptyCmd_TII    },
+    { "iota",       "I:TS",     IotaCmd_TS      },
     { "meta",       "T:T",      MetaCmd_T       },
     { "new",        "T:T",      NewCmd_T        },
     { "size",       "T:T",      SizeCmd_T       },
