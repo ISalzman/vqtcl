@@ -22,6 +22,8 @@ static int RangeExpand (Vector v, int off) {
     return off;
 }
 
+#pragma mark - MUTABLE TABLE -
+
 static vq_Type MutVecGetter (int row, vq_Item *item) {
     int col = item->o.b.i, aux = row;
     Vector v = item->o.a.m, *vecp = (Vector*) vData(v) + 3 * col;

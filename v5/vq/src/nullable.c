@@ -4,8 +4,6 @@
 
 #include <string.h>
 
-#pragma mark - RANGE OPERATIONS -
-
 void *VecInsert (Vector *vecp, int off, int cnt) {
     Vector v = *vecp, v2;
     int unit = vType(v)->unit, limit = vLimit(v);

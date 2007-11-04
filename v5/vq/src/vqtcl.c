@@ -77,19 +77,25 @@ static void InvalidateNonTableReps (Tcl_Obj *obj) {
     }
     Tcl_InvalidateStringRep(obj);
 }
-static Tcl_Obj *MakeMutableObj (Tcl_Obj *obj) {
+Tcl_Obj *MutableObject (const char* s) {
     vq_Table t;
-    if (Tcl_IsShared(obj))
-        obj = Tcl_DuplicateObj(obj);
-    t = ObjAsTable(obj);
-    assert(obj->typePtr == &f_tableObjType);
-    if (!IsMutable(t) || vRefs(t) > 1)
-        t = WrapMutable(t);
-    if (t != obj->internalRep.twoPtrValue.ptr1) {
-        vq_release(obj->internalRep.twoPtrValue.ptr1);
-        obj->internalRep.twoPtrValue.ptr1 = vq_retain(t);
+    Tcl_Obj *obj;
+    assert(s[0] == '@');
+    obj = Tcl_GetVar2Ex(context, s+1, 0, TCL_LEAVE_ERR_MSG | TCL_GLOBAL_ONLY);
+    if (obj != 0) {
+        if (Tcl_IsShared(obj))
+            obj = Tcl_DuplicateObj(obj);
+        t = ObjAsTable(obj);
+        assert(obj->typePtr == &f_tableObjType);
+        if (!IsMutable(t) || vRefs(t) > 1)
+            t = WrapMutable(t);
+        if (t != obj->internalRep.twoPtrValue.ptr1) {
+            vq_release(obj->internalRep.twoPtrValue.ptr1);
+            obj->internalRep.twoPtrValue.ptr1 = vq_retain(t);
+        }
+        InvalidateNonTableReps(obj);
     }
-    InvalidateNonTableReps(obj);
+    /* TODO: check for leaks when obj is a duplicate */
     return obj;
 }
 void UpdateVar (const char *s, Tcl_Obj *obj) {
@@ -326,15 +332,6 @@ static Tcl_Obj *ItemAsObj (vq_Type type, vq_Item item) {
         case VQ_object: return item.o.a.p;
     }
     return Tcl_NewObj();
-}
-Tcl_Obj *MutableObject (const char* s) {
-    Tcl_Obj *o;
-    assert(s[0] == '@');
-    o = Tcl_GetVar2Ex(context, s+1, 0, TCL_LEAVE_ERR_MSG | TCL_GLOBAL_ONLY);
-    if (o != 0)
-        o = MakeMutableObj(o);
-    /* TODO: check for leaks when o is a duplicate */
-    return o;
 }
 
 #pragma mark - DELAYED EVALUATION -
