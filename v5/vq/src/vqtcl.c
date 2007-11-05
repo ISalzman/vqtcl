@@ -105,10 +105,6 @@ void UpdateVar (const char *s, Tcl_Obj *obj) {
     InvalidateNonTableReps(obj);
     Tcl_SetVar2Ex(context, s+1, 0, obj, TCL_LEAVE_ERR_MSG | TCL_GLOBAL_ONLY);
 }
-#else
-void UpdateVar (const char *s, Tcl_Obj *obj) {
-    /* dummy */
-}
 #endif
 
 static vq_Table RefAsTable (Tcl_Obj *obj) {
