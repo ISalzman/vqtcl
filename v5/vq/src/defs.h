@@ -75,7 +75,7 @@ Vector (AllocDataVec) (vq_Type type, int rows);
 /* table creation in core.c */
 
 vq_Table (EmptyMetaTable) (void);
-vq_Table (IndirectTable) (vq_Table meta, Dispatch *vtab, int extra);
+vq_Table (IndirectTable) (vq_Table meta, Dispatch *vtab, int rows, int extra);
 vq_Table (IotaTable) (int rows, const char *name);
 
 /* utility wrappers in core.c */

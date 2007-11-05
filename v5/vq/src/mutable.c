@@ -149,9 +149,9 @@ int IsMutable (vq_Table t) {
     return vType(t) == &muvtab;
 }
 vq_Table WrapMutable (vq_Table t) {
-    vq_Table m = vMeta(t);
-    vq_Table w = IndirectTable(m, &muvtab, 3 * vCount(m) * sizeof(Vector));
-    vCount(w) = vCount(t);
+    vq_Table meta = vMeta(t);
+    vq_Table w = IndirectTable(meta, &muvtab, vCount(t),
+                                3 * vCount(meta) * sizeof(Vector));
     vOrig(w) = vq_retain(t);
     return w;
 }

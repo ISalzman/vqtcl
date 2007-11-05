@@ -339,11 +339,12 @@ vq_Table EmptyMetaTable (void) {
 
 #pragma mark - IOTA VIRTUAL TABLE -
 
-vq_Table IndirectTable (vq_Table meta, Dispatch *vtabp, int extra) {
+vq_Table IndirectTable (vq_Table meta, Dispatch *vtabp, int rows, int extra) {
     int i, cols = vCount(meta);
     vq_Table t = vq_hold(AllocVector(vtabp, cols * sizeof *t + extra));
     vMeta(t) = vq_retain(meta);
     vData(t) = t + cols;
+    vCount(t) = rows;
     for (i = 0; i < cols; ++i) {
         t[i].o.a.m = t;
         t[i].o.b.i = i;
@@ -359,13 +360,11 @@ static Dispatch iotatab = {
     "iota", 3, 0, 0, FreeVector, IotaVecGetter
 };
 vq_Table IotaTable (int rows, const char *name) {
-    vq_Table t, meta = vq_new(vq_meta(0), 1);
+    vq_Table meta = vq_new(vq_meta(0), 1);
     Vq_setString(meta, 0, 0, name);
     Vq_setInt(meta, 0, 1, VQ_int);
     Vq_setTable(meta, 0, 2, EmptyMetaTable());
-    t = IndirectTable(meta, &iotatab, 0);
-    vCount(t) = rows;
-    return t;
+    return IndirectTable(meta, &iotatab, rows, 0);
 }
 
 #pragma mark - CORE TABLE FUNCTIONS -
