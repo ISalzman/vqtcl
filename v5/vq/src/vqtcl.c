@@ -11,7 +11,9 @@
 #endif
 
 #include "defs.h"
-#include "core.c"
+
+#include <stdlib.h>
+#include <string.h>
 
 static Tcl_Interp *context; /* TODO: not threadsafe */
 

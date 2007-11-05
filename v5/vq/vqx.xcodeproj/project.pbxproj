@@ -7,25 +7,25 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		114FBAE90CDCBFBD000B5611 /* core.c in Headers */ = {isa = PBXBuildFile; fileRef = 111FCE0E0CA5DBFD00C4FBEA /* core.c */; };
 		114FBB010CDCE53D000B5611 /* mkload.c in Sources */ = {isa = PBXBuildFile; fileRef = 114FBB000CDCE53D000B5611 /* mkload.c */; };
 		114FBBF60CDE1157000B5611 /* nullable.c in Sources */ = {isa = PBXBuildFile; fileRef = 114FBBF50CDE1157000B5611 /* nullable.c */; };
 		114FBC350CDE301E000B5611 /* mutable.c in Sources */ = {isa = PBXBuildFile; fileRef = 114FBC340CDE301E000B5611 /* mutable.c */; };
 		1198A2110CDCBD23008D4837 /* reader.c in Sources */ = {isa = PBXBuildFile; fileRef = 1198A2100CDCBD23008D4837 /* reader.c */; };
+		11A808D10CDE9B39000DD818 /* core.c in Sources */ = {isa = PBXBuildFile; fileRef = 111FCE0E0CA5DBFD00C4FBEA /* core.c */; };
 		11D2FB380CB3A7E3007C57D0 /* vqtcl.c in Sources */ = {isa = PBXBuildFile; fileRef = 11D2FB220CB3A74B007C57D0 /* vqtcl.c */; };
 		11D2FB3E0CB3A80F007C57D0 /* vq4c.h in Headers */ = {isa = PBXBuildFile; fileRef = 111FCE110CA5DC2100C4FBEA /* vq4c.h */; };
 		11D2FB3F0CB3A810007C57D0 /* defs.h in Headers */ = {isa = PBXBuildFile; fileRef = 11E080930CA710910000CF5A /* defs.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		111FCE0E0CA5DBFD00C4FBEA /* core.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = core.c; path = src/core.c; sourceTree = "<group>"; };
+		111FCE0E0CA5DBFD00C4FBEA /* core.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.c; fileEncoding = 30; name = core.c; path = src/core.c; sourceTree = "<group>"; };
 		111FCE110CA5DC2100C4FBEA /* vq4c.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = vq4c.h; path = src/vq4c.h; sourceTree = "<group>"; };
 		114FBB000CDCE53D000B5611 /* mkload.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mkload.c; path = src/mkload.c; sourceTree = "<group>"; };
 		114FBBF50CDE1157000B5611 /* nullable.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = nullable.c; path = src/nullable.c; sourceTree = "<group>"; };
 		114FBC340CDE301E000B5611 /* mutable.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mutable.c; path = src/mutable.c; sourceTree = "<group>"; };
 		1198A2100CDCBD23008D4837 /* reader.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = reader.c; path = src/reader.c; sourceTree = "<group>"; };
 		11D2FB220CB3A74B007C57D0 /* vqtcl.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = vqtcl.c; path = src/vqtcl.c; sourceTree = "<group>"; };
-		11D2FB350CB3A7CB007C57D0 /* libvq5.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libvq5.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		11D2FB350CB3A7CB007C57D0 /* libvq5tcl.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libvq5tcl.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		11E080930CA710910000CF5A /* defs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = defs.h; path = src/defs.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -67,7 +67,7 @@
 		1AB674ADFE9D54B511CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				11D2FB350CB3A7CB007C57D0 /* libvq5.dylib */,
+				11D2FB350CB3A7CB007C57D0 /* libvq5tcl.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -81,16 +81,15 @@
 			files = (
 				11D2FB3E0CB3A80F007C57D0 /* vq4c.h in Headers */,
 				11D2FB3F0CB3A810007C57D0 /* defs.h in Headers */,
-				114FBAE90CDCBFBD000B5611 /* core.c in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		11D2FB340CB3A7CB007C57D0 /* vq5 dylib */ = {
+		11D2FB340CB3A7CB007C57D0 /* libvq5tcl (dyn) */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 11D2FB400CB3A818007C57D0 /* Build configuration list for PBXNativeTarget "vq5 dylib" */;
+			buildConfigurationList = 11D2FB400CB3A818007C57D0 /* Build configuration list for PBXNativeTarget "libvq5tcl (dyn)" */;
 			buildPhases = (
 				11D2FB310CB3A7CB007C57D0 /* Headers */,
 				11D2FB320CB3A7CB007C57D0 /* Sources */,
@@ -100,9 +99,9 @@
 			);
 			dependencies = (
 			);
-			name = "vq5 dylib";
+			name = "libvq5tcl (dyn)";
 			productName = libvq5;
-			productReference = 11D2FB350CB3A7CB007C57D0 /* libvq5.dylib */;
+			productReference = 11D2FB350CB3A7CB007C57D0 /* libvq5tcl.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 /* End PBXNativeTarget section */
@@ -117,7 +116,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				11D2FB340CB3A7CB007C57D0 /* vq5 dylib */,
+				11D2FB340CB3A7CB007C57D0 /* libvq5tcl (dyn) */,
 			);
 		};
 /* End PBXProject section */
@@ -128,6 +127,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				11D2FB380CB3A7E3007C57D0 /* vqtcl.c in Sources */,
+				11A808D10CDE9B39000DD818 /* core.c in Sources */,
 				1198A2110CDCBD23008D4837 /* reader.c in Sources */,
 				114FBB010CDCE53D000B5611 /* mkload.c in Sources */,
 				114FBBF60CDE1157000B5611 /* nullable.c in Sources */,
@@ -142,7 +142,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
-				EXECUTABLE_PREFIX = lib;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
@@ -150,8 +149,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INSTALL_PATH = /usr/local/lib;
 				PREBINDING = NO;
-				PRODUCT_NAME = vq5;
-				ZERO_LINK = YES;
+				PRODUCT_NAME = libvq5tcl;
 			};
 			name = Debug;
 		};
@@ -159,14 +157,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COPY_PHASE_STRIP = YES;
-				EXECUTABLE_PREFIX = lib;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = /usr/local/lib;
 				PREBINDING = NO;
-				PRODUCT_NAME = libvq5;
-				ZERO_LINK = NO;
+				PRODUCT_NAME = libvq5tcl;
 			};
 			name = Release;
 		};
@@ -235,7 +231,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		11D2FB400CB3A818007C57D0 /* Build configuration list for PBXNativeTarget "vq5 dylib" */ = {
+		11D2FB400CB3A818007C57D0 /* Build configuration list for PBXNativeTarget "libvq5tcl (dyn)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				11D2FB410CB3A818007C57D0 /* Debug */,

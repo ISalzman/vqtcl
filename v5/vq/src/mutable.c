@@ -2,6 +2,8 @@
 
 #include "defs.h"
 
+#if VQ_MOD_MUTABLE
+
 #pragma mark - RANGE OPERATIONS -
 
 static int RangeSpan (Vector v, int offset, int count, int *startp, int miss) {
@@ -153,3 +155,38 @@ vq_Table WrapMutable (vq_Table t) {
     vOrig(w) = vq_retain(t);
     return w;
 }
+
+#pragma mark - OPERATOR WRAPPERS -
+
+vq_Type ReplaceCmd_SIIT (vq_Item a[]) {
+    Object_p obj = MutableObject(a[0].o.a.s);
+    vq_Table t = ObjAsTable(obj);
+    vq_replace(t, a[1].o.a.i, a[2].o.a.i, a[3].o.a.m);
+    UpdateVar(a[0].o.a.s, obj);
+    return VQ_nil;
+}
+vq_Type SetCmd_SIIO (vq_Item a[]) {
+    Object_p obj = MutableObject(a[0].o.a.s);
+    vq_Table t = ObjAsTable(obj);
+    int row = a[1].o.a.i, column = a[2].o.a.i;
+    vq_Type type = Vq_getInt(vMeta(t), column, 1, VQ_nil) & VQ_TYPEMASK;
+    if (ObjToItem(type, a+3)) {
+        if (row >= vCount(t))
+            vCount(t) = row + 1;
+        vq_set(t, row, column, type, a[3]);
+        UpdateVar(a[0].o.a.s, obj);
+    }
+    return VQ_nil;
+}
+vq_Type UnsetCmd_SII (vq_Item a[]) {
+    Object_p obj = MutableObject(a[0].o.a.s);
+    vq_Table t = ObjAsTable(obj);
+    int row = a[1].o.a.i, column = a[2].o.a.i;
+    if (row >= vCount(t))
+        vCount(t) = row + 1;
+    vq_set(t, row, column, VQ_nil, a[0]);
+    UpdateVar(a[0].o.a.s, obj);
+    return VQ_nil;
+}
+
+#endif

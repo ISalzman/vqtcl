@@ -105,6 +105,9 @@ Dispatch* (FixedGetter) (int bytes, int rows, int real, int flip);
 vq_Table (DescToMeta) (const char *desc, int length);
 vq_Table (MapToTable) (Vector map);
 
+vq_Type (Desc2MetaCmd_S) (vq_Item a[]);
+vq_Type (OpenCmd_S) (vq_Item a[]);
+
 /* nullable.c */
 
 void* (VecInsert) (Vector *vecp, int off, int cnt);
@@ -124,5 +127,9 @@ vq_Type (RdeleteCmd_OII) (vq_Item a[]);
 
 int (IsMutable) (vq_Table t);
 vq_Table (WrapMutable) (vq_Table t);
+
+vq_Type (ReplaceCmd_SIIT) (vq_Item a[]);
+vq_Type (SetCmd_SIIO) (vq_Item a[]);
+vq_Type (UnsetCmd_SII) (vq_Item a[]);
 
 #endif

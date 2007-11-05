@@ -2,6 +2,8 @@
 
 #include "defs.h"
 
+#if VQ_MOD_MKLOAD
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -394,3 +396,20 @@ vq_Table MapToTable (Vector map) {
     AdjustMappedFile(map, MF_Length(map) - datalen);
     return MapSubtable(map, rootoff, EmptyMetaTable());
 }
+
+#pragma mark - OPERATOR WRAPPERS -
+
+vq_Type Desc2MetaCmd_S (vq_Item a[]) {
+    a->o.a.m = DescToMeta(a[0].o.a.s, -1);
+    return VQ_table;
+}
+
+vq_Type OpenCmd_S (vq_Item a[]) {
+    Vector map = OpenMappedFile(a[0].o.a.s);
+    if (map == 0)
+        return VQ_nil;
+    a->o.a.m = MapToTable(map);
+    return VQ_table;
+}
+
+#endif

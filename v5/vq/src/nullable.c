@@ -2,6 +2,8 @@
 
 #include "defs.h"
 
+#if VQ_MOD_NULLABLE
+
 #include <string.h>
 
 void *VecInsert (Vector *vecp, int off, int cnt) {
@@ -124,3 +126,5 @@ void RangeDelete (Vector *vecp, int off, int count) {
             break;
         }
 }
+
+#endif
