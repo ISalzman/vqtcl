@@ -22,7 +22,7 @@ extern Tcl_ObjType f_tableObjType;
 static Tcl_Obj *(ItemAsObj) (vq_Type type, vq_Item item);
 static Tcl_Obj *(TableAsList) (vq_Table table);
 static vq_Table (CmdAsTable) (Tcl_Obj *obj);
-EXTERN int Vq_Init (Tcl_Interp *interp);
+EXTERN int (Vq_Init) (Tcl_Interp *interp);
 
 #pragma mark - TCL REFERENCE COUNTS -
 

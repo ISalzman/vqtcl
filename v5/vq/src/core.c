@@ -283,16 +283,23 @@ Vector AllocDataVec (vq_Type type, int rows) {
 #pragma mark - TABLE CREATION -
 
 static void TableCleaner (Vector v) {
+#if 0
+    /* FIXME: ! */
+    int i, n = vCount(vMeta(v));
+    for (i = 0; i < n; ++i)
+        vq_release(v[i].o.a.m);
+#endif
     vq_release(vMeta(v));
     FreeVector(v);
 }
 static Dispatch vtab = { "table", 2, sizeof(vq_Item), 0, TableCleaner };
 
-vq_Table vq_new (vq_Table meta, int bytes) {
+vq_Table vq_new (vq_Table meta, int rows) {
     vq_Table t;
     if (meta == 0)
         meta = EmptyMetaTable();
-    t = vq_hold(AllocVector(&vtab, bytes));
+    t = vq_hold(AllocVector(&vtab, vCount(meta) * sizeof(vq_Item)));
+    vCount(t) = rows;
     vMeta(t) = vq_retain(meta);
     return t;
 }
@@ -345,8 +352,7 @@ static Dispatch iotatab = {
     "iota", 3, 0, 0, FreeVector, IotaVecGetter
 };
 vq_Table IotaTable (int rows, const char *name) {
-    vq_Table t, meta = vq_new(vq_meta(0), 3 * sizeof(vq_Item));
-    vCount(meta) = 1;
+    vq_Table t, meta = vq_new(vq_meta(0), 1);
     meta[0].o.a.m = vq_retain(AllocDataVec(VQ_string, 1));
     meta[1].o.a.m = vq_retain(AllocDataVec(VQ_int, 1));
     meta[2].o.a.m = vq_retain(AllocDataVec(VQ_table, 1));
@@ -497,9 +503,7 @@ static vq_Type NewCmd_T (vq_Item a[]) {
     return VQ_table;
 }
 static vq_Type SizeCmd_T (vq_Item a[]) {
-    vq_Table t = vq_new(0, 0);
-    vCount(t) = vq_size(a[0].o.a.m);
-    a->o.a.m = t;
+    a->o.a.m = vq_new(0, vq_size(a[0].o.a.m));
     return VQ_table;
 }
 static vq_Type VersionCmd_ (vq_Item a[]) {

@@ -58,7 +58,7 @@ void    (vq_release) (vq_Table t);
 
 /* core table functions */
 
-vq_Table    (vq_new) (vq_Table t, int bytes);
+vq_Table    (vq_new) (vq_Table t, int rows);
 vq_Table   (vq_meta) (vq_Table t);
 int        (vq_size) (vq_Table t);
 int       (vq_empty) (vq_Table t, int row, int col);

@@ -49,8 +49,7 @@ static vq_Table ParseDesc (char **desc, const char **nbuf, int *tbuf, vq_Table *
     
     *desc = ptr;
 
-    result = vq_new(vMeta(empty), 3 * sizeof(vq_Item));
-    vCount(result) = cols;
+    result = vq_new(vMeta(empty), cols);
     result[0].o.a.m = vq_retain(AllocDataVec(VQ_string, cols));
     result[1].o.a.m = vq_retain(AllocDataVec(VQ_int, cols));
     result[2].o.a.m = vq_retain(AllocDataVec(VQ_table, cols));
@@ -320,8 +319,7 @@ static vq_Table MapCols (Vector map, const char **nextp, vq_Table meta) {
     cols = vCount(meta);
     assert(cols > 0);
     
-    result = vq_new(meta, cols * sizeof(vq_Item));
-    vCount(result) = rows;
+    result = vq_new(meta, rows);
     
     if (rows > 0)
         for (c = 0; c < cols; ++c) {
