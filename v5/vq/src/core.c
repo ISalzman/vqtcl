@@ -301,6 +301,13 @@ vq_Table vq_new (vq_Table meta, int rows) {
     t = vq_hold(AllocVector(&vtab, vCount(meta) * sizeof(vq_Item)));
     vCount(t) = rows;
     vMeta(t) = vq_retain(meta);
+    if (rows > 0) {
+        int i, n = vCount(meta);
+        for (i = 0; i < n; ++i) {
+            int type = Vq_getInt(meta, i, 1, VQ_nil) & VQ_TYPEMASK;
+            t[i].o.a.m = vq_retain(AllocDataVec(type, rows));
+        }
+    }
     return t;
 }
 
@@ -353,9 +360,6 @@ static Dispatch iotatab = {
 };
 vq_Table IotaTable (int rows, const char *name) {
     vq_Table t, meta = vq_new(vq_meta(0), 1);
-    meta[0].o.a.m = vq_retain(AllocDataVec(VQ_string, 1));
-    meta[1].o.a.m = vq_retain(AllocDataVec(VQ_int, 1));
-    meta[2].o.a.m = vq_retain(AllocDataVec(VQ_table, 1));
     Vq_setString(meta, 0, 0, name);
     Vq_setInt(meta, 0, 1, VQ_int);
     Vq_setTable(meta, 0, 2, EmptyMetaTable());
