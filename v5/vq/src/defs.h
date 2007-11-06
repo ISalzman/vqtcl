@@ -132,4 +132,47 @@ vq_Type (ReplaceCmd_SIIT) (vq_Item a[]);
 vq_Type (SetCmd_SIIO) (vq_Item a[]);
 vq_Type (UnsetCmd_SII) (vq_Item a[]);
 
+/* buffer.c */
+
+typedef struct Buffer *Buffer_p;
+typedef struct Overflow *Overflow_p;
+
+struct Buffer {
+    union { char *c; int *i; const void **p; } fill;
+    char       *limit;
+    Overflow_p  head;
+    intptr_t    saved;
+    intptr_t    used;
+    char       *ofill;
+    char       *result;
+    char        buf [128];
+    char        slack [8];
+};
+
+#define ADD_ONEC_TO_BUF(b,x) (*(b).fill.c++ = (x))
+
+#define ADD_CHAR_TO_BUF(b,x) \
+          { char _c = (x); \
+            if ((b).fill.c < (b).limit) *(b).fill.c++ = _c; \
+              else AddToBuffer(&(b), &_c, sizeof _c); }
+
+#define ADD_INT_TO_BUF(b,x) \
+          { int _i = (x); \
+            if ((b).fill.c < (b).limit) *(b).fill.i++ = _i; \
+              else AddToBuffer(&(b), &_i, sizeof _i); }
+
+#define ADD_PTR_TO_BUF(b,x) \
+          { const void *_p = (x); \
+            if ((b).fill.c < (b).limit) *(b).fill.p++ = _p; \
+              else AddToBuffer(&(b), &_p, sizeof _p); }
+
+#define BufferFill(b) ((b)->saved + ((b)->fill.c - (b)->buf))
+
+void (InitBuffer) (Buffer_p bp);
+void (ReleaseBuffer) (Buffer_p bp, int keep);
+void (AddToBuffer) (Buffer_p bp, const void *data, intptr_t len);
+void* (BufferAsPtr) (Buffer_p bp, int fast);
+Vector (BufferAsIntVec) (Buffer_p bp);
+int (NextBuffer) (Buffer_p bp, char **firstp, int *countp);
+
 #endif
