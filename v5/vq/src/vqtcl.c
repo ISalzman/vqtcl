@@ -256,7 +256,7 @@ static Tcl_Obj *TableAsList (vq_Table table) {
         Tcl_ListObjAppendElement(0, result, Tcl_NewIntObj(rows));
     } else {
         Tcl_ListObjAppendElement(0, result, Tcl_NewStringObj("data", 4));
-        Tcl_ListObjAppendElement(0, result, MetaTableAsList(meta));
+        Tcl_ListObjAppendElement(0, result, TableAsList(meta));
         Tcl_ListObjAppendElement(0, result, Tcl_NewIntObj(rows));
         if (rows > 0)
             for (c = 0; c < cols; ++c) {

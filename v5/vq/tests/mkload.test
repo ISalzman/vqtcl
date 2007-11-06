@@ -23,7 +23,7 @@ test 3 {} {
 
 test 4 {} {
     vq open ../data/simple.db
-} {data {{v abc:I}} 1 {{data abc:I 5 {1 22 333 4444 55555}}}}
+} {data {mdef {{v abc:I}}} 1 {{data {mdef abc:I} 5 {1 22 333 4444 55555}}}}
 
 test 5 {} {
     vq meta [vq open ../data/alltypes.db]
@@ -31,8 +31,8 @@ test 5 {} {
 
 test 6 {} {
     vq open ../data/alltypes.db
-} {data {{v {i0:I i1:I i2:I i4:I i8:I i16:I i32:I l:L f:F d:D s b:B}}} 1\
-    {{data {i0:I i1:I i2:I i4:I i8:I i16:I i32:I l:L f:F d:D s b:B} 5\
+} {data {mdef {{v {i0:I i1:I i2:I i4:I i8:I i16:I i32:I l:L f:F d:D s b:B}}}} 1\
+    {{data {mdef {i0:I i1:I i2:I i4:I i8:I i16:I i32:I l:L f:F d:D s b:B}} 5\
         {0 0 0 0 0}\
         {1 0 1 0 1}\
         {1 2 1 0 3}\

@@ -23,14 +23,14 @@ test 2 {modify meta-table} {
 
 test 3 {simple empty table} {
     set t [vq new $m]
-} {data y 0}
+} {data {mdef y} 0}
 
 test 4 {modify must not alter original when shared} {
     vq set @t 0 0 a
     set o $t
     vq set @t 0 0 b
     list $o $t
-} {{data y 1 a} {data y 1 b}}
+} {{data {mdef y} 1 a} {data {mdef y} 1 b}}
 
 test 5 {setup meta-table} {
     set m [vq new [vq meta ""]]
@@ -45,7 +45,7 @@ test 5 {setup meta-table} {
 
 test 6 {empty data table} {
     set t [vq new $m]
-} {data {n:n i:i l:l f:f d:d s:s b:b t:t o:o} 0}
+} {data {mdef {n:n i:i l:l f:f d:d s:s b:b t:t o:o}} 0}
 
 test 7 {starts with no rows} {
     vq size $t
@@ -58,7 +58,7 @@ test 8 {grow to 2 rows} {
 
 test 9 {show empty table} {
     set t
-} {data {n:n i:i l:l f:f d:d s:s b:b t:t o:o} 2\
+} {data {mdef {n:n i:i l:l f:f d:d s:s b:b t:t o:o}} 2\
     {} {} {} {} {} {} {} {} {}}
 
 test 10 {all cells are empty} {
@@ -83,7 +83,7 @@ test 12 {fill entire data table} {
         vq set @t 1 $x $x
     }
     set t
-} {data {n:n i:i l:l f:f d:d s:s b:b t:t o:o} 2\
+} {data {mdef {n:n i:i l:l f:f d:d s:s b:b t:t o:o}} 2\
     {} {1 1} {1 2} {1.0 3.0} {1.0 4.0} {1 5} {1 6} {1 7} {1 8}}
 
 test 13 {all cells are non-empty} {
@@ -99,7 +99,7 @@ test 14 {unset some data} {
         vq unset @t [expr {$x%2}] $x
     }
     set t
-} {data {n:n i:i l:l f:f d:d s:s b:b t:t o:o} 2\
+} {data {mdef {n:n i:i l:l f:f d:d s:s b:b t:t o:o}} 2\
     {} 1 {1 2} 2 {0 1} 1.0 {1 2} 4.0 {0 1} 1 {1 2} 6 {0 1} 1 {1 2} 8 {0 1}}
 
 test 15 {data table with some missing values} {
@@ -108,7 +108,7 @@ test 15 {data table with some missing values} {
         vq set @t 1 $x $x
     }
     set t
-} {data {n:n i:i l:l f:f d:d s:s b:b t:t o:o} 2\
+} {data {mdef {n:n i:i l:l f:f d:d s:s b:b t:t o:o}} 2\
     {} 1 {0 1} 2 {0 1} 3.0 {0 1} 4.0 {0 1} 5 {0 1} 6 {0 1} 7 {0 1} 8 {0 1}}
 
 test 16 {get all values} {
@@ -127,7 +127,7 @@ test 17 {set and unset some values} {
         vq set @t [expr {(3*$x)%2}] $x [expr {$x+$x}]
     }
     set t
-} {data {n:n i:i l:l f:f d:d s:s b:b t:t o:o} 2\
+} {data {mdef {n:n i:i l:l f:f d:d s:s b:b t:t o:o}} 2\
     {} 2 {0 1} {4 2} 6.0 {0 1} {8.0 4.0} 10 {0 1} {12 6} 14 {0 1} {16 8}}
     
 test 18 {get all values again} {
@@ -142,13 +142,13 @@ test 19 {set over existing data} {
     set t [vq iota 5 N]
     vq set @t 2 0 99
     set t
-} {data N:I 5 {0 1 99 3 4}}
+} {data {mdef N:I} 5 {0 1 99 3 4}}
 
 test 20 {unset over existing data} {
     set t [vq iota 5 N]
     vq unset @t 2 0
     set t
-} {data N:I 5 {0 1 3 4} {2 3}}
+} {data {mdef N:I} 5 {0 1 3 4} {2 3}}
 
 test 21 {get empty state of modified iota} {
     set r {}
@@ -166,61 +166,61 @@ test 23 {insert some empty rows} {
     set t [vq iota 4 N]
     vq replace @t 2 0 5
     set t
-} {data N:I 9 {0 1 2 3} {2 7}}
+} {data {mdef N:I} 9 {0 1 2 3} {2 7}}
 
 test 24 {delete some rows} {
     set t [vq iota 9 N]
     vq replace @t 2 5 0
     set t
-} {data N:I 4 {0 1 7 8}}
+} {data {mdef N:I} 4 {0 1 7 8}}
 
 test 25 {delete some rows, then insert some empty ones} {
     set t [vq iota 9 N]
     vq replace @t 2 5 0
     vq replace @t 2 0 3
     set t
-} {data N:I 7 {0 1 7 8} {2 5}}
+} {data {mdef N:I} 7 {0 1 7 8} {2 5}}
 
 test 26 {insert some empty rows, then delete inside} {
     set t [vq iota 4 N]
     vq replace @t 2 0 5
     vq replace @t 3 3 0
     set t
-} {data N:I 6 {0 1 2 3} {2 4}}
+} {data {mdef N:I} 6 {0 1 2 3} {2 4}}
 
 test 27 {insert some empty rows, then delete around} {
     set t [vq iota 6 N]
     vq replace @t 3 0 3
     vq replace @t 2 5 0
     set t
-} {data N:I 4 {0 1 4 5}}
+} {data {mdef N:I} 4 {0 1 4 5}}
 
 test 28 {insert some filled rows} {
     set t [vq iota 4 N]
     vq replace @t 2 0 [vq iota 5 N]
     set t
-} {data N:I 9 {0 1 0 1 2 3 4 2 3}}
+} {data {mdef N:I} 9 {0 1 0 1 2 3 4 2 3}}
 
 test 29 {insert some empty, then filled rows} {
     set t [vq iota 4 N]
     vq replace @t 2 0 2
     vq replace @t 3 0 [vq iota 5 N]
     set t
-} {data N:I 11 {0 1 0 1 2 3 4 2 3} {2 3 8 9}}
+} {data {mdef N:I} 11 {0 1 0 1 2 3 4 2 3} {2 3 8 9}}
 
 test 30 {insert some rows, then delete inside} {
     set t [vq iota 4 N]
     vq replace @t 2 0 [vq iota 5 N]
     vq replace @t 3 3 0
     set t
-} {data N:I 6 {0 1 0 4 2 3}}
+} {data {mdef N:I} 6 {0 1 0 4 2 3}}
 
 test 31 {insert some rows, then delete around} {
     set t [vq iota 6 N]
     vq replace @t 3 0 [vq iota 3 N]
     vq replace @t 2 5 0
     set t
-} {data N:I 4 {0 1 4 5}}
+} {data {mdef N:I} 4 {0 1 4 5}}
 
 test 32 {more ranges} {
     set t [vq iota 10 N]
@@ -229,7 +229,7 @@ test 32 {more ranges} {
     }
     vq set @t 28 0 -1
     set t
-} {data N:I 30 {0 1 2 3 4 5 6 7 8 -1 9}\
+} {data {mdef N:I} 30 {0 1 2 3 4 5 6 7 8 -1 9}\
     {0 2 3 5 6 8 9 11 12 14 15 17 18 20 21 23 24 26 27 28}}
 
 test 33 {access to ranges} {
