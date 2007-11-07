@@ -16,7 +16,7 @@
 		11A808D10CDE9B39000DD818 /* core.c in Sources */ = {isa = PBXBuildFile; fileRef = 111FCE0E0CA5DBFD00C4FBEA /* core.c */; };
 		11A824C20CDF7B04000DD818 /* buffer.c in Sources */ = {isa = PBXBuildFile; fileRef = 11A824C10CDF7B04000DD818 /* buffer.c */; };
 		11D2FB380CB3A7E3007C57D0 /* vqtcl.c in Sources */ = {isa = PBXBuildFile; fileRef = 11D2FB220CB3A74B007C57D0 /* vqtcl.c */; };
-		11D2FB3E0CB3A80F007C57D0 /* vq4c.h in Headers */ = {isa = PBXBuildFile; fileRef = 111FCE110CA5DC2100C4FBEA /* vq4c.h */; };
+		11D2FB3E0CB3A80F007C57D0 /* vqc.h in Headers */ = {isa = PBXBuildFile; fileRef = 111FCE110CA5DC2100C4FBEA /* vqc.h */; };
 		11D2FB3F0CB3A810007C57D0 /* defs.h in Headers */ = {isa = PBXBuildFile; fileRef = 11E080930CA710910000CF5A /* defs.h */; };
 /* End PBXBuildFile section */
 
@@ -25,7 +25,7 @@
 		110665180CE1ACFA003ED04A /* vqpy.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = vqpy.c; path = src/vqpy.c; sourceTree = "<group>"; };
 		110672060CE1B3C1003ED04A /* Python.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Python.framework; path = /Library/Frameworks/Python.framework; sourceTree = "<absolute>"; };
 		111FCE0E0CA5DBFD00C4FBEA /* core.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.c; fileEncoding = 30; name = core.c; path = src/core.c; sourceTree = "<group>"; };
-		111FCE110CA5DC2100C4FBEA /* vq4c.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = vq4c.h; path = src/vq4c.h; sourceTree = "<group>"; };
+		111FCE110CA5DC2100C4FBEA /* vqc.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = vqc.h; path = src/vqc.h; sourceTree = "<group>"; };
 		114FBB000CDCE53D000B5611 /* mkload.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mkload.c; path = src/mkload.c; sourceTree = "<group>"; };
 		114FBBF50CDE1157000B5611 /* nullable.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = nullable.c; path = src/nullable.c; sourceTree = "<group>"; };
 		114FBC340CDE301E000B5611 /* mutable.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mutable.c; path = src/mutable.c; sourceTree = "<group>"; };
@@ -68,7 +68,7 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				111FCE110CA5DC2100C4FBEA /* vq4c.h */,
+				111FCE110CA5DC2100C4FBEA /* vqc.h */,
 				11E080930CA710910000CF5A /* defs.h */,
 				11A824C10CDF7B04000DD818 /* buffer.c */,
 				111FCE0E0CA5DBFD00C4FBEA /* core.c */,
@@ -113,7 +113,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				11D2FB3E0CB3A80F007C57D0 /* vq4c.h in Headers */,
+				11D2FB3E0CB3A80F007C57D0 /* vqc.h in Headers */,
 				11D2FB3F0CB3A810007C57D0 /* defs.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

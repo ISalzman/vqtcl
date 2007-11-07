@@ -9,7 +9,7 @@
 #define VQ_MOD_MUTABLE 1
 #define VQ_MOD_NULLABLE 1
 
-#include "vq4c.h"
+#include "vqc.h"
 
 #include <assert.h>
 
@@ -44,8 +44,10 @@ typedef struct vq_Dispatch_s {
     
 /* host language functions */
 
-#ifdef _TCL
+#if defined (_TCL)
 typedef struct Tcl_Obj *Object_p;
+#elif defined (Py_PYTHON_H)
+typedef struct _object *Object_p;
 #else
 typedef void           *Object_p;
 #endif
