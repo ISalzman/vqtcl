@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1106652A0CE1AFB4003ED04A /* vqpy.c in Sources */ = {isa = PBXBuildFile; fileRef = 110665180CE1ACFA003ED04A /* vqpy.c */; };
+		110672070CE1B3C1003ED04A /* Python.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 110672060CE1B3C1003ED04A /* Python.framework */; };
 		114FBB010CDCE53D000B5611 /* mkload.c in Sources */ = {isa = PBXBuildFile; fileRef = 114FBB000CDCE53D000B5611 /* mkload.c */; };
 		114FBBF60CDE1157000B5611 /* nullable.c in Sources */ = {isa = PBXBuildFile; fileRef = 114FBBF50CDE1157000B5611 /* nullable.c */; };
 		114FBC350CDE301E000B5611 /* mutable.c in Sources */ = {isa = PBXBuildFile; fileRef = 114FBC340CDE301E000B5611 /* mutable.c */; };
@@ -19,6 +21,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		110665140CE1ACA5003ED04A /* vq5py.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = vq5py.so; sourceTree = BUILT_PRODUCTS_DIR; };
+		110665180CE1ACFA003ED04A /* vqpy.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = vqpy.c; path = src/vqpy.c; sourceTree = "<group>"; };
+		110672060CE1B3C1003ED04A /* Python.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Python.framework; path = /Library/Frameworks/Python.framework; sourceTree = "<absolute>"; };
 		111FCE0E0CA5DBFD00C4FBEA /* core.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.c; fileEncoding = 30; name = core.c; path = src/core.c; sourceTree = "<group>"; };
 		111FCE110CA5DC2100C4FBEA /* vq4c.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = vq4c.h; path = src/vq4c.h; sourceTree = "<group>"; };
 		114FBB000CDCE53D000B5611 /* mkload.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mkload.c; path = src/mkload.c; sourceTree = "<group>"; };
@@ -32,6 +37,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		110665120CE1ACA5003ED04A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				110672070CE1B3C1003ED04A /* Python.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		11D2FB330CB3A7CB007C57D0 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -46,6 +59,7 @@
 			isa = PBXGroup;
 			children = (
 				08FB7795FE84155DC02AAC07 /* Source */,
+				110665320CE1AFD6003ED04A /* Libraries */,
 				1AB674ADFE9D54B511CA2CBB /* Products */,
 			);
 			name = vqx;
@@ -62,15 +76,25 @@
 				114FBC340CDE301E000B5611 /* mutable.c */,
 				114FBBF50CDE1157000B5611 /* nullable.c */,
 				1198A2100CDCBD23008D4837 /* reader.c */,
+				110665180CE1ACFA003ED04A /* vqpy.c */,
 				11D2FB220CB3A74B007C57D0 /* vqtcl.c */,
 			);
 			name = Source;
+			sourceTree = "<group>";
+		};
+		110665320CE1AFD6003ED04A /* Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				110672060CE1B3C1003ED04A /* Python.framework */,
+			);
+			name = Libraries;
 			sourceTree = "<group>";
 		};
 		1AB674ADFE9D54B511CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				11D2FB350CB3A7CB007C57D0 /* libvq5tcl.dylib */,
+				110665140CE1ACA5003ED04A /* vq5py.so */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -78,6 +102,13 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		110665100CE1ACA5003ED04A /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		11D2FB310CB3A7CB007C57D0 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -90,9 +121,26 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		11D2FB340CB3A7CB007C57D0 /* libvq5tcl (dyn) */ = {
+		110665130CE1ACA5003ED04A /* vq5py (dyn) */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 11D2FB400CB3A818007C57D0 /* Build configuration list for PBXNativeTarget "libvq5tcl (dyn)" */;
+			buildConfigurationList = 110665170CE1ACF7003ED04A /* Build configuration list for PBXNativeTarget "vq5py (dyn)" */;
+			buildPhases = (
+				110665100CE1ACA5003ED04A /* Headers */,
+				110665110CE1ACA5003ED04A /* Sources */,
+				110665120CE1ACA5003ED04A /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "vq5py (dyn)";
+			productName = vq5py;
+			productReference = 110665140CE1ACA5003ED04A /* vq5py.so */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+		11D2FB340CB3A7CB007C57D0 /* vq5tcl (dyn) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 11D2FB400CB3A818007C57D0 /* Build configuration list for PBXNativeTarget "vq5tcl (dyn)" */;
 			buildPhases = (
 				11D2FB310CB3A7CB007C57D0 /* Headers */,
 				11D2FB320CB3A7CB007C57D0 /* Sources */,
@@ -102,7 +150,7 @@
 			);
 			dependencies = (
 			);
-			name = "libvq5tcl (dyn)";
+			name = "vq5tcl (dyn)";
 			productName = libvq5;
 			productReference = 11D2FB350CB3A7CB007C57D0 /* libvq5tcl.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
@@ -119,12 +167,21 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				11D2FB340CB3A7CB007C57D0 /* libvq5tcl (dyn) */,
+				11D2FB340CB3A7CB007C57D0 /* vq5tcl (dyn) */,
+				110665130CE1ACA5003ED04A /* vq5py (dyn) */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		110665110CE1ACA5003ED04A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1106652A0CE1AFB4003ED04A /* vqpy.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		11D2FB320CB3A7CB007C57D0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -142,6 +199,34 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		110665150CE1ACA5003ED04A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				EXECUTABLE_EXTENSION = so;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = /usr/local/lib;
+				PREBINDING = NO;
+				PRODUCT_NAME = vq5py;
+			};
+			name = Debug;
+		};
+		110665160CE1ACA5003ED04A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				EXECUTABLE_EXTENSION = so;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/lib;
+				PREBINDING = NO;
+				PRODUCT_NAME = vq5py;
+			};
+			name = Release;
+		};
 		11D2FB410CB3A818007C57D0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -235,7 +320,16 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		11D2FB400CB3A818007C57D0 /* Build configuration list for PBXNativeTarget "libvq5tcl (dyn)" */ = {
+		110665170CE1ACF7003ED04A /* Build configuration list for PBXNativeTarget "vq5py (dyn)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				110665150CE1ACA5003ED04A /* Debug */,
+				110665160CE1ACA5003ED04A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		11D2FB400CB3A818007C57D0 /* Build configuration list for PBXNativeTarget "vq5tcl (dyn)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				11D2FB410CB3A818007C57D0 /* Debug */,
