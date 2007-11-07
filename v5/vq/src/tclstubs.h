@@ -8,10 +8,10 @@ struct TclIntPlatStubs *tclIntPlatStubsPtr = NULL;
 static int MyInitStubs (Tcl_Interp *ip) {
 
     typedef struct HeadOfInterp {
-        char                 *result;
+        char         *result;
         Tcl_FreeProc *freeProc;
-        int                     errorLine;
-        TclStubs         *stubTable;
+        int           errorLine;
+        TclStubs     *stubTable;
     } HeadOfInterp;
 
     HeadOfInterp *hoi = (HeadOfInterp*) ip;
@@ -30,9 +30,9 @@ static int MyInitStubs (Tcl_Interp *ip) {
     }
 
     if (tclStubsPtr->hooks != NULL) {
-            tclPlatStubsPtr = tclStubsPtr->hooks->tclPlatStubs;
-            tclIntStubsPtr = tclStubsPtr->hooks->tclIntStubs;
-            tclIntPlatStubsPtr = tclStubsPtr->hooks->tclIntPlatStubs;
+        tclPlatStubsPtr = tclStubsPtr->hooks->tclPlatStubs;
+        tclIntStubsPtr = tclStubsPtr->hooks->tclIntStubs;
+        tclIntPlatStubsPtr = tclStubsPtr->hooks->tclIntPlatStubs;
     }
 
     return 1;

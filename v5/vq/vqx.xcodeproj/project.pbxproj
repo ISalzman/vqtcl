@@ -6,9 +6,30 @@
 	objectVersion = 44;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		111AA46D0CE2422B00395A6A /* all */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 111AA47C0CE2425400395A6A /* Build configuration list for PBXAggregateTarget "all" */;
+			buildPhases = (
+			);
+			dependencies = (
+				111AA4710CE2423400395A6A /* PBXTargetDependency */,
+				111AA4730CE2423700395A6A /* PBXTargetDependency */,
+				111AA4750CE2423B00395A6A /* PBXTargetDependency */,
+				111AA4770CE2423E00395A6A /* PBXTargetDependency */,
+			);
+			name = all;
+			productName = all;
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
 		1106652A0CE1AFB4003ED04A /* vqpy.c in Sources */ = {isa = PBXBuildFile; fileRef = 110665180CE1ACFA003ED04A /* vqpy.c */; };
 		110672070CE1B3C1003ED04A /* Python.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 110672060CE1B3C1003ED04A /* Python.framework */; };
+		110672460CE218F7003ED04A /* vqrb.c in Sources */ = {isa = PBXBuildFile; fileRef = 110672450CE218F7003ED04A /* vqrb.c */; };
+		111AA42A0CE2395400395A6A /* libruby.1.8.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 111AA4290CE2395400395A6A /* libruby.1.8.dylib */; };
+		111AA43E0CE23EF900395A6A /* vqlua.c in Sources */ = {isa = PBXBuildFile; fileRef = 111AA43D0CE23EF900395A6A /* vqlua.c */; };
+		111AA45B0CE241D200395A6A /* liblua.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 111AA45A0CE241D200395A6A /* liblua.dylib */; };
 		114FBB010CDCE53D000B5611 /* mkload.c in Sources */ = {isa = PBXBuildFile; fileRef = 114FBB000CDCE53D000B5611 /* mkload.c */; };
 		114FBBF60CDE1157000B5611 /* nullable.c in Sources */ = {isa = PBXBuildFile; fileRef = 114FBBF50CDE1157000B5611 /* nullable.c */; };
 		114FBC350CDE301E000B5611 /* mutable.c in Sources */ = {isa = PBXBuildFile; fileRef = 114FBC340CDE301E000B5611 /* mutable.c */; };
@@ -20,10 +41,47 @@
 		11D2FB3F0CB3A810007C57D0 /* defs.h in Headers */ = {isa = PBXBuildFile; fileRef = 11E080930CA710910000CF5A /* defs.h */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		111AA4700CE2423400395A6A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 111AA4390CE23ED000395A6A /* vq5lua (dyn) */;
+			remoteInfo = "vq5lua (dyn)";
+		};
+		111AA4720CE2423700395A6A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 110665130CE1ACA5003ED04A /* vq5py (dyn) */;
+			remoteInfo = "vq5py (dyn)";
+		};
+		111AA4740CE2423B00395A6A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 110672410CE218D5003ED04A /* vq5rb (dyn) */;
+			remoteInfo = "vq5rb (dyn)";
+		};
+		111AA4760CE2423E00395A6A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 11D2FB340CB3A7CB007C57D0 /* vq5tcl (dyn) */;
+			remoteInfo = "vq5tcl (dyn)";
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		110665140CE1ACA5003ED04A /* vq5py.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = vq5py.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		110665180CE1ACFA003ED04A /* vqpy.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = vqpy.c; path = src/vqpy.c; sourceTree = "<group>"; };
 		110672060CE1B3C1003ED04A /* Python.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Python.framework; path = /Library/Frameworks/Python.framework; sourceTree = "<absolute>"; };
+		110672420CE218D5003ED04A /* vq5rb.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = vq5rb.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		110672450CE218F7003ED04A /* vqrb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = vqrb.c; path = src/vqrb.c; sourceTree = "<group>"; };
+		111AA4290CE2395400395A6A /* libruby.1.8.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libruby.1.8.dylib; path = /usr/local/lib/libruby.1.8.dylib; sourceTree = "<absolute>"; };
+		111AA43A0CE23ED000395A6A /* vq5lua.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = vq5lua.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		111AA43D0CE23EF900395A6A /* vqlua.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = vqlua.c; path = src/vqlua.c; sourceTree = "<group>"; };
+		111AA45A0CE241D200395A6A /* liblua.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = liblua.dylib; path = "../../../../../Shared/Oss/ObjC/LuaObjCBridge-1.4.2/Source/build/Embedding/liblua.dylib"; sourceTree = SOURCE_ROOT; };
 		111FCE0E0CA5DBFD00C4FBEA /* core.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.c; fileEncoding = 30; name = core.c; path = src/core.c; sourceTree = "<group>"; };
 		111FCE110CA5DC2100C4FBEA /* vqc.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = vqc.h; path = src/vqc.h; sourceTree = "<group>"; };
 		114FBB000CDCE53D000B5611 /* mkload.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mkload.c; path = src/mkload.c; sourceTree = "<group>"; };
@@ -42,6 +100,22 @@
 			buildActionMask = 2147483647;
 			files = (
 				110672070CE1B3C1003ED04A /* Python.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		110672400CE218D5003ED04A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				111AA42A0CE2395400395A6A /* libruby.1.8.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		111AA4380CE23ED000395A6A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				111AA45B0CE241D200395A6A /* liblua.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -76,7 +150,9 @@
 				114FBC340CDE301E000B5611 /* mutable.c */,
 				114FBBF50CDE1157000B5611 /* nullable.c */,
 				1198A2100CDCBD23008D4837 /* reader.c */,
+				111AA43D0CE23EF900395A6A /* vqlua.c */,
 				110665180CE1ACFA003ED04A /* vqpy.c */,
+				110672450CE218F7003ED04A /* vqrb.c */,
 				11D2FB220CB3A74B007C57D0 /* vqtcl.c */,
 			);
 			name = Source;
@@ -85,7 +161,9 @@
 		110665320CE1AFD6003ED04A /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				111AA45A0CE241D200395A6A /* liblua.dylib */,
 				110672060CE1B3C1003ED04A /* Python.framework */,
+				111AA4290CE2395400395A6A /* libruby.1.8.dylib */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";
@@ -93,8 +171,10 @@
 		1AB674ADFE9D54B511CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				11D2FB350CB3A7CB007C57D0 /* libvq5tcl.dylib */,
+				111AA43A0CE23ED000395A6A /* vq5lua.dylib */,
 				110665140CE1ACA5003ED04A /* vq5py.so */,
+				110672420CE218D5003ED04A /* vq5rb.dylib */,
+				11D2FB350CB3A7CB007C57D0 /* libvq5tcl.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -103,6 +183,20 @@
 
 /* Begin PBXHeadersBuildPhase section */
 		110665100CE1ACA5003ED04A /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1106723E0CE218D5003ED04A /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		111AA4360CE23ED000395A6A /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -138,6 +232,40 @@
 			productReference = 110665140CE1ACA5003ED04A /* vq5py.so */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
+		110672410CE218D5003ED04A /* vq5rb (dyn) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 110672470CE218F7003ED04A /* Build configuration list for PBXNativeTarget "vq5rb (dyn)" */;
+			buildPhases = (
+				1106723E0CE218D5003ED04A /* Headers */,
+				1106723F0CE218D5003ED04A /* Sources */,
+				110672400CE218D5003ED04A /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "vq5rb (dyn)";
+			productName = vq5rb;
+			productReference = 110672420CE218D5003ED04A /* vq5rb.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+		111AA4390CE23ED000395A6A /* vq5lua (dyn) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 111AA43F0CE23EF900395A6A /* Build configuration list for PBXNativeTarget "vq5lua (dyn)" */;
+			buildPhases = (
+				111AA4360CE23ED000395A6A /* Headers */,
+				111AA4370CE23ED000395A6A /* Sources */,
+				111AA4380CE23ED000395A6A /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "vq5lua (dyn)";
+			productName = vq5lua;
+			productReference = 111AA43A0CE23ED000395A6A /* vq5lua.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
 		11D2FB340CB3A7CB007C57D0 /* vq5tcl (dyn) */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 11D2FB400CB3A818007C57D0 /* Build configuration list for PBXNativeTarget "vq5tcl (dyn)" */;
@@ -167,8 +295,11 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				11D2FB340CB3A7CB007C57D0 /* vq5tcl (dyn) */,
+				111AA46D0CE2422B00395A6A /* all */,
+				111AA4390CE23ED000395A6A /* vq5lua (dyn) */,
 				110665130CE1ACA5003ED04A /* vq5py (dyn) */,
+				110672410CE218D5003ED04A /* vq5rb (dyn) */,
+				11D2FB340CB3A7CB007C57D0 /* vq5tcl (dyn) */,
 			);
 		};
 /* End PBXProject section */
@@ -179,6 +310,22 @@
 			buildActionMask = 2147483647;
 			files = (
 				1106652A0CE1AFB4003ED04A /* vqpy.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1106723F0CE218D5003ED04A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				110672460CE218F7003ED04A /* vqrb.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		111AA4370CE23ED000395A6A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				111AA43E0CE23EF900395A6A /* vqlua.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -197,6 +344,29 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		111AA4710CE2423400395A6A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 111AA4390CE23ED000395A6A /* vq5lua (dyn) */;
+			targetProxy = 111AA4700CE2423400395A6A /* PBXContainerItemProxy */;
+		};
+		111AA4730CE2423700395A6A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 110665130CE1ACA5003ED04A /* vq5py (dyn) */;
+			targetProxy = 111AA4720CE2423700395A6A /* PBXContainerItemProxy */;
+		};
+		111AA4750CE2423B00395A6A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 110672410CE218D5003ED04A /* vq5rb (dyn) */;
+			targetProxy = 111AA4740CE2423B00395A6A /* PBXContainerItemProxy */;
+		};
+		111AA4770CE2423E00395A6A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 11D2FB340CB3A7CB007C57D0 /* vq5tcl (dyn) */;
+			targetProxy = 111AA4760CE2423E00395A6A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		110665150CE1ACA5003ED04A /* Debug */ = {
@@ -224,6 +394,93 @@
 				INSTALL_PATH = /usr/local/lib;
 				PREBINDING = NO;
 				PRODUCT_NAME = vq5py;
+			};
+			name = Release;
+		};
+		110672430CE218D6003ED04A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				HEADER_SEARCH_PATHS = "/usr/local/lib/ruby/1.8/i686-darwin9.0.0";
+				INSTALL_PATH = /usr/local/lib;
+				PREBINDING = NO;
+				PRODUCT_NAME = vq5rb;
+			};
+			name = Debug;
+		};
+		110672440CE218D6003ED04A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_MODEL_TUNING = G5;
+				HEADER_SEARCH_PATHS = "/usr/local/lib/ruby/1.8/i686-darwin9.0.0";
+				INSTALL_PATH = /usr/local/lib;
+				PREBINDING = NO;
+				PRODUCT_NAME = vq5rb;
+			};
+			name = Release;
+		};
+		111AA43B0CE23ED000395A6A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				INSTALL_PATH = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../../../../Shared/Oss/ObjC/LuaObjCBridge-1.4.2/Source/build/Embedding\"",
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = vq5lua;
+			};
+			name = Debug;
+		};
+		111AA43C0CE23ED000395A6A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				INSTALL_PATH = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../../../../Shared/Oss/ObjC/LuaObjCBridge-1.4.2/Source/build/Embedding\"",
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = vq5lua;
+			};
+			name = Release;
+		};
+		111AA46E0CE2422B00395A6A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = all;
+			};
+			name = Debug;
+		};
+		111AA46F0CE2422B00395A6A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				PRODUCT_NAME = all;
+				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
@@ -325,6 +582,33 @@
 			buildConfigurations = (
 				110665150CE1ACA5003ED04A /* Debug */,
 				110665160CE1ACA5003ED04A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		110672470CE218F7003ED04A /* Build configuration list for PBXNativeTarget "vq5rb (dyn)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				110672430CE218D6003ED04A /* Debug */,
+				110672440CE218D6003ED04A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		111AA43F0CE23EF900395A6A /* Build configuration list for PBXNativeTarget "vq5lua (dyn)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				111AA43B0CE23ED000395A6A /* Debug */,
+				111AA43C0CE23ED000395A6A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		111AA47C0CE2425400395A6A /* Build configuration list for PBXAggregateTarget "all" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				111AA46E0CE2422B00395A6A /* Debug */,
+				111AA46F0CE2422B00395A6A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
