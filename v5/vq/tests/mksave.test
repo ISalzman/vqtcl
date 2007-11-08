@@ -14,20 +14,23 @@ test 1 {} {
 } name:S,type:I,subt:T
 
 test 2 {} {
-    vq load [vq emit 0]
-} 0
+    vq meta2desc 3
+} {}
 
 test 3 {} {
+    vq load [vq emit 7]
+} 7
+
+test 4 {} {
     vq load [vq emit ""]
 } {data {mdef {name type:I subt:T}} 0}
 
-test 4 {} {
+test 5 {} {
     vq load [vq emit [vq iota 5 N]]
 } {data {mdef N:I} 5 {0 1 2 3 4}}
 
-test 5 {} {
-    set d [vq emit [vq open ../data/alltypes.db]]
-    vq load $d
+test 6 {} {
+    vq load [vq emit [vq open ../data/alltypes.db]]
 } {data {mdef {{v {i0:I i1:I i2:I i4:I i8:I i16:I i32:I l:L f:F d:D s b:B}}}} 1\
     {{data {mdef {i0:I i1:I i2:I i4:I i8:I i16:I i32:I l:L f:F d:D s b:B}} 5\
         {0 0 0 0 0}\

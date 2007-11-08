@@ -6,7 +6,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-
+#include <stdio.h>
 /* forward */
 static vq_Table MapSubtable (Vector map, intptr_t offset, vq_Table meta);
 
@@ -69,7 +69,9 @@ vq_Table DescToMeta (const char *desc, int length) {
     
     if (length < 0)
         length = strlen(desc);
-        
+    if (length == 0)
+        return EmptyMetaTable();
+    
     /* find a hard upper bound for the buffer requirements */
     for (i = 0; i < length; ++i)
         if (desc[i] == ',' || desc[i] == '[')
@@ -314,7 +316,6 @@ static vq_Table MapCols (Vector map, const char **nextp, vq_Table meta) {
     
     rows = GetVarInt(nextp);
     cols = vCount(meta);
-    assert(cols > 0);
     
     result = vq_new(meta, 0);
     vCount(result) = rows;
