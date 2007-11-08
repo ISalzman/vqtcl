@@ -266,7 +266,7 @@ static Vector MappedStringCol (Vector map, int rows, const char **nextp, int ist
     Vector offvec, result, sizes;
     vq_Item item;
 
-    offvec = AllocDataVec(VQ_int, rows);
+    offvec = AllocDataVec(sizeof(void*) == 4 ? VQ_int : VQ_long, rows);
     offsets = (void*) offvec;
 
     colsize = GetVarInt(nextp);
