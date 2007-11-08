@@ -182,7 +182,7 @@ static Vector ListAsIntVec (Tcl_Obj *obj) {
 
 #pragma mark - CONVERT TO TCL OBJECTS -
 
-static Tcl_Obj *ColumnAsList (vq_Item colref, int rows, int mode) {
+static Tcl_Obj* ColumnAsList (vq_Item colref, int rows, int mode) {
     int i;
     Tcl_Obj *list = Tcl_NewListObj(0, 0);
 #if VQ_MOD_NULLABLE
@@ -208,7 +208,7 @@ static Tcl_Obj *ColumnAsList (vq_Item colref, int rows, int mode) {
     }
     return list;
 }
-static Tcl_Obj *MetaTableAsList (vq_Table meta) {
+static Tcl_Obj* MetaTableAsList (vq_Table meta) {
     Tcl_Obj *result = Tcl_NewListObj(0, 0);
     if (meta != 0) {
         vq_Type type;
@@ -242,7 +242,7 @@ static Tcl_Obj *MetaTableAsList (vq_Table meta) {
     }
     return result;
 }
-static Tcl_Obj *TableAsList (vq_Table table) {
+static Tcl_Obj* TableAsList (vq_Table table) {
     vq_Table meta = vq_meta(table);
     int c, rows = vCount(table), cols = vCount(meta);
     Tcl_Obj *result = Tcl_NewListObj(0, 0);
@@ -273,7 +273,7 @@ static Tcl_Obj *TableAsList (vq_Table table) {
 
     return result;
 }
-Tcl_Obj *ItemAsObj (vq_Type type, vq_Item item) {
+Tcl_Obj* ItemAsObj (vq_Type type, vq_Item item) {
     switch (type) {
         case VQ_nil:    break;
         case VQ_int:    return Tcl_NewIntObj(item.o.a.i);
@@ -363,8 +363,10 @@ vq_Type LoadCmd_O (vq_Item a[]) {
 #endif
 
 #if VQ_MOD_MKSAVE
-#define EmitInitFun ((SaveInitFun) Tcl_SetByteArrayLength)
-static void *EmitDataFun(void *data, const void *ptr, intptr_t len) {
+static void* EmitInitFun (void *obj, intptr_t length) {
+    return Tcl_SetByteArrayLength(obj, length);
+}
+static void* EmitDataFun (void *data, const void *ptr, intptr_t len) {
     memcpy(data, ptr, len);
     return (char*) data + len;
 }
@@ -388,7 +390,7 @@ static void InvalidateNonTableReps (Tcl_Obj *obj) {
     }
     Tcl_InvalidateStringRep(obj);
 }
-Tcl_Obj *MutableObject (const char* s) {
+Tcl_Obj* MutableObject (const char* s) {
     vq_Table t;
     Tcl_Obj *obj;
     assert(s[0] == '@');

@@ -10,12 +10,12 @@ test 0 {load package} {
 } $version
 
 test 1 {} {
-    vq meta2desc ""
-} name:S,type:I,subt:T
-
-test 2 {} {
     vq meta2desc 3
 } {}
+
+test 2 {} {
+    vq meta2desc ""
+} name:S,type:I,subt:T
 
 test 3 {} {
     vq load [vq emit 7]
