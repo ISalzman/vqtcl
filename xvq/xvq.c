@@ -214,8 +214,94 @@ static void rawSetCell (CellVec vector, int index, Cell value) {
 
 // ----------------------------------------------------------- TCL INTERFACE ---
 
+int TestCmd_1 (Cell* args) {
+    return 1;
+}
+
+static int ObjAsCell (char type, Tcl_Obj* object, Cell* result) {
+    result->p = (Object) newString(Tcl_GetString(object));
+    result->i = -1;
+    return 1;
+}
+
+static Tcl_Obj* CellAsObj (Cell value) {
+    return Tcl_NewStringObj((char*) value.p, -1);
+}
+
+typedef struct CmdDispatch {
+    const char *name, *args;
+    int (*proc) (Cell*);
+} CmdDispatch;
+
+static CmdDispatch commands[] = {
+    { "test", "S:S", TestCmd_1 },
+    { NULL, NULL, NULL }
+};
+
+static const char* TypeDesc (char type) {
+    switch (type & ~0x20) {
+        case 'C': return "list";
+        case 'I': return "int";
+        case 'N': return "col";
+        case 'O': return "any";
+        case 'S': return "string";
+        case 'V': return "view";
+        case 'X': return "...";
+    }
+    return "?";
+}
+
 static int xvqCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
-    Tcl_SetResult(interp, "ha!", TCL_STATIC);
+    if (objc <= 1) {
+        Tcl_WrongNumArgs(interp, 1, objv, "command ...");
+        return TCL_ERROR;
+    }
+
+    int index;
+    if (Tcl_GetIndexFromObjStruct(interp, objv[1], commands, sizeof *commands, 
+                                    "command", TCL_EXACT, &index) != TCL_OK)
+        return TCL_ERROR;
+
+    objv += 2; objc -= 2;
+    const char* args = commands[index].args + 2; /* skip return type and ':' */
+    Cell stack [20];
+    
+    for (int i = 0; args[i] != 0; ++i) {
+        assert(i < sizeof stack / sizeof *stack);
+//      if (args[i] == 'X') {
+//          assert(args[i+1] == 0);
+//          stack[i].u.ptr = (const void*) (objv+i);
+//          stack[i].u.len = objc-i;
+//          break;
+//      }
+        if ((args[i] == 0 && i != objc) || (args[i] != 0 && i >= objc)) {
+            char buf [sizeof stack];
+            *buf = 0;
+            for (i = 0; args[i] != 0; ++i) {
+                strcat(buf, " ");
+                strcat(buf, TypeDesc(args[i]));
+                if (args[i] & 0x20)
+                    strcat(buf, "*");
+            }
+            Tcl_WrongNumArgs(interp, 2, objv-2, buf+1);
+            return TCL_ERROR;
+        }
+        if (!ObjAsCell(args[i], objv[i], stack+i)) {
+            if (*Tcl_GetStringResult(interp) == 0)
+                Tcl_AppendResult(interp, commands[index].name, ": invalid ",
+                                                    TypeDesc(args[i]), NULL);
+            return TCL_ERROR; /* TODO: append info about which arg is bad */
+        }
+    }
+
+    if (!commands[index].proc(stack))
+        return TCL_ERROR;
+    
+    Tcl_Obj* result = CellAsObj(stack[0]);
+    if (result == NULL)
+        return TCL_ERROR;
+
+    Tcl_SetObjResult(interp, result);                            
     return TCL_OK;
 }
 
