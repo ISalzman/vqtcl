@@ -1,4 +1,4 @@
-/* Vlerq public C header */
+/* Vlerq private C header */
 
 #ifndef VQ_DEFS_H
 #define VQ_DEFS_H

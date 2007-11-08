@@ -24,7 +24,7 @@ static Dispatch vmmap = { "mmap", 1, 0, 0, MapCleaner };
 Vector OpenMappedFile (const char *filename) {
     Vector map;
     const char *data = NULL;
-    int length = -1;
+    intptr_t length = -1;
 
 #ifdef VQ_WIN32
     {

@@ -8,7 +8,7 @@ endif
 ifeq ($(ARCHSUFFIX),.macosx)
 	dll = .dylib
 	dyn = -dynamiclib -fno-common
-	CFLAGS += -isysroot /Developer/SDKs/MacOSX10.4u.sdk
+	#CFLAGS += -isysroot /Developer/SDKs/MacOSX10.4u.sdk
 endif
 
 CFLAGS += -Wall -pedantic -Wstrict-prototypes -Wno-unknown-pragmas

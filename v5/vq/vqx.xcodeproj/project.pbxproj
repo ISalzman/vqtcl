@@ -49,35 +49,35 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 111AA4390CE23ED000395A6A /* vq5lua (dyn) */;
+			remoteGlobalIDString = 111AA4390CE23ED000395A6A;
 			remoteInfo = "vq5lua (dyn)";
 		};
 		111AA4720CE2423700395A6A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 110665130CE1ACA5003ED04A /* vq5py (dyn) */;
+			remoteGlobalIDString = 110665130CE1ACA5003ED04A;
 			remoteInfo = "vq5py (dyn)";
 		};
 		111AA4740CE2423B00395A6A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 110672410CE218D5003ED04A /* vq5rb (dyn) */;
+			remoteGlobalIDString = 110672410CE218D5003ED04A;
 			remoteInfo = "vq5rb (dyn)";
 		};
 		111AA4760CE2423E00395A6A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 11D2FB340CB3A7CB007C57D0 /* vq5tcl (dyn) */;
+			remoteGlobalIDString = 11D2FB340CB3A7CB007C57D0;
 			remoteInfo = "vq5tcl (dyn)";
 		};
 		111AB2A10CE2811200395A6A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 111AB25A0CE27E6500395A6A /* vq5objc */;
+			remoteGlobalIDString = 111AB25A0CE27E6500395A6A;
 			remoteInfo = vq5objc;
 		};
 /* End PBXContainerItemProxy section */

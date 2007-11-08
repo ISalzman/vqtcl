@@ -8,7 +8,7 @@
 #include <string.h>
 
 /* forward */
-static vq_Table MapSubtable (Vector map, int offset, vq_Table meta);
+static vq_Table MapSubtable (Vector map, intptr_t offset, vq_Table meta);
 
 #pragma mark - META DESCRIPTIONS -
 
@@ -92,26 +92,26 @@ vq_Table DescToMeta (const char *desc, int length) {
 #pragma mark - METAKIT UTILITY CODE -
 
 #define MF_Data(x) ((x)->o.a.s)
-#define MF_Length(x) ((x)->o.b.i)
+#define MF_Length(x) ((intptr_t) (x)->o.b.p)
 
-static int IsReversedEndian(Vector map) {
+static int IsReversedEndian (Vector map) {
 #ifdef VQ_BIG_ENDIAN
     return *MF_Data(map) == 'J';
 #else
     return *MF_Data(map) == 'L';
 #endif
 }
-static int GetVarInt (const char **nextp) {
+static intptr_t GetVarInt (const char **nextp) {
     int8_t b;
-    int v = 0;
+    intptr_t v = 0;
     do {
         b = *(*nextp)++;
         v = (v << 7) + b;
     } while (b >= 0);
     return v + 128;
 }
-static int GetVarPair (const char **nextp) {
-    int n = GetVarInt(nextp);
+static intptr_t GetVarPair (const char **nextp) {
+    intptr_t n = GetVarInt(nextp);
     if (n > 0 && GetVarInt(nextp) == 0)
         *nextp += n;
     return n;
@@ -135,7 +135,7 @@ static vq_Type MappedViewGetter (int row, vq_Item *item) {
     vq_Table *subs = (void*) v;
     
     if (subs[row] == NULL) {
-        const int *offsets = vData(v);
+        const intptr_t *offsets = vData(v);
         subs[row] = vq_retain(MapSubtable(vOrig(v), offsets[row], vMeta(v)));
     }
     
@@ -149,7 +149,7 @@ static Dispatch mvtab = {
 
 static Vector MappedViewCol (Vector map, int rows, const char **nextp, vq_Table meta) {
     int r, c, cols, subcols;
-    int colsize, colpos, *offsets;
+    intptr_t colsize, colpos, *offsets;
     const char *next;
     Vector offvec, result;
     
@@ -166,7 +166,7 @@ static Vector MappedViewCol (Vector map, int rows, const char **nextp, vq_Table 
         offsets[r] = next - MF_Data(map);
         GetVarInt(&next);
         if (cols == 0) {
-            int desclen = GetVarInt(&next);
+            intptr_t desclen = GetVarInt(&next);
             meta = DescToMeta(next, desclen);
             next += desclen;
         }
@@ -193,7 +193,7 @@ static Vector MappedViewCol (Vector map, int rows, const char **nextp, vq_Table 
 }
 
 static Vector MappedFixedCol (Vector map, int rows, const char **nextp, int real) {
-    int bytes = GetVarInt(nextp);
+    intptr_t bytes = GetVarInt(nextp);
     int colpos = bytes > 0 ? GetVarInt(nextp) : 0;
     Dispatch *vtab = FixedGetter(bytes, rows, real, IsReversedEndian(map));
     Vector result = AllocVector(vtab, 0);    
@@ -212,7 +212,7 @@ static void MappedStringCleaner (Vector v) {
 
 static vq_Type MappedStringGetter (int row, vq_Item *item) {
     Vector v = item->o.a.m;
-    const int *offsets = vData(v);
+    const intptr_t *offsets = vData(v);
     const char *data = MF_Data(vOrig(v));
 
     if (offsets[row] == 0)
@@ -236,7 +236,7 @@ static Dispatch mstab = {
 
 static vq_Type MappedBytesGetter (int row, vq_Item *itemp) {
     Vector v = itemp->o.a.m;
-    const int *offsets = vData(v);
+    const intptr_t *offsets = vData(v);
     const char *data = MF_Data(vOrig(v));
     itemp->o.a.m = vMeta(v);
     GetItem(row, itemp);
@@ -259,7 +259,7 @@ static Dispatch mbtab = {
 
 static Vector MappedStringCol (Vector map, int rows, const char **nextp, int istext) {
     int r;
-    int colsize, colpos, *offsets;
+    intptr_t colsize, colpos, *offsets;
     const char *next, *limit;
     Vector offvec, result, sizes;
     vq_Item item;
@@ -351,12 +351,12 @@ static vq_Table MapCols (Vector map, const char **nextp, vq_Table meta) {
     return result;
 }
 
-static vq_Table MapSubtable (Vector map, int offset, vq_Table meta) {
+static vq_Table MapSubtable (Vector map, intptr_t offset, vq_Table meta) {
     const char *next = MF_Data(map) + offset;
     GetVarInt(&next);
     
     if (vCount(meta) == 0) {
-        int desclen = GetVarInt(&next);
+        intptr_t desclen = GetVarInt(&next);
         meta = DescToMeta(next, desclen);
         next += desclen;
     }
@@ -371,7 +371,7 @@ static int BigEndianInt32 (const char *p) {
 
 vq_Table MapToTable (Vector map) {
     int i, t[4];
-    int datalen, rootoff;
+    intptr_t datalen, rootoff;
     
     if (MF_Length(map) <= 24 || *(MF_Data(map) + MF_Length(map) - 16) != '\x80')
         return NULL;
@@ -383,8 +383,8 @@ vq_Table MapToTable (Vector map) {
     rootoff = t[3];
 
     if (rootoff < 0) {
-        const int mask = 0x7FFFFFFF; 
-        datalen = (datalen & mask) + ((int) ((t[0] & 0x7FF) << 16) << 15);
+        const intptr_t mask = 0x7FFFFFFF; 
+        datalen = (datalen & mask) + ((intptr_t) ((t[0] & 0x7FF) << 16) << 15);
         rootoff = (rootoff & mask) + (datalen & ~mask);
         /* FIXME: rollover at 2 Gb, prob needs: if (rootoff > datalen) ... */
     }
