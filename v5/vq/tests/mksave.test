@@ -1,0 +1,20 @@
+#!/usr/bin/env tclkit
+# %renumber<^\s*test >%
+
+# mkload module tests
+
+source [file join [file dir [info script]] initests.tcl]
+
+test 0 {load package} {
+    package require vq
+} $version
+
+test 1 {} {
+    vq load [vq emit 0]
+} 0
+
+test 1 {} {
+    vq load [vq emit [vq iota 5 N]]
+} {data {mdef N:I} 5 {0 1 2 3 4}}
+
+::tcltest::cleanupTests

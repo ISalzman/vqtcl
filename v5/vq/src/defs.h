@@ -6,6 +6,7 @@
 /* modules included */
 
 #define VQ_MOD_MKLOAD 1
+#define VQ_MOD_MKSAVE 1
 #define VQ_MOD_MUTABLE 1
 #define VQ_MOD_NULLABLE 1
 
@@ -95,9 +96,16 @@ typedef struct {
 
 extern CmdDispatch f_commands[];
 
+vq_Type (LoadCmd_O) (vq_Item a[]);
+vq_Type (RflipCmd_OII) (vq_Item a[]);
+vq_Type (RlocateCmd_OI) (vq_Item a[]);
+vq_Type (RinsertCmd_OIII) (vq_Item a[]);
+vq_Type (RdeleteCmd_OII) (vq_Item a[]);
+
 /* reader.c */
 
 Vector (OpenMappedFile) (const char *filename);
+Vector (OpenMappedBytes) (const void *data, int length, Object_p ref);
 const char* (AdjustMappedFile) (Vector map, int offset);
 Dispatch* (PickIntGetter) (int bits);
 Dispatch* (FixedGetter) (int bytes, int rows, int real, int flip);
@@ -119,11 +127,6 @@ void* (RangeFlip) (Vector *vecp, int off, int count);
 int (RangeLocate) (Vector v, int off, int *offp);
 void (RangeInsert) (Vector *vecp, int off, int count, int mode);
 void (RangeDelete) (Vector *vecp, int off, int count);
-
-vq_Type (RflipCmd_OII) (vq_Item a[]);
-vq_Type (RlocateCmd_OI) (vq_Item a[]);
-vq_Type (RinsertCmd_OIII) (vq_Item a[]);
-vq_Type (RdeleteCmd_OII) (vq_Item a[]);
 
 /* mutable.c */
 
@@ -176,5 +179,9 @@ void (AddToBuffer) (Buffer_p bp, const void *data, intptr_t len);
 void* (BufferAsPtr) (Buffer_p bp, int fast);
 Vector (BufferAsIntVec) (Buffer_p bp);
 int (NextBuffer) (Buffer_p bp, char **firstp, int *countp);
+
+/* mksave.c */
+
+vq_Type (EmitCmd_T) (vq_Item a[]);
 
 #endif

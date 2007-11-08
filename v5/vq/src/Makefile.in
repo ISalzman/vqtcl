@@ -20,7 +20,7 @@ TARGET = libvq5$(dll)
 
 HDR = ../src/vqtcl.c ../src/vqc.h ../src/defs.h
 SRC =  ../src/core.c ../src/reader.c ../src/mkload.c ../src/nullable.c \
- 	../src/mutable.c ../src/buffer.c ../src/vqtcl.c
+ 	../src/mutable.c ../src/buffer.c ../src/mksave.c ../src/vqtcl.c
 		
 all: $(TARGET)
 
@@ -39,7 +39,7 @@ test: $(TARGET)
 	../tests/all.tcl
 
 clean:
-	rm -f *.o $(TARGET)
+	rm -rf *.o $(TARGET)*
 
 distclean: clean
 	rm -f Makefile pkgIndex.tcl

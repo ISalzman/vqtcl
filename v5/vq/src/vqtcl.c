@@ -349,6 +349,19 @@ static vq_Table CmdAsTable (Tcl_Obj *obj) {
 
 #pragma mark - OPTIONAL COMMANDS -
 
+#if VQ_MOD_MKLOAD
+vq_Type LoadCmd_O (vq_Item a[]) {
+    Vector map;
+    Tcl_Obj *obj = a[0].o.a.p;
+    ObjToItem(VQ_bytes, &a[0]);
+    map = OpenMappedBytes(a[0].o.a.p, a[0].o.b.i, obj);
+    if (map == 0)
+        return VQ_nil;
+    a->o.a.m = MapToTable(map);
+    return VQ_table;
+}
+#endif
+
 #if VQ_MOD_MUTABLE
 static void InvalidateNonTableReps (Tcl_Obj *obj) {
     assert(obj->typePtr == &f_tableObjType);

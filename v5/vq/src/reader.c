@@ -19,6 +19,7 @@ static void MapCleaner (Vector map) {
 #else
     munmap(map[1].o.a.p, map[1].o.b.i);
 #endif
+    FreeVector(map);
 }
 static Dispatch vmmap = { "mmap", 1, 0, 0, MapCleaner };
 Vector OpenMappedFile (const char *filename) {
@@ -64,6 +65,18 @@ Vector OpenMappedFile (const char *filename) {
     map = AllocVector(&vmmap, 2 * sizeof(vq_Item));
     map[0].o.a.s = map[1].o.a.s = (void*) data;
     map[0].o.b.i = map[1].o.b.i = length;
+    return map;
+}
+static void BytesCleaner (Vector map) {
+    ObjDecRef(map[2].o.a.p);
+    FreeVector(map);
+}
+static Dispatch vbytes = { "bytes", 1, 0, 0, BytesCleaner };
+Vector OpenMappedBytes (const void *data, int length, Object_p ref) {
+    Vector map = AllocVector(&vbytes, 3 * sizeof(vq_Item));
+    map[0].o.a.s = map[1].o.a.s = (void*) data;
+    map[0].o.b.i = map[1].o.b.i = length;
+    map[2].o.a.p = ObjIncRef(ref);
     return map;
 }
 const char *AdjustMappedFile (Vector map, int offset) {

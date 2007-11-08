@@ -526,7 +526,11 @@ CmdDispatch f_commands[] = {
     { "version",    "S:",       VersionCmd_     },
 #if VQ_MOD_MKLOAD
     { "desc2meta",  "T:S",      Desc2MetaCmd_S  },
+    { "load",       "T:O",      LoadCmd_O       },
     { "open",       "T:S",      OpenCmd_S       },
+#endif
+#if VQ_MOD_MKSAVE
+    { "emit",       "B:T",      EmitCmd_T       },
 #endif
 #if VQ_MOD_MUTABLE
     { "replace",    "V:SIIT",   ReplaceCmd_SIIT },

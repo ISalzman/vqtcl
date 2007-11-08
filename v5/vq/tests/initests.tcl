@@ -25,8 +25,11 @@ if {[info exists env(TM_FILENAME)]} {
     }
 }
 
-proc readfile {filename} {                                                      
-    set fd [open $filename]                                                       
+proc readfile {filename {mode ""}} {                                                      
+    set fd [open $filename]      
+    if {$mode eq "-binary"} {
+        fconfigure $fd -translation binary
+    }                                                 
     set data [read $fd]                                                           
     close $fd                                                                     
     return $data                                                                  
