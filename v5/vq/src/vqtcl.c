@@ -226,10 +226,12 @@ static Tcl_Obj *MetaTableAsList (vq_Table meta) {
                 case VQ_table:
                     subt = Vq_getTable(meta, rowNum, 2, 0);
                     assert(subt != 0);
-                    fieldobj = Tcl_NewListObj(1, &fieldobj);
-                    Tcl_ListObjAppendElement(0, fieldobj,
-                                                    MetaTableAsList(subt));
-                    break;
+                    if (vCount(subt) > 0) {
+                        fieldobj = Tcl_NewListObj(1, &fieldobj);
+                        Tcl_ListObjAppendElement(0, fieldobj,
+                                                        MetaTableAsList(subt));
+                        break;
+                    }
                 default:
                     Tcl_AppendToObj(fieldobj, ":", 1);
                     Tcl_AppendToObj(fieldobj, TypeAsString(type, buf), 1);
@@ -357,6 +359,23 @@ vq_Type LoadCmd_O (vq_Item a[]) {
         return VQ_nil;
     a->o.a.m = MapToTable(map);
     return VQ_table;
+}
+#endif
+
+#if VQ_MOD_MKSAVE
+#define EmitInitFun ((SaveInitFun) Tcl_SetByteArrayLength)
+static void *EmitDataFun(void *data, const void *ptr, intptr_t len) {
+    memcpy(data, ptr, len);
+    return (char*) data + len;
+}
+vq_Type EmitCmd_T (vq_Item a[]) {
+    Object_p result = Tcl_NewByteArrayObj(NULL, 0);   
+    if (TableSave(a[0].o.a.m, result, EmitInitFun, EmitDataFun) < 0) {
+        ObjDecRef(result);
+        return VQ_nil;
+    }
+    a->o.a.p = result;
+    return VQ_object;
 }
 #endif
 

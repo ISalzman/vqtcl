@@ -1,7 +1,7 @@
 #!/usr/bin/env tclkit
 # %renumber<^\s*test >%
 
-# mkload module tests
+# mksave module tests
 
 source [file join [file dir [info script]] initests.tcl]
 
@@ -18,6 +18,10 @@ test 2 {} {
 } 0
 
 test 3 {} {
+    vq load [vq emit ""]
+} {data {mdef {name type:I subt:T}} 0}
+
+test 4 {} {
     vq load [vq emit [vq iota 5 N]]
 } {data {mdef N:I} 5 {0 1 2 3 4}}
 

@@ -183,6 +183,11 @@ int (NextBuffer) (Buffer *bp, char **firstp, int *countp);
 
 /* mksave.c */
 
+typedef void *(*SaveInitFun)(void*,intptr_t);
+typedef void *(*SaveDataFun)(void*,const void*,intptr_t);
+
+intptr_t (TableSave) (vq_Table t, void *aux, SaveInitFun fi, SaveDataFun fd);
+
 vq_Type (Meta2DescCmd_T) (vq_Item a[]);
 vq_Type (EmitCmd_T) (vq_Item a[]);
 
