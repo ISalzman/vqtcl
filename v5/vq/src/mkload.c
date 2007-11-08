@@ -1,4 +1,4 @@
-/* Load views from a Metakit-format memory map */
+/* Load tables from a Metakit-format memory map */
 
 #include "defs.h"
 
@@ -119,7 +119,7 @@ static intptr_t GetVarPair (const char **nextp) {
 
 #pragma mark - METAKIT DATA READER -
 
-static void MappedViewCleaner (Vector v) {
+static void MappedTableCleaner (Vector v) {
     const vq_Table *subs = (void*) v;
     int i, count = vCount(v);
     for (i = 0; i < count; ++i)
@@ -130,7 +130,7 @@ static void MappedViewCleaner (Vector v) {
     FreeVector(v);
 }
 
-static vq_Type MappedViewGetter (int row, vq_Item *item) {
+static vq_Type MappedTableGetter (int row, vq_Item *item) {
     Vector v = item->o.a.m;
     vq_Table *subs = (void*) v;
     
@@ -144,10 +144,10 @@ static vq_Type MappedViewGetter (int row, vq_Item *item) {
 }
 
 static Dispatch mvtab = {
-    "mappedview", 3, 0, 0, MappedViewCleaner, MappedViewGetter
+    "mappedtable", 3, 0, 0, MappedTableCleaner, MappedTableGetter
 };
 
-static Vector MappedViewCol (Vector map, int rows, const char **nextp, vq_Table meta) {
+static Vector MappedTableCol (Vector map, int rows, const char **nextp, vq_Table meta) {
     int r, c, cols, subcols;
     intptr_t colsize, colpos, *offsets;
     const char *next;
@@ -188,7 +188,7 @@ static Vector MappedViewCol (Vector map, int rows, const char **nextp, vq_Table 
     vData(result) = offsets;
     vOrig(result) = vq_retain(map);
     vMeta(result) = vq_retain(cols > 0 ? meta : EmptyMetaTable());    
-    /* TODO: could combine subview cache and offsets vector */
+    /* TODO: could combine subtable cache and offsets vector */
     return result;
 }
 
@@ -339,7 +339,7 @@ static vq_Table MapCols (Vector map, const char **nextp, vq_Table meta) {
                     break;
                 case VQ_table:
                     sub = Vq_getTable(meta, c, 2, 0);
-                    vec = MappedViewCol(map, r, nextp, sub); 
+                    vec = MappedTableCol(map, r, nextp, sub); 
                     break;
                 default:
                     assert(0);

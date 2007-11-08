@@ -329,10 +329,10 @@ vq_Table EmptyMetaTable (void) {
         Vq_setInt(mm, 0, 1, VQ_string);
         Vq_setInt(mm, 1, 1, VQ_int);
         Vq_setInt(mm, 2, 1, VQ_table);
-        meta = vq_new(mm, 0); /* circular, retained forever */
+        meta = vq_retain(vq_new(mm, 0)); /* retained forever */
         Vq_setTable(mm, 0, 2, meta);
         Vq_setTable(mm, 1, 2, meta);
-        Vq_setTable(mm, 2, 2, mm); /* circular */
+        Vq_setTable(mm, 2, 2, meta);
     }
     return meta;
 }
@@ -531,6 +531,7 @@ CmdDispatch f_commands[] = {
 #endif
 #if VQ_MOD_MKSAVE
     { "emit",       "B:T",      EmitCmd_T       },
+    { "meta2desc",  "O:T",      Meta2DescCmd_T  },
 #endif
 #if VQ_MOD_MUTABLE
     { "replace",    "V:SIIT",   ReplaceCmd_SIIT },

@@ -10,10 +10,14 @@ test 0 {load package} {
 } $version
 
 test 1 {} {
+    vq meta2desc ""
+} name:S,type:I,subt:T
+
+test 2 {} {
     vq load [vq emit 0]
 } 0
 
-test 1 {} {
+test 3 {} {
     vq load [vq emit [vq iota 5 N]]
 } {data {mdef N:I} 5 {0 1 2 3 4}}
 

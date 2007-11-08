@@ -19,7 +19,6 @@ static Tcl_Interp *context; /* TODO: not threadsafe */
 
 /* forward */
 extern Tcl_ObjType f_tableObjType;
-static Tcl_Obj *(ItemAsObj) (vq_Type type, vq_Item item);
 static Tcl_Obj *(TableAsList) (vq_Table table);
 static vq_Table (CmdAsTable) (Tcl_Obj *obj);
 EXTERN int (Vq_Init) (Tcl_Interp *interp);
@@ -214,7 +213,7 @@ static Tcl_Obj *MetaTableAsList (vq_Table meta) {
     if (meta != 0) {
         vq_Type type;
         int rowNum;
-        vq_Table subv;
+        vq_Table subt;
         Tcl_Obj *fieldobj;
         char buf[30];
 
@@ -225,13 +224,12 @@ static Tcl_Obj *MetaTableAsList (vq_Table meta) {
                 case VQ_string:
                     break;
                 case VQ_table:
-                    subv = Vq_getTable(meta, rowNum, 2, 0);
-                    if (subv != 0) {
-                        fieldobj = Tcl_NewListObj(1, &fieldobj);
-                        Tcl_ListObjAppendElement(0, fieldobj,
-                                                        MetaTableAsList(subv));
-                        break;
-                    }
+                    subt = Vq_getTable(meta, rowNum, 2, 0);
+                    assert(subt != 0);
+                    fieldobj = Tcl_NewListObj(1, &fieldobj);
+                    Tcl_ListObjAppendElement(0, fieldobj,
+                                                    MetaTableAsList(subt));
+                    break;
                 default:
                     Tcl_AppendToObj(fieldobj, ":", 1);
                     Tcl_AppendToObj(fieldobj, TypeAsString(type, buf), 1);
@@ -273,7 +271,7 @@ static Tcl_Obj *TableAsList (vq_Table table) {
 
     return result;
 }
-static Tcl_Obj *ItemAsObj (vq_Type type, vq_Item item) {
+Tcl_Obj *ItemAsObj (vq_Type type, vq_Item item) {
     switch (type) {
         case VQ_nil:    break;
         case VQ_int:    return Tcl_NewIntObj(item.o.a.i);

@@ -10,7 +10,7 @@ typedef struct Overflow {
     Overflow_p  next;
 } Overflow;
 
-void InitBuffer (Buffer_p bp) {
+void InitBuffer (Buffer *bp) {
     bp->fill.c = bp->buf;
     bp->limit = bp->buf + sizeof bp->buf;
     bp->head = 0;
@@ -19,7 +19,7 @@ void InitBuffer (Buffer_p bp) {
     bp->result = 0;
 }
 
-void ReleaseBuffer (Buffer_p bp, int keep) {
+void ReleaseBuffer (Buffer *bp, int keep) {
     while (bp->head != 0) {
         Overflow_p op = bp->head;
         bp->head = op->next;
@@ -29,7 +29,7 @@ void ReleaseBuffer (Buffer_p bp, int keep) {
         free(bp->result);
 }
 
-void AddToBuffer (Buffer_p bp, const void *data, intptr_t len) {
+void AddToBuffer (Buffer *bp, const void *data, intptr_t len) {
     intptr_t n;
     while (len > 0) {
         if (bp->fill.c >= bp->limit) {
@@ -57,7 +57,7 @@ void AddToBuffer (Buffer_p bp, const void *data, intptr_t len) {
     }
 }
 
-int NextBuffer (Buffer_p bp, char **firstp, int *countp) {
+int NextBuffer (Buffer *bp, char **firstp, int *countp) {
     int count;
     
     if (*firstp == NULL) {
@@ -92,7 +92,7 @@ int NextBuffer (Buffer_p bp, char **firstp, int *countp) {
     return *countp;
 }
 
-void *BufferAsPtr (Buffer_p bp, int fast) {
+void *BufferAsPtr (Buffer *bp, int fast) {
     intptr_t len;
     char *data, *ptr = NULL;
     int cnt;
@@ -110,7 +110,7 @@ void *BufferAsPtr (Buffer_p bp, int fast) {
     return bp->result;
 }
 
-Vector BufferAsIntVec (Buffer_p bp) {
+Vector BufferAsIntVec (Buffer *bp) {
     int cnt;
     char *data, *ptr = NULL;
     Vector vec = AllocDataVec(VQ_int, BufferFill(bp) / sizeof(int));

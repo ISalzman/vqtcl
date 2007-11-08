@@ -61,6 +61,7 @@ vq_Table (ObjAsMetaTable) (Object_p obj);
 vq_Table (ObjAsTable) (Object_p obj);
 int (ObjToItem) (vq_Type type, vq_Item *item);
 Object_p (MutableObject) (const char* s);
+Object_p (ItemAsObj) (vq_Type type, vq_Item item);
 
 /* memory management in core.c */
 
@@ -139,7 +140,7 @@ vq_Type (UnsetCmd_SII) (vq_Item a[]);
 
 /* buffer.c */
 
-typedef struct Buffer *Buffer_p;
+typedef struct Buffer Buffer;
 typedef struct Overflow *Overflow_p;
 
 struct Buffer {
@@ -173,15 +174,16 @@ struct Buffer {
 
 #define BufferFill(b) ((b)->saved + ((b)->fill.c - (b)->buf))
 
-void (InitBuffer) (Buffer_p bp);
-void (ReleaseBuffer) (Buffer_p bp, int keep);
-void (AddToBuffer) (Buffer_p bp, const void *data, intptr_t len);
-void* (BufferAsPtr) (Buffer_p bp, int fast);
-Vector (BufferAsIntVec) (Buffer_p bp);
-int (NextBuffer) (Buffer_p bp, char **firstp, int *countp);
+void (InitBuffer) (Buffer *bp);
+void (ReleaseBuffer) (Buffer *bp, int keep);
+void (AddToBuffer) (Buffer *bp, const void *data, intptr_t len);
+void* (BufferAsPtr) (Buffer *bp, int fast);
+Vector (BufferAsIntVec) (Buffer *bp);
+int (NextBuffer) (Buffer *bp, char **firstp, int *countp);
 
 /* mksave.c */
 
+vq_Type (Meta2DescCmd_T) (vq_Item a[]);
 vq_Type (EmitCmd_T) (vq_Item a[]);
 
 #endif
