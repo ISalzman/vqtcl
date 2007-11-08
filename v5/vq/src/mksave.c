@@ -40,7 +40,7 @@ static void MetaAsDesc (vq_Table meta, Buffer *buffer) {
         AddToBuffer(buffer, name, strlen(name));
         if (type == VQ_table && vCount(subt) > 0) {
             ADD_CHAR_TO_BUF(*buffer, '[');
-            /*MetaAsDesc(subt, buffer);*/
+            MetaAsDesc(subt, buffer);
             ADD_CHAR_TO_BUF(*buffer, ']');
         } else {
             ADD_CHAR_TO_BUF(*buffer, ':');
@@ -150,11 +150,46 @@ static int EmitFixCol (EmitInfo *eip, vq_Item column, vq_Type type) {
     return bufsize != 0;
 }
 
-static void EmitVarCol (EmitInfo *eip, vq_Item column, int istext) {
+static void EmitVarCol (EmitInfo *eip, vq_Item column, int istext, int rows) {
+    int r, bytes;
+    intptr_t buflen;
+    Buffer buffer;
+    Vector sizes = AllocDataVec(VQ_int, rows);
+    int *sizevec = (void*) sizes;
+
+    InitBuffer(&buffer);
+
+    if (istext)
+        for (r = 0; r < rows; ++r) {
+            vq_Item item = column;
+            GetItem(r, &item);
+            bytes = strlen(item.o.a.s);
+            if (bytes > 0)
+                AddToBuffer(&buffer, item.o.a.s, ++bytes);
+            sizevec[r] = bytes;
+        }
+    else
+        for (r = 0; r < rows; ++r) {
+            vq_Item item = column;
+            GetItem(r, &item);
+            AddToBuffer(&buffer, item.o.a.p, item.o.b.i);
+            sizevec[r] = item.o.b.i;
+        }
+
+    buflen = BufferFill(&buffer);
+    EmitPair(eip, EmitBuffer(eip, &buffer));    
+    if (buflen > 0) {
+        vq_Item item;
+        item.o.a.m = sizes;
+        vCount(sizes) = rows;
+        EmitFixCol(eip, item, 1);
+    }
+
+    EmitVarInt(eip, 0); /* no memos */
 }
     
-static void EmitSubCol (EmitInfo *eip, vq_Item column, int describe) {
-    int r, rows = vCount(column.o.a.m);
+static void EmitSubCol (EmitInfo *eip, vq_Item column, int describe, int rows) {
+    int r;
     Buffer newcolbuf;
     Buffer *origcolbuf;
     origcolbuf = eip->colbuf;
@@ -186,14 +221,14 @@ static void EmitCols (EmitInfo *eip, vq_Table table) {
                     EmitFixCol(eip, table[c], type); 
                     break;
                 case VQ_string:
-                    EmitVarCol(eip, table[c], 1);
+                    EmitVarCol(eip, table[c], 1, rows);
                     break;
                 case VQ_bytes:
-                    EmitVarCol(eip, table[c], 0);
+                    EmitVarCol(eip, table[c], 0, rows);
                     break;
                 case VQ_table:
                     subt = Vq_getTable(meta, c, 2, 0);
-                    EmitSubCol(eip, table[c], vCount(subt) == 0);
+                    EmitSubCol(eip, table[c], vCount(subt) == 0, rows);
                     break;
                 default: assert(0);
             }
