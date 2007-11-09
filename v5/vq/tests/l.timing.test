@@ -29,7 +29,7 @@ test 3 {set table entry} {
     set t [time { vq set @a 2 0 9 } 10000]
     puts [format "3 %10.3f uS" [lindex $t 0]]
     set a
-} {data N:I 5 {0 1 9 3 4}}
+} {data {mdef N:I} 5 {0 1 9 3 4}}
 
 test 4 {more ranges} -constraints slow -body {
     set a [vq iota 10000 N]
@@ -40,10 +40,10 @@ test 4 {more ranges} -constraints slow -body {
     puts [format "4 %10.3f uS" [lindex $t 0]]
     set a
 } -match glob -result \
-    {data N:I 40000 {0 1 2 * 9997 9998 -1 9999}\
-                    {0 3 4 7 * 39992 39995 39996 39998}}
+    {data {mdef N:I} 40000 {0 1 2 * 9997 9998 -1 9999}\
+                           {0 3 4 7 * 39992 39995 39996 39998}}
 
-test 5 {access to ranges} knownbug {
+test 5 {access to ranges} slow {
     set r {}
     foreach x {0 1 2 3 4 39995 39996 39997 39998 39999} {
         lappend r [vq at $a $x 0 -9]
