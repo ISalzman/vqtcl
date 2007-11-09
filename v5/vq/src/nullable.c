@@ -2,7 +2,7 @@
 
 #include "defs.h"
 
-#if VQ_MOD_NULLABLE
+#if VQ_MOD_NULLABLE || VQ_MOD_MUTABLE
 
 void *VecInsert (Vector *vecp, int off, int cnt) {
     Vector v = *vecp, v2;

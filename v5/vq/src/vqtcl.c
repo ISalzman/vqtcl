@@ -359,25 +359,6 @@ vq_Type LoadCmd_O (vq_Item a[]) {
 }
 #endif
 
-#if VQ_MOD_SAVE
-static void* EmitInitFun (void *obj, intptr_t length) {
-    return Tcl_SetByteArrayLength(obj, length);
-}
-static void* EmitDataFun (void *data, const void *ptr, intptr_t len) {
-    memcpy(data, ptr, len);
-    return (char*) data + len;
-}
-vq_Type EmitCmd_T (vq_Item a[]) {
-    Object_p result = Tcl_NewByteArrayObj(NULL, 0);   
-    if (TableSave(a[0].o.a.m, result, EmitInitFun, EmitDataFun) < 0) {
-        ObjDecRef(result);
-        return VQ_nil;
-    }
-    a->o.a.p = result;
-    return VQ_object;
-}
-#endif
-
 #if VQ_MOD_MUTABLE
 static void InvalidateNonTableReps (Tcl_Obj *obj) {
     assert(obj->typePtr == &f_tableObjType);
@@ -457,6 +438,25 @@ vq_Type RdeleteCmd_OII (vq_Item a[]) {
         return VQ_nil;
     RangeDelete(&item.o.a.m, offset, count);
     a->o.a.p = ColumnAsList(item, vCount(item.o.a.m), -1);
+    return VQ_object;
+}
+#endif
+
+#if VQ_MOD_SAVE
+static void* EmitInitFun (void *obj, intptr_t length) {
+    return Tcl_SetByteArrayLength(obj, length);
+}
+static void* EmitDataFun (void *data, const void *ptr, intptr_t len) {
+    memcpy(data, ptr, len);
+    return (char*) data + len;
+}
+vq_Type EmitCmd_T (vq_Item a[]) {
+    Object_p result = Tcl_NewByteArrayObj(NULL, 0);   
+    if (TableSave(a[0].o.a.m, result, EmitInitFun, EmitDataFun) < 0) {
+        ObjDecRef(result);
+        return VQ_nil;
+    }
+    a->o.a.p = result;
     return VQ_object;
 }
 #endif

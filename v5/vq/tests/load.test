@@ -1,7 +1,7 @@
 #!/usr/bin/env tclkit
 # %renumber<^\s*test >%
 
-# mksave module tests
+# load module tests
 
 source [file join [file dir [info script]] initests.tcl]
 
@@ -10,27 +10,27 @@ test 0 {load package} {
 } $version
 
 test 1 {} {
-    vq meta2desc 3
-} {}
+    vq desc2meta {A:S,B:I,C:F}
+} {mdef {A B:I C:F}}
 
 test 2 {} {
-    vq meta2desc ""
-} name:S,type:I,subt:T
+    vq desc2meta {A:S,B[C:I,D:F],E:T,F:L}
+} {mdef {A {B {C:I D:F}} E:T F:L}}
 
 test 3 {} {
-    vq load [vq emit 7]
-} 7
+    vq meta [vq open ../data/simple.db]
+} {mdef {{v abc:I}}}
 
 test 4 {} {
-    vq load [vq emit ""]
-} {data {mdef {name type:I subt:T}} 0}
+    vq open ../data/simple.db
+} {data {mdef {{v abc:I}}} 1 {{data {mdef abc:I} 5 {1 22 333 4444 55555}}}}
 
 test 5 {} {
-    vq load [vq emit [vq iota 5 N]]
-} {data {mdef N:I} 5 {0 1 2 3 4}}
+    vq meta [vq open ../data/alltypes.db]
+} {mdef {{v {i0:I i1:I i2:I i4:I i8:I i16:I i32:I l:L f:F d:D s b:B}}}}
 
 test 6 {} {
-    vq load [vq emit [vq open ../data/alltypes.db]]
+    vq open ../data/alltypes.db
 } {data {mdef {{v {i0:I i1:I i2:I i4:I i8:I i16:I i32:I l:L f:F d:D s b:B}}}} 1\
     {{data {mdef {i0:I i1:I i2:I i4:I i8:I i16:I i32:I l:L f:F d:D s b:B}} 5\
         {0 0 0 0 0}\
@@ -45,5 +45,9 @@ test 6 {} {
         {11.1 2222.1 333333.1 44444444.1 5555555555.1}\
         {s1 s22 s333 s4444 s55555}\
         {b11 b2222 b333333 b44444444 b5555555555}}}}
+
+test 7 {} {
+    vq load [readfile ../data/simple.db -binary]
+} {data {mdef {{v abc:I}}} 1 {{data {mdef abc:I} 5 {1 22 333 4444 55555}}}}
 
 ::tcltest::cleanupTests

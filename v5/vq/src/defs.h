@@ -142,7 +142,7 @@ const char* (AdjustMappedFile) (Vector map, int offset);
 Dispatch* (PickIntGetter) (int bits);
 Dispatch* (FixedGetter) (int bytes, int rows, int real, int flip);
 
-/* mkload.c */
+/* load.c */
 
 vq_Table (DescToMeta) (const char *desc, int length);
 vq_Table (MapToTable) (Vector map);
@@ -212,7 +212,7 @@ void* (BufferAsPtr) (Buffer *bp, int fast);
 Vector (BufferAsIntVec) (Buffer *bp);
 int (NextBuffer) (Buffer *bp, char **firstp, int *countp);
 
-/* mksave.c */
+/* save.c */
 
 typedef void *(*SaveInitFun)(void*,intptr_t);
 typedef void *(*SaveDataFun)(void*,const void*,intptr_t);

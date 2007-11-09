@@ -19,8 +19,8 @@ CFLAGS += -DDEBUG -g -O0
 TARGET = libvq5$(dll)
 
 HDR = ../src/vqtcl.c ../src/vqc.h ../src/defs.h
-SRC =  ../src/core.c ../src/reader.c ../src/mkload.c ../src/nullable.c \
- 	../src/mutable.c ../src/buffer.c ../src/mksave.c ../src/vqtcl.c
+SRC =  ../src/core.c ../src/reader.c ../src/load.c ../src/nullable.c \
+ 	../src/mutable.c ../src/buffer.c ../src/save.c ../src/vqtcl.c
 		
 all: $(TARGET)
 
