@@ -119,11 +119,11 @@ static intptr_t GetVarPair (const char **nextp) {
 #pragma mark - MAPPED TABLE COLUMNS -
 
 static void MappedTableCleaner (Vector v) {
-    const vq_Table *subs = (void*) v;
+    const intptr_t *offsets = (void*) v;
     int i, count = vCount(v);
     for (i = 0; i < count; ++i)
-        vq_release(subs[i]);
-    vq_release(vExtra(v));
+        if ((offsets[i] & 1) == 0)
+            vq_release((void*) offsets[i]);
     vq_release(vMeta(v));
     vq_release(vOrig(v));
     FreeVector(v);
@@ -131,14 +131,16 @@ static void MappedTableCleaner (Vector v) {
 
 static vq_Type MappedTableGetter (int row, vq_Item *item) {
     Vector v = item->o.a.m;
-    vq_Table *subs = (void*) v;
+    intptr_t *offsets = (void*) v;
     
-    if (subs[row] == NULL) {
-        const intptr_t *offsets = (void*) vExtra(v);
-        subs[row] = vq_retain(MapSubtable(vOrig(v), offsets[row], vMeta(v)));
+    /* odd means it's a file offset, else it's a cached table pointer */
+    if (offsets[row] & 1) {
+        intptr_t o = (uintptr_t) offsets[row] >> 1;
+        offsets[row] = (intptr_t) vq_retain(MapSubtable(vOrig(v), o, vMeta(v)));
+        assert((offsets[row] & 1) == 0);
     }
     
-    item->o.a.m = subs[row];
+    item->o.a.m = (void*) offsets[row];
     return VQ_table;
 }
 
@@ -150,10 +152,10 @@ static Vector MappedTableCol (Vector map, int rows, const char **nextp, vq_Table
     int r, c, cols, subcols;
     intptr_t colsize, colpos, *offsets;
     const char *next;
-    Vector offvec, result;
+    Vector result;
     
-    offvec = AllocDataVec(VQ_int, rows);
-    offsets = (void*) offvec;
+    result = AllocVector(&mvtab, rows * sizeof(vq_Table*));
+    offsets = (void*) result;
     
     cols = vCount(meta);
     
@@ -162,7 +164,7 @@ static Vector MappedTableCol (Vector map, int rows, const char **nextp, vq_Table
     next = MF_Data(map) + colpos;
     
     for (r = 0; r < rows; ++r) {
-        offsets[r] = next - MF_Data(map);
+        offsets[r] = 2 * (next - MF_Data(map)) | 1; /* see MappedTableGetter */
         GetVarInt(&next);
         if (cols == 0) {
             intptr_t desclen = GetVarInt(&next);
@@ -181,12 +183,9 @@ static Vector MappedTableCol (Vector map, int rows, const char **nextp, vq_Table
         }
     }
     
-    result = AllocVector(&mvtab, rows * sizeof(vq_Table*));
     vCount(result) = rows;
-    vExtra(result) = vq_retain(offvec);
     vOrig(result) = vq_retain(map);
     vMeta(result) = vq_retain(cols > 0 ? meta : EmptyMetaTable());    
-    /* TODO: could combine subtable cache and offsets vector */
     return result;
 }
 
