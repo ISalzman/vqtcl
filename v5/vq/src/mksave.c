@@ -2,7 +2,7 @@
 
 #include "defs.h"
 
-#if VQ_MOD_MKSAVE
+#if VQ_MOD_SAVE
 
 typedef struct EmitItem {
     intptr_t size;

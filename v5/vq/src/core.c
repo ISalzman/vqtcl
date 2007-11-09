@@ -486,6 +486,23 @@ static vq_Type AtCmd_TIIO (vq_Item a[]) {
     *a = a[3];
     return VQ_object;
 }
+static vq_Type ConfigCmd_ (vq_Item a[]) {
+    a->o.a.s = VQ_VERSION
+#if VQ_MOD_LOAD
+            " load"
+#endif
+#if VQ_MOD_MUTABLE
+            " mutable"
+#endif
+#if VQ_MOD_NULLABLE
+            " nullable"
+#endif
+#if VQ_MOD_SAVE
+            " save"
+#endif
+        ;
+    return VQ_string;
+}
 static vq_Type EmptyCmd_TII (vq_Item a[]) {
     a->o.a.i = vq_empty(a[0].o.a.m, a[1].o.a.i, a[2].o.a.i);
     return VQ_int;
@@ -506,29 +523,21 @@ static vq_Type SizeCmd_T (vq_Item a[]) {
     a->o.a.m = vq_new(0, vq_size(a[0].o.a.m));
     return VQ_table;
 }
-static vq_Type VersionCmd_ (vq_Item a[]) {
-    a->o.a.s = VQ_VERSION;
-    return VQ_string;
-}
 
 #pragma mark - OPERATOR DISPATCH -
 
 CmdDispatch f_commands[] = {
     { "at",         "O:TIIO",   AtCmd_TIIO      },
+    { "config",     "S:",       ConfigCmd_      },
     { "empty",      "I:TII",    EmptyCmd_TII    },
     { "iota",       "I:TS",     IotaCmd_TS      },
     { "meta",       "T:T",      MetaCmd_T       },
     { "new",        "T:T",      NewCmd_T        },
     { "size",       "T:T",      SizeCmd_T       },
-    { "version",    "S:",       VersionCmd_     },
-#if VQ_MOD_MKLOAD
+#if VQ_MOD_LOAD
     { "desc2meta",  "T:S",      Desc2MetaCmd_S  },
     { "load",       "T:O",      LoadCmd_O       },
     { "open",       "T:S",      OpenCmd_S       },
-#endif
-#if VQ_MOD_MKSAVE
-    { "emit",       "B:T",      EmitCmd_T       },
-    { "meta2desc",  "O:T",      Meta2DescCmd_T  },
 #endif
 #if VQ_MOD_MUTABLE
     { "replace",    "V:SIIT",   ReplaceCmd_SIIT },
@@ -540,6 +549,10 @@ CmdDispatch f_commands[] = {
     { "rlocate",    "O:OI",     RlocateCmd_OI   },
     { "rinsert",    "O:OIII",   RinsertCmd_OIII },
     { "rdelete",    "O:OII",    RdeleteCmd_OII  },
+#endif
+#if VQ_MOD_SAVE
+    { "emit",       "B:T",      EmitCmd_T       },
+    { "meta2desc",  "O:T",      Meta2DescCmd_T  },
 #endif
     { 0, 0, 0 }
 };  

@@ -3,18 +3,20 @@
 #ifndef VQ_DEFS_H
 #define VQ_DEFS_H
 
+#include "vqc.h"
+
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+
 /* modules included */
 
 #ifndef VQ_MOD_ALL
 #define VQ_MOD_ALL 1
 #endif
 
-#ifndef VQ_MOD_MKLOAD
-#define VQ_MOD_MKLOAD VQ_MOD_ALL
-#endif
-
-#ifndef VQ_MOD_MKSAVE
-#define VQ_MOD_MKSAVE VQ_MOD_ALL
+#ifndef VQ_MOD_LOAD
+#define VQ_MOD_LOAD VQ_MOD_ALL
 #endif
 
 #ifndef VQ_MOD_MUTABLE
@@ -25,16 +27,28 @@
 #define VQ_MOD_NULLABLE VQ_MOD_ALL
 #endif
 
-#include "vqc.h"
+#ifndef VQ_MOD_SAVE
+#define VQ_MOD_SAVE VQ_MOD_ALL
+#endif
 
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+/* portability */
+
+#if defined(__sparc__) || defined(__sgi__)
+#define VQ_MUSTALIGN 1
+#endif
+
+#if defined(_BIG_ENDIAN) || defined(WORDS_BIGENDIAN)
+#define VQ_BIGENDIAN 1
+#endif
+
+/* definitions for use with vq_Type */
 
 #define VQ_NULLABLE (1 << 4)
 #define VQ_TYPEMASK (VQ_NULLABLE - 1)
 
-typedef vq_Table Vector; /* every vq_Table is a Vector, but not vice-versa */
+/* every vq_Table is a Vector, but not vice-versa */
+
+typedef vq_Table Vector;
 
 /* table prefix fields and type dispatch */
 

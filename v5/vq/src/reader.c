@@ -2,6 +2,8 @@
 
 #include "defs.h"
 
+#if VQ_MOD_LOAD
+
 #ifdef VQ_WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -256,3 +258,5 @@ Dispatch* FixedGetter (int bytes, int rows, int real, int flip) {
     }
     return PickIntGetter(bits);
 }
+
+#endif

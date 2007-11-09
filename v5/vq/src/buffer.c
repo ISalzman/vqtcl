@@ -2,6 +2,8 @@
 
 #include "defs.h"
 
+#if VQ_MOD_SAVE
+
 typedef struct Overflow {
     char                b[4096];    /* must be first member */
     Overflow_p  next;
@@ -116,3 +118,5 @@ Vector BufferAsIntVec (Buffer *bp) {
         memcpy(data, ptr, cnt);
     return vec;
 }
+
+#endif

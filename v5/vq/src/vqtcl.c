@@ -346,7 +346,7 @@ static vq_Table CmdAsTable (Tcl_Obj *obj) {
 
 #pragma mark - OPTIONAL COMMANDS -
 
-#if VQ_MOD_MKLOAD
+#if VQ_MOD_LOAD
 vq_Type LoadCmd_O (vq_Item a[]) {
     Vector map;
     Tcl_Obj *obj = a[0].o.a.p;
@@ -359,7 +359,7 @@ vq_Type LoadCmd_O (vq_Item a[]) {
 }
 #endif
 
-#if VQ_MOD_MKSAVE
+#if VQ_MOD_SAVE
 static void* EmitInitFun (void *obj, intptr_t length) {
     return Tcl_SetByteArrayLength(obj, length);
 }
