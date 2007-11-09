@@ -54,8 +54,8 @@ typedef vq_Table Vector;
 
 #define vType(vecptr)   ((vecptr)[-1].o.a.h)
 #define vRefs(vecptr)   ((vecptr)[-1].o.b.i)
-#define vMeta(vecptr)   ((vecptr)[-2].o.a.m)
-#define vLimit(vecptr)  ((vecptr)[-2].o.a.i)
+#define vMeta(vecptr)   ((vecptr)[-2].o.a.m)    /* same slot as vLimit */
+#define vLimit(vecptr)  ((vecptr)[-2].o.a.i)    /* same slot as vMeta */
 #define vCount(vecptr)  ((vecptr)[-2].o.b.i)
 #define vOrig(vecptr)   ((vecptr)[-3].o.a.m)
 #define vData(vecptr)   ((vecptr)[-3].o.b.p)

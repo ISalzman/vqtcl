@@ -289,6 +289,7 @@ static void TableCleaner (Vector v) {
     vq_release(vMeta(v));
     FreeVector(v);
 }
+/* TODO: support row replaces (and insert/delete) on standard tables */
 static Dispatch vtab = { "table", 2, sizeof(vq_Item), 0, TableCleaner };
 
 vq_Table vq_new (vq_Table meta, int rows) {
@@ -373,8 +374,9 @@ vq_Table IotaTable (int rows, const char *name) {
 
 vq_Type GetItem (int row, vq_Item *item) {
     Vector v = item->o.a.m;
-    if (v == 0 || vType(v)->getter == 0)
+    if (v == 0)
         return VQ_nil;
+    assert(vType(v)->getter != 0);
     return vType(v)->getter(row, item);
 }
 
@@ -401,10 +403,12 @@ vq_Item vq_get (vq_Table t, int row, int column, vq_Type type, vq_Item def) {
     return GetItem(row, &item) != VQ_nil ? item : def;
 }
 void vq_set (vq_Table t, int row, int col, vq_Type type, vq_Item val) {
+    /* use tablel setter if defined, else column setter */
     if (vType(t)->setter == 0) {
         t = t[col].o.a.m;
         assert(t != 0 && vType(t)->setter != 0);
     }
+    /* TODO: copy-on-write of columns if refcount > 1 */
     vType(t)->setter(t, row, col, type != VQ_nil ? &val : 0);
 }
 void vq_replace (vq_Table t, int start, int count, vq_Table data) {
