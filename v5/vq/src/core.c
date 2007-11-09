@@ -373,7 +373,8 @@ vq_Table IotaTable (int rows, const char *name) {
 
 vq_Type GetItem (int row, vq_Item *item) {
     Vector v = item->o.a.m;
-    assert(v != 0 && vType(v)->getter != 0);
+    if (v == 0 || vType(v)->getter == 0)
+        return VQ_nil;
     return vType(v)->getter(row, item);
 }
 
@@ -400,9 +401,11 @@ vq_Item vq_get (vq_Table t, int row, int column, vq_Type type, vq_Item def) {
     return GetItem(row, &item) != VQ_nil ? item : def;
 }
 void vq_set (vq_Table t, int row, int col, vq_Type type, vq_Item val) {
-    Vector v = t[col].o.a.m;
-    assert(v != 0 && vType(v)->setter != 0);
-    vType(v)->setter(v, row, col, type != VQ_nil ? &val : 0);
+    if (vType(t)->setter == 0) {
+        t = t[col].o.a.m;
+        assert(t != 0 && vType(t)->setter != 0);
+    }
+    vType(t)->setter(t, row, col, type != VQ_nil ? &val : 0);
 }
 void vq_replace (vq_Table t, int start, int count, vq_Table data) {
     assert(start >= 0 && count >= 0 && start + count <= vCount(t));

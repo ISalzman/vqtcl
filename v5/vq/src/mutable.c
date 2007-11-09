@@ -58,6 +58,12 @@ static void InitMutVec (Vector v, int col) {
         vecp[1] = vq_retain(AllocDataVec(VQ_int, 2));
         vecp[2] = vq_retain(AllocDataVec(type, 2));
     }
+    /* sneaky: make sure getter always goes through mutvec from now on */
+    if (v[col].o.a.m != v) {
+        vq_release(v[col].o.a.m);
+        v[col].o.a.m = v;
+        v[col].o.b.i = col;
+    }
 }
 static void MutVecSetter (Vector v, int row, int col, const vq_Item *item) {
     int fill, miss;
@@ -150,9 +156,15 @@ int IsMutable (vq_Table t) {
 }
 vq_Table WrapMutable (vq_Table t) {
     vq_Table meta = vMeta(t);
+    int i, cols = vCount(meta);
     vq_Table w = IndirectTable(meta, &muvtab, vCount(t),
                                 3 * vCount(meta) * sizeof(Vector));
     vOrig(w) = vq_retain(t);
+    /* override to use original columns until a set or replace is done */
+    for (i = 0; i < cols; ++i) {
+        w[i] = t[i];
+        vq_retain(w[i].o.a.m);
+    }
     return w;
 }
 
