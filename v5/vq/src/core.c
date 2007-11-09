@@ -336,9 +336,14 @@ vq_Table EmptyMetaTable (void) {
 
 #pragma mark - IOTA VIRTUAL TABLE -
 
+void IndirectCleaner (Vector v) {
+    vq_release(vMeta(v));
+    FreeVector(v);
+}
 vq_Table IndirectTable (vq_Table meta, Dispatch *vtabp, int rows, int extra) {
     int i, cols = vCount(meta);
     vq_Table t = vq_hold(AllocVector(vtabp, cols * sizeof *t + extra));
+    assert(vtabp->prefix >= 3);
     vMeta(t) = vq_retain(meta);
     vData(t) = t + cols;
     vCount(t) = rows;
@@ -349,12 +354,12 @@ vq_Table IndirectTable (vq_Table meta, Dispatch *vtabp, int rows, int extra) {
     return t;
 }
 
-static vq_Type IotaVecGetter (int row, vq_Item *item) {
+static vq_Type IotaGetter (int row, vq_Item *item) {
     item->o.a.i = row;
     return VQ_int;
 }
 static Dispatch iotatab = {
-    "iota", 3, 0, 0, FreeVector, IotaVecGetter
+    "iota", 3, 0, 0, IndirectCleaner, IotaGetter
 };
 vq_Table IotaTable (int rows, const char *name) {
     vq_Table meta = vq_new(vq_meta(0), 1);

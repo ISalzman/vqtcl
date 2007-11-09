@@ -13,7 +13,10 @@ singleProcess true ;# run without forking
 
 testsDirectory [file dirname [info script]]
 
-cd [testsDirectory]/../build
+if {![file exists pkgIndex.tcl]} {
+    cd [testsDirectory]/../build
+}
+
 temporaryDirectory [pwd]
 workingDirectory [pwd]
 

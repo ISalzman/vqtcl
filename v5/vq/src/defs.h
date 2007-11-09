@@ -37,7 +37,7 @@
 #define VQ_MUSTALIGN 1
 #endif
 
-#if defined(_BIG_ENDIAN) || defined(WORDS_BIGENDIAN)
+#if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
 #define VQ_BIGENDIAN 1
 #endif
 
@@ -57,7 +57,6 @@ typedef vq_Table Vector;
 #define vMeta(vecptr)   ((vecptr)[-2].o.a.m)
 #define vLimit(vecptr)  ((vecptr)[-2].o.a.i)
 #define vCount(vecptr)  ((vecptr)[-2].o.b.i)
-#define vExtra(vecptr)  ((vecptr)[-2].o.b.m)
 #define vOrig(vecptr)   ((vecptr)[-3].o.a.m)
 #define vData(vecptr)   ((vecptr)[-3].o.b.p)
 #define vInsv(vecptr)   ((vecptr)[-4].o.a.m)
@@ -110,6 +109,7 @@ Vector (AllocDataVec) (vq_Type type, int rows);
 /* table creation in core.c */
 
 vq_Table (EmptyMetaTable) (void);
+void (IndirectCleaner) (Vector v);
 vq_Table (IndirectTable) (vq_Table meta, Dispatch *vtab, int rows, int extra);
 vq_Table (IotaTable) (int rows, const char *name);
 

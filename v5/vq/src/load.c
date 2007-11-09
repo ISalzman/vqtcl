@@ -94,7 +94,7 @@ vq_Table DescToMeta (const char *desc, int length) {
 #define MF_Length(x) ((intptr_t) (x)->o.b.p)
 
 static int IsReversedEndian (Vector map) {
-#ifdef VQ_BIG_ENDIAN
+#ifdef VQ_BIGENDIAN
     return *MF_Data(map) == 'J';
 #else
     return *MF_Data(map) == 'L';
@@ -221,10 +221,8 @@ static vq_Type MappedStringGetter (int row, vq_Item *item) {
         item->o.a.s = data + offsets[row];
     else {
         const char *next = data - offsets[row];
-        if (GetVarInt(&next) > 0)
-            item->o.a.s = data + GetVarInt(&next);
-        else
-            item->o.a.s = "";
+        GetVarInt(&next);
+        item->o.a.s = data + GetVarInt(&next);
     }
 
     return VQ_string;
@@ -234,20 +232,23 @@ static Dispatch mstab = {
     "mappedstring", 3, 0, 0, MappedStringCleaner, MappedStringGetter
 };
 
-static vq_Type MappedBytesGetter (int row, vq_Item *itemp) {
-    Vector v = itemp->o.a.m;
+static vq_Type MappedBytesGetter (int row, vq_Item *item) {
+    Vector v = item->o.a.m;
     const intptr_t *offsets = (void*) v;
     const char *data = MF_Data(vOrig(v));
-    itemp->o.a.m = vMeta(v);
-    GetItem(row, itemp);
-    itemp->o.b.i = itemp->o.a.i;
     
-    if (offsets[row] >= 0)
-        itemp->o.a.p = (char*) data + offsets[row];
-    else {
+    if (offsets[row] == 0) {
+        item->o.b.i = 0;
+        item->o.a.p = 0;
+    } else if (offsets[row] > 0) {
+        item->o.a.m = vMeta(v); /* reuse item to access sizes */
+        GetItem(row, item);
+        item->o.b.i = item->o.a.i;
+        item->o.a.p = (char*) data + offsets[row];
+    } else {
         const char *next = data - offsets[row];
-        itemp->o.b.i = GetVarInt(&next);
-        itemp->o.a.p = (char*) data + GetVarInt(&next);
+        item->o.b.i = GetVarInt(&next);
+        item->o.a.p = (char*) data + GetVarInt(&next);
     }
 
     return VQ_bytes;
@@ -290,7 +291,8 @@ static Vector MappedStringCol (Vector map, int rows, const char **nextp, int ist
     /* negated offsets point to the size/pos pair in the map */
     for (r = 0; next < limit; ++r) {
         r += (int) GetVarInt(&next);
-        offsets[r] = MF_Data(map) - next; /* always < 0 */
+        offsets[r] = MF_Data(map) - next;
+        assert(offsets[r] < 0);
         GetVarPair(&next);
     }
 
