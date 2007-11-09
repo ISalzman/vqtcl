@@ -313,7 +313,7 @@ vq_Table EmptyMetaTable (void) {
     static vq_Table meta = 0;
     if (meta == 0) {
         vq_Table mm = AllocVector(&vtab, 3 * sizeof *mm);
-        vMeta(mm) = vq_retain(mm); /* circular */
+        vMeta(mm) = mm; /* circular */
         vCount(mm) = 3;
         mm[0].o.a.m = vq_retain(AllocDataVec(VQ_string, 3));
         mm[1].o.a.m = vq_retain(AllocDataVec(VQ_int, 3));
@@ -327,7 +327,7 @@ vq_Table EmptyMetaTable (void) {
         Vq_setInt(mm, 0, 1, VQ_string);
         Vq_setInt(mm, 1, 1, VQ_int);
         Vq_setInt(mm, 2, 1, VQ_table);
-        meta = vq_retain(vq_new(mm, 0)); /* retained forever */
+        meta = vq_new(mm, 0); /* retained forever */
         Vq_setTable(mm, 0, 2, meta);
         Vq_setTable(mm, 1, 2, meta);
         Vq_setTable(mm, 2, 2, meta);
