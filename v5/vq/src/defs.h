@@ -198,7 +198,7 @@ struct Buffer {
             if ((b).fill.c < (b).limit) *(b).fill.i++ = _i; \
               else AddToBuffer(&(b), &_i, sizeof _i); }
 
-#define ADD_PTR_TO_BUF(b,x) \
+    #define ADD_PTR_TO_BUF(b,x) \
           { const void *_p = (x); \
             if ((b).fill.c < (b).limit) *(b).fill.p++ = _p; \
               else AddToBuffer(&(b), &_p, sizeof _p); }

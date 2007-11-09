@@ -116,7 +116,7 @@ static intptr_t GetVarPair (const char **nextp) {
     return n;
 }
 
-#pragma mark - METAKIT DATA READER -
+#pragma mark - MAPPED TABLE COLUMNS -
 
 static void MappedTableCleaner (Vector v) {
     const vq_Table *subs = (void*) v;
@@ -134,7 +134,7 @@ static vq_Type MappedTableGetter (int row, vq_Item *item) {
     vq_Table *subs = (void*) v;
     
     if (subs[row] == NULL) {
-        const intptr_t *offsets = vData(v);
+        const intptr_t *offsets = (void*) vExtra(v);
         subs[row] = vq_retain(MapSubtable(vOrig(v), offsets[row], vMeta(v)));
     }
     
@@ -184,12 +184,13 @@ static Vector MappedTableCol (Vector map, int rows, const char **nextp, vq_Table
     result = AllocVector(&mvtab, rows * sizeof(vq_Table*));
     vCount(result) = rows;
     vExtra(result) = vq_retain(offvec);
-    vData(result) = offsets;
     vOrig(result) = vq_retain(map);
     vMeta(result) = vq_retain(cols > 0 ? meta : EmptyMetaTable());    
     /* TODO: could combine subtable cache and offsets vector */
     return result;
 }
+
+#pragma mark - MAPPED FIXED-SIZE ENTRY COLUMNS -
 
 static Vector MappedFixedCol (Vector map, int rows, const char **nextp, int real) {
     intptr_t bytes = GetVarInt(nextp);
@@ -202,8 +203,9 @@ static Vector MappedFixedCol (Vector map, int rows, const char **nextp, int real
     return result;
 }
 
+#pragma mark - MAPPED STRING COLUMNS -
+
 static void MappedStringCleaner (Vector v) {
-    vq_release(vExtra(v));
     vq_release(vMeta(v));
     vq_release(vOrig(v));
     FreeVector(v);
@@ -211,7 +213,7 @@ static void MappedStringCleaner (Vector v) {
 
 static vq_Type MappedStringGetter (int row, vq_Item *item) {
     Vector v = item->o.a.m;
-    const intptr_t *offsets = vData(v);
+    const intptr_t *offsets = (void*) v;
     const char *data = MF_Data(vOrig(v));
 
     if (offsets[row] == 0)
@@ -235,7 +237,7 @@ static Dispatch mstab = {
 
 static vq_Type MappedBytesGetter (int row, vq_Item *itemp) {
     Vector v = itemp->o.a.m;
-    const intptr_t *offsets = vData(v);
+    const intptr_t *offsets = (void*) v;
     const char *data = MF_Data(vOrig(v));
     itemp->o.a.m = vMeta(v);
     GetItem(row, itemp);
@@ -260,11 +262,11 @@ static Vector MappedStringCol (Vector map, int rows, const char **nextp, int ist
     int r;
     intptr_t colsize, colpos, *offsets;
     const char *next, *limit;
-    Vector offvec, result, sizes;
+    Vector result, sizes;
     vq_Item item;
 
-    offvec = AllocDataVec(sizeof(void*) == 4 ? VQ_int : VQ_long, rows);
-    offsets = (void*) offvec;
+    result = AllocVector(istext ? &mstab : &mbtab, rows * sizeof(void*));
+    offsets = (void*) result;
 
     colsize = GetVarInt(nextp);
     colpos = colsize > 0 ? GetVarInt(nextp) : 0;
@@ -293,10 +295,7 @@ static Vector MappedStringCol (Vector map, int rows, const char **nextp, int ist
         GetVarPair(&next);
     }
 
-    result = AllocVector(istext ? &mstab : &mbtab, 0);
     vCount(result) = rows;
-    vExtra(result) = vq_retain(offvec);
-    vData(result) = offsets;
     vOrig(result) = vq_retain(map);
     if (istext)
         vq_release(sizes);
@@ -305,6 +304,8 @@ static Vector MappedStringCol (Vector map, int rows, const char **nextp, int ist
 
     return result;
 }
+
+#pragma mark - TREE TRAVERSAL -
 
 static vq_Table MapCols (Vector map, const char **nextp, vq_Table meta) {
     int c, cols, r, rows;
