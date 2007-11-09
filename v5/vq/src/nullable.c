@@ -4,8 +4,6 @@
 
 #if VQ_MOD_NULLABLE
 
-#include <string.h>
-
 void *VecInsert (Vector *vecp, int off, int cnt) {
     Vector v = *vecp, v2;
     int unit = vType(v)->unit, limit = vLimit(v);

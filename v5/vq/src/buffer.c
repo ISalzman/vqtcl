@@ -2,9 +2,6 @@
 
 #include "defs.h"
 
-#include <stdlib.h>
-#include <string.h>
-
 typedef struct Overflow {
     char                b[4096];    /* must be first member */
     Overflow_p  next;

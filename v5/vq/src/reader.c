@@ -2,8 +2,6 @@
 
 #include "defs.h"
 
-#include <stdlib.h>
-
 #ifdef VQ_WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -111,7 +109,6 @@ static vq_Type Rgetter_i8 (int row, vq_Item *item) {
 }
 
 #ifdef VQ_MUSTALIGN
-
 static vq_Type Rgetter_i16 (int row, vq_Item *item) {
     const uint8_t *ptr = (const uint8_t*) vData(item->o.a.m) + row * 2;
 #ifdef VQ_BIGENDIAN
@@ -143,9 +140,7 @@ static vq_Type Rgetter_f64 (int row, vq_Item *item) {
     Rgetter_i64(row, item);
     return VQ_double;
 }
-
 #else
-
 static vq_Type Rgetter_i16 (int row, vq_Item *item) {
     const char *ptr = vData(item->o.a.m);
     item->o.a.i = ((short*) ptr)[row];
@@ -171,7 +166,6 @@ static vq_Type Rgetter_f64 (int row, vq_Item *item) {
     item->d = ((const double*) ptr)[row];
     return VQ_double;
 }
-
 #endif
 
 static vq_Type Rgetter_i16r (int row, vq_Item *item) {

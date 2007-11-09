@@ -2,9 +2,6 @@
 
 #include "defs.h"
 
-#include <stdlib.h>
-#include <string.h>
-
 #define POOL_CHUNK 64
 
 /* TODO: make globals thread-safe */

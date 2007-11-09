@@ -5,14 +5,31 @@
 
 /* modules included */
 
-#define VQ_MOD_MKLOAD 1
-#define VQ_MOD_MKSAVE 1
-#define VQ_MOD_MUTABLE 1
-#define VQ_MOD_NULLABLE 1
+#ifndef VQ_MOD_ALL
+#define VQ_MOD_ALL 1
+#endif
+
+#ifndef VQ_MOD_MKLOAD
+#define VQ_MOD_MKLOAD VQ_MOD_ALL
+#endif
+
+#ifndef VQ_MOD_MKSAVE
+#define VQ_MOD_MKSAVE VQ_MOD_ALL
+#endif
+
+#ifndef VQ_MOD_MUTABLE
+#define VQ_MOD_MUTABLE VQ_MOD_ALL
+#endif
+
+#ifndef VQ_MOD_NULLABLE
+#define VQ_MOD_NULLABLE VQ_MOD_ALL
+#endif
 
 #include "vqc.h"
 
 #include <assert.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define VQ_NULLABLE (1 << 4)
 #define VQ_TYPEMASK (VQ_NULLABLE - 1)

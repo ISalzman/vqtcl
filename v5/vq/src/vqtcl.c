@@ -12,9 +12,6 @@
 
 #include "defs.h"
 
-#include <stdlib.h>
-#include <string.h>
-
 static Tcl_Interp *context; /* TODO: not threadsafe */
 
 /* forward */

@@ -4,9 +4,6 @@
 
 #if VQ_MOD_MKLOAD
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
 /* forward */
 static vq_Table MapSubtable (Vector map, intptr_t offset, vq_Table meta);
 

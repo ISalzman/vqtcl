@@ -4,9 +4,6 @@
 
 #if VQ_MOD_MKSAVE
 
-#include <stdlib.h>
-#include <string.h>
-
 typedef struct EmitItem {
     intptr_t size;
     const void *data;
