@@ -240,7 +240,7 @@ static Tcl_Obj* ColumnAsList (vq_Item colref, int rows, int mode) {
             if (GetItem(i, &item) == VQ_nil)
                 RangeFlip(&ranges, i, 1);
         }
-        mode = -1;
+        mode = -2;
         rows = vCount(ranges);
         colref.o.a.m = ranges;
     }
@@ -254,7 +254,7 @@ static Tcl_Obj* ColumnAsList (vq_Item colref, int rows, int mode) {
             Tcl_ListObjAppendElement(0, list, Tcl_NewIntObj(i));
     }
 #if VQ_MOD_NULLABLE
-    if (mode == 0)
+    if (mode == -2)
         vq_release(colref.o.a.m);
 #endif
     return list;
