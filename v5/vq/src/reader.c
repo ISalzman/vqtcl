@@ -73,7 +73,7 @@ static void BytesCleaner (Vector map) {
 }
 static Dispatch vbytes = { "bytes", 1, 0, 0, BytesCleaner };
 Vector OpenMappedBytes (const void *data, int length, Object_p ref) {
-    Vector map = AllocVector(&vbytes, 3 * sizeof(vq_Item));
+    Vector map = vq_hold(AllocVector(&vbytes, 3 * sizeof(vq_Item)));
     map[0].o.a.s = map[1].o.a.s = (void*) data;
     map[0].o.b.i = map[1].o.b.i = length;
     map[2].o.a.p = ObjIncRef(ref);
