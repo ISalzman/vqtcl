@@ -274,7 +274,7 @@ Vector AllocDataVec (vq_Type type, int rows) {
         default: assert(0);
     }
     v = AllocVector(vtab, bytes);
-    vLimit(v) = rows;
+    vCount(v) = vLimit(v) = rows;
     return v;
 }
 
@@ -316,9 +316,6 @@ vq_Table EmptyMetaTable (void) {
         mm[0].o.a.m = vq_retain(AllocDataVec(VQ_string, 3));
         mm[1].o.a.m = vq_retain(AllocDataVec(VQ_int, 3));
         mm[2].o.a.m = vq_retain(AllocDataVec(VQ_table, 3));
-        vCount(mm[0].o.a.m) = 3;
-        vCount(mm[1].o.a.m) = 3;
-        vCount(mm[2].o.a.m) = 3;
         Vq_setString(mm, 0, 0, "name");
         Vq_setString(mm, 1, 0, "type");
         Vq_setString(mm, 2, 0, "subt");

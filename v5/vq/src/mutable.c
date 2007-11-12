@@ -57,6 +57,9 @@ static void InitMutVec (Vector v, int col) {
         vecp[0] = vq_retain(AllocDataVec(VQ_int, 2));
         vecp[1] = vq_retain(AllocDataVec(VQ_int, 2));
         vecp[2] = vq_retain(AllocDataVec(type, 2));
+        vCount(vecp[0]) = 0;
+        vCount(vecp[1]) = 0;
+        vCount(vecp[2]) = 0;
     }
     /* sneaky: make sure getter always goes through mutvec from now on */
     if (v[col].o.a.m != v) {
@@ -100,6 +103,8 @@ static void MutVecReplacer (vq_Table t, int offset, int delrows, vq_Table data) 
     if (vInsv(t) == 0) {
         vInsv(t) = vq_retain(AllocDataVec(VQ_int, 2));
         vDelv(t) = vq_retain(AllocDataVec(VQ_int, 2));
+        vCount(vInsv(t)) = 0;
+        vCount(vDelv(t)) = 0;
     }
     vCount(t) += insrows;
     for (c = 0; c < cols; ++c) {

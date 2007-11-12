@@ -48,8 +48,10 @@ void *VecDelete (Vector *vecp, int off, int cnt) {
 
 void *RangeFlip (Vector *vecp, int off, int count) {
     int pos, end, *iptr;
-    if (*vecp == 0)
+    if (*vecp == 0) {
         *vecp = vq_retain(AllocDataVec(VQ_int, 4));
+        vCount(*vecp) = 0;
+    }
     if (count > 0) {
         end = vCount(*vecp);
         for (pos = 0, iptr = (int*) *vecp; pos < end; ++pos, ++iptr)

@@ -214,7 +214,6 @@ static Vector ListAsVector (vq_Type type, Tcl_Obj *obj) {
     if (Tcl_ListObjLength(context, obj, &n) != TCL_OK)
         return 0;
     v = AllocDataVec(type, n);
-    vCount(v) = n;
     assert(vType(v)->setter != 0);
     for (i = 0; i < n; ++i) {
         Tcl_ListObjIndex(0, obj, i, &entry);
