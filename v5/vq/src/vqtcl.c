@@ -160,19 +160,22 @@ int ObjToItem (vq_Type type, vq_Item *item) {
     }
     return 1;
 }
-static Vector ListAsIntVec (Tcl_Obj *obj) {
+static Vector ListAsVector (vq_Type type, Tcl_Obj *obj) {
     Vector v;
-    int i, n, *ivec;
+    vq_Item item;
+    Tcl_Obj *entry;
+    int i, n;
     if (Tcl_ListObjLength(context, obj, &n) != TCL_OK)
         return 0;
-    v = vq_retain(AllocDataVec(VQ_int, n)); /* FIXME: crashes with vq_hold */
+    v = vq_retain(AllocDataVec(type, n)); /* FIXME: crashes with vq_hold */
     vCount(v) = n;
-    ivec = (int*) v;
+    assert(vType(v)->setter != 0);
     for (i = 0; i < n; ++i) {
-        Tcl_Obj *entry;
         Tcl_ListObjIndex(0, obj, i, &entry);
-        if (Tcl_GetIntFromObj(context, entry, ivec + i) != TCL_OK)
+        item.o.a.p = entry;
+        if (!ObjToItem(type, &item))
             return 0;
+        vType(v)->setter(v, i, 0, &item);
     }
     return v;
 }
@@ -407,7 +410,7 @@ Tcl_Obj* MutableObject (Tcl_Obj *o) {
         t = ObjAsTable(obj);
         assert(obj->typePtr == &f_tableObjType);
         if (!IsMutable(t) || vRefs(t) > 1)
-            t = WrapMutable(t, o);
+            t = WrapMutable(t, o); /* FIXME: use "obj" i.s.o. "o" ? */
         if (t != obj->internalRep.twoPtrValue.ptr1) {
             vq_release(obj->internalRep.twoPtrValue.ptr1);
             obj->internalRep.twoPtrValue.ptr1 = vq_retain(t);
@@ -429,7 +432,7 @@ void UpdateVar (Tcl_Obj *ref, Tcl_Obj *val) {
 vq_Type RflipCmd_OII (vq_Item a[]) {
     vq_Item item;
     int offset = a[1].o.a.i, count = a[2].o.a.i;
-    item.o.a.m = ListAsIntVec(a[0].o.a.p);
+    item.o.a.m = ListAsVector(VQ_int, a[0].o.a.p);
     if (item.o.a.m == 0)
         return VQ_nil;
     RangeFlip(&item.o.a.m, offset, count);
@@ -439,7 +442,7 @@ vq_Type RflipCmd_OII (vq_Item a[]) {
 vq_Type RlocateCmd_OI (vq_Item a[]) {
     Tcl_Obj *result;
     int offset = a[1].o.a.i, pos;
-    Vector v = ListAsIntVec(a[0].o.a.p);
+    Vector v = ListAsVector(VQ_int, a[0].o.a.p);
     if (v == 0)
         return VQ_nil;
     pos = RangeLocate(v, offset, &offset);
@@ -452,7 +455,7 @@ vq_Type RlocateCmd_OI (vq_Item a[]) {
 vq_Type RinsertCmd_OIII (vq_Item a[]) {
     vq_Item item;
     int offset = a[1].o.a.i, count = a[2].o.a.i, mode = a[3].o.a.i;
-    item.o.a.m = ListAsIntVec(a[0].o.a.p);
+    item.o.a.m = ListAsVector(VQ_int, a[0].o.a.p);
     if (item.o.a.m == 0)
         return VQ_nil;
     RangeInsert(&item.o.a.m, offset, count, mode);
@@ -462,7 +465,7 @@ vq_Type RinsertCmd_OIII (vq_Item a[]) {
 vq_Type RdeleteCmd_OII (vq_Item a[]) {
     vq_Item item;
     int offset = a[1].o.a.i, count = a[2].o.a.i;
-    item.o.a.m = ListAsIntVec(a[0].o.a.p);
+    item.o.a.m = ListAsVector(VQ_int, a[0].o.a.p);
     if (item.o.a.m == 0)
         return VQ_nil;
     RangeDelete(&item.o.a.m, offset, count);
