@@ -125,6 +125,52 @@ static Tcl_Obj *TableAsObj (vq_Table table) {
 
 #pragma mark - CONVERT FROM TCL OBJECTS -
 
+vq_Table ObjAsMetaTable (Tcl_Obj *obj) {
+    int r, rows, objc;
+    Object_p *objv, entry;
+    const char *name, *sep;
+    vq_Type type;
+    vq_Table table;
+
+    if (Tcl_ListObjLength(context, obj, &rows) != TCL_OK)
+        return 0;
+
+    table = vq_new(vMeta(EmptyMetaTable()), rows);
+
+    for (r = 0; r < rows; ++r) {
+        Tcl_ListObjIndex(0, obj, r, &entry);
+        if (Tcl_ListObjGetElements(context, entry, &objc, &objv) != TCL_OK ||
+                objc < 1 || objc > 2)
+            return 0;
+
+        name = Tcl_GetString(objv[0]);
+        sep = strchr(name, ':');
+        type = objc > 1 ? VQ_table : VQ_string;
+
+        if (sep != 0) {
+            int n = sep - name;
+            char *buf = memcpy(malloc(n+1), name, n);
+            buf[n] = 0;
+            if (sep[1] != 0)
+                type = StringAsType(sep+1);
+            Vq_setString(table, r, 0, buf);
+            free(buf);
+        } else
+            Vq_setString(table, r, 0, name);
+
+        Vq_setInt(table, r, 1, type);
+
+        if (objc > 1) {
+            vq_Table t = ObjAsMetaTable(objv[1]);
+            if (t == 0)
+                return 0;
+            Vq_setTable(table, r, 2, t);
+        } else
+            Vq_setTable(table, r, 2, EmptyMetaTable());
+    }
+
+    return table;
+}
 vq_Table ObjAsTable (Object_p obj) {
     return Tcl_ConvertToType(context, obj, &f_tableObjType) == TCL_OK ?
                 ((Tcl_Obj*) obj)->internalRep.twoPtrValue.ptr1 : 0;
@@ -483,7 +529,7 @@ static void* EmitDataFun (void *data, const void *ptr, intptr_t len) {
     return (char*) data + len;
 }
 vq_Type EmitCmd_T (vq_Item a[]) {
-    Object_p result = Tcl_NewByteArrayObj(NULL, 0);   
+    Object_p result = Tcl_NewByteArrayObj(0, 0);   
     if (TableSave(a[0].o.a.m, result, EmitInitFun, EmitDataFun) < 0) {
         ObjDecRef(result);
         return VQ_nil;

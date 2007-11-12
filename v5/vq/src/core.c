@@ -523,6 +523,10 @@ static vq_Type IotaCmd_TS (vq_Item a[]) {
     a->o.a.m = IotaTable(vq_size(a[0].o.a.m), a[1].o.a.s);
     return VQ_table;
 }
+static vq_Type MdefCmd_O (vq_Item a[]) {
+    a->o.a.m = ObjAsMetaTable(a[0].o.a.p);
+    return VQ_table;
+}
 static vq_Type MetaCmd_T (vq_Item a[]) {
     a->o.a.m = vq_meta(a[0].o.a.m);
     return VQ_table;
@@ -543,6 +547,7 @@ CmdDispatch f_commands[] = {
     { "config",     "S:",       ConfigCmd_      },
     { "empty",      "I:TII",    EmptyCmd_TII    },
     { "iota",       "I:TS",     IotaCmd_TS      },
+    { "mdef",       "T:O",      MdefCmd_O       },
     { "meta",       "T:T",      MetaCmd_T       },
     { "new",        "T:T",      NewCmd_T        },
     { "size",       "T:T",      SizeCmd_T       },
