@@ -151,7 +151,7 @@ static void EmitVarCol (EmitInfo *eip, vq_Item column, int istext, int rows) {
     int r, bytes;
     intptr_t buflen;
     Buffer buffer;
-    Vector sizes = AllocDataVec(VQ_int, rows);
+    Vector sizes = vq_retain(AllocDataVec(VQ_int, rows));
     int *sizevec = (void*) sizes;
 
     InitBuffer(&buffer);
@@ -178,9 +178,9 @@ static void EmitVarCol (EmitInfo *eip, vq_Item column, int istext, int rows) {
     if (buflen > 0) {
         vq_Item item;
         item.o.a.m = sizes;
-        vCount(sizes) = rows;
         EmitFixCol(eip, item, 1);
     }
+    vq_release(sizes);
 
     EmitVarInt(eip, 0); /* no memos */
 }
