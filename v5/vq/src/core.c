@@ -18,6 +18,7 @@ Vector AllocVector (Dispatch *vtab, int bytes) {
 }
 
 void FreeVector (Vector v) {
+    assert(vRefs(v) == 0);
     free(v - vType(v)->prefix);
 }
 
@@ -280,12 +281,9 @@ Vector AllocDataVec (vq_Type type, int rows) {
 #pragma mark - TABLE CREATION -
 
 static void TableCleaner (Vector v) {
-#if 0
-    /* FIXME: ! */
     int i, n = vCount(vMeta(v));
     for (i = 0; i < n; ++i)
         vq_release(v[i].o.a.m);
-#endif
     vq_release(vMeta(v));
     FreeVector(v);
 }

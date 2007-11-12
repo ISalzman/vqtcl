@@ -213,7 +213,7 @@ static Vector ListAsVector (vq_Type type, Tcl_Obj *obj) {
     int i, n;
     if (Tcl_ListObjLength(context, obj, &n) != TCL_OK)
         return 0;
-    v = vq_retain(AllocDataVec(type, n)); /* FIXME: crashes with vq_hold */
+    v = AllocDataVec(type, n);
     vCount(v) = n;
     assert(vType(v)->setter != 0);
     for (i = 0; i < n; ++i) {
@@ -223,6 +223,7 @@ static Vector ListAsVector (vq_Type type, Tcl_Obj *obj) {
             return 0;
         vType(v)->setter(v, i, 0, &item);
     }
+    /* NOTE: result is not retained (Range* functions req a retain count 1!) */
     return v;
 }
 
@@ -479,17 +480,18 @@ void UpdateVar (Tcl_Obj *ref, Tcl_Obj *val) {
 vq_Type RflipCmd_OII (vq_Item a[]) {
     vq_Item item;
     int offset = a[1].o.a.i, count = a[2].o.a.i;
-    item.o.a.m = ListAsVector(VQ_int, a[0].o.a.p);
+    item.o.a.m = vq_retain(ListAsVector(VQ_int, a[0].o.a.p));
     if (item.o.a.m == 0)
         return VQ_nil;
     RangeFlip(&item.o.a.m, offset, count);
     a->o.a.p = ColumnAsList(item, vCount(item.o.a.m), -1);
+    vq_release(item.o.a.m);
     return VQ_object;
 }
 vq_Type RlocateCmd_OI (vq_Item a[]) {
     Tcl_Obj *result;
     int offset = a[1].o.a.i, pos;
-    Vector v = ListAsVector(VQ_int, a[0].o.a.p);
+    Vector v = vq_hold(ListAsVector(VQ_int, a[0].o.a.p));
     if (v == 0)
         return VQ_nil;
     pos = RangeLocate(v, offset, &offset);
@@ -502,21 +504,23 @@ vq_Type RlocateCmd_OI (vq_Item a[]) {
 vq_Type RinsertCmd_OIII (vq_Item a[]) {
     vq_Item item;
     int offset = a[1].o.a.i, count = a[2].o.a.i, mode = a[3].o.a.i;
-    item.o.a.m = ListAsVector(VQ_int, a[0].o.a.p);
+    item.o.a.m = vq_retain(ListAsVector(VQ_int, a[0].o.a.p));
     if (item.o.a.m == 0)
         return VQ_nil;
     RangeInsert(&item.o.a.m, offset, count, mode);
     a->o.a.p = ColumnAsList(item, vCount(item.o.a.m), -1);
+    vq_release(item.o.a.m);
     return VQ_object;
 }
 vq_Type RdeleteCmd_OII (vq_Item a[]) {
     vq_Item item;
     int offset = a[1].o.a.i, count = a[2].o.a.i;
-    item.o.a.m = ListAsVector(VQ_int, a[0].o.a.p);
+    item.o.a.m = vq_retain(ListAsVector(VQ_int, a[0].o.a.p));
     if (item.o.a.m == 0)
         return VQ_nil;
     RangeDelete(&item.o.a.m, offset, count);
     a->o.a.p = ColumnAsList(item, vCount(item.o.a.m), -1);
+    vq_release(item.o.a.m);
     return VQ_object;
 }
 #endif

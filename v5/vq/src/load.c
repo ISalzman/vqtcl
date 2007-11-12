@@ -283,6 +283,8 @@ static Vector MappedStringCol (Vector map, int rows, const char **nextp, int ist
         }
     } else
         sizes = AllocVector(FixedGetter(0, rows, 0, 0), 0);
+        
+    vq_retain(sizes);
     
     colsize = GetVarInt(nextp);
     next = MF_Data(map) + (colsize > 0 ? GetVarInt(nextp) : 0);
@@ -298,10 +300,11 @@ static Vector MappedStringCol (Vector map, int rows, const char **nextp, int ist
 
     vCount(result) = rows;
     vOrig(result) = vq_retain(map);
+    
     if (istext)
         vq_release(sizes);
     else
-        vMeta(result) = vq_retain(sizes);
+        vMeta(result) = sizes;
 
     return result;
 }
