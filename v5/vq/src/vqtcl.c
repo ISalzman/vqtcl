@@ -253,6 +253,10 @@ static Tcl_Obj* ColumnAsList (vq_Item colref, int rows, int mode) {
         else if (mode == 0 && type == VQ_nil)
             Tcl_ListObjAppendElement(0, list, Tcl_NewIntObj(i));
     }
+#if VQ_MOD_NULLABLE
+    if (mode == 0)
+        vq_release(colref.o.a.m);
+#endif
     return list;
 }
 static Tcl_Obj* VectorAsList (Vector v) {
