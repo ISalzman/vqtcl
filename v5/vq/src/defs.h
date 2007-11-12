@@ -96,6 +96,8 @@ Object_p (ChangesAsList) (vq_Table table);
 Object_p (MutableObject) (Object_p obj);
 Object_p (ItemAsObj) (vq_Type type, vq_Item item);
 
+vq_Type (DataCmd_TIX) (vq_Item a[]);
+
 /* memory management in core.c */
 
 Vector (AllocVector) (Dispatch *vtab, int bytes);

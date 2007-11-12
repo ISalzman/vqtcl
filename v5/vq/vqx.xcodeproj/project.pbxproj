@@ -25,12 +25,9 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		1106652A0CE1AFB4003ED04A /* vqpy.c in Sources */ = {isa = PBXBuildFile; fileRef = 110665180CE1ACFA003ED04A /* vqpy.c */; };
 		110672070CE1B3C1003ED04A /* Python.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 110672060CE1B3C1003ED04A /* Python.framework */; };
-		110672460CE218F7003ED04A /* vqrb.c in Sources */ = {isa = PBXBuildFile; fileRef = 110672450CE218F7003ED04A /* vqrb.c */; };
 		1119D43B0CE310A700A3B62A /* save.c in Sources */ = {isa = PBXBuildFile; fileRef = 1119D43A0CE310A700A3B62A /* save.c */; };
 		111AA42A0CE2395400395A6A /* libruby.1.8.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 111AA4290CE2395400395A6A /* libruby.1.8.dylib */; };
-		111AA43E0CE23EF900395A6A /* vqlua.c in Sources */ = {isa = PBXBuildFile; fileRef = 111AA43D0CE23EF900395A6A /* vqlua.c */; };
 		111AA45B0CE241D200395A6A /* liblua.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 111AA45A0CE241D200395A6A /* liblua.dylib */; };
 		111AB2620CE27EA900395A6A /* vqobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 111AB2600CE27EA900395A6A /* vqobjc.h */; };
 		111AB2630CE27EA900395A6A /* vqobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 111AB2610CE27EA900395A6A /* vqobjc.m */; };
@@ -85,14 +82,11 @@
 
 /* Begin PBXFileReference section */
 		110665140CE1ACA5003ED04A /* vq5py.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = vq5py.so; sourceTree = BUILT_PRODUCTS_DIR; };
-		110665180CE1ACFA003ED04A /* vqpy.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = vqpy.c; path = src/vqpy.c; sourceTree = "<group>"; };
 		110672060CE1B3C1003ED04A /* Python.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Python.framework; path = /Library/Frameworks/Python.framework; sourceTree = "<absolute>"; };
 		110672420CE218D5003ED04A /* vq5rb.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = vq5rb.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		110672450CE218F7003ED04A /* vqrb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = vqrb.c; path = src/vqrb.c; sourceTree = "<group>"; };
 		1119D43A0CE310A700A3B62A /* save.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = save.c; path = src/save.c; sourceTree = "<group>"; };
 		111AA4290CE2395400395A6A /* libruby.1.8.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libruby.1.8.dylib; path = /usr/local/lib/libruby.1.8.dylib; sourceTree = "<absolute>"; };
 		111AA43A0CE23ED000395A6A /* vq5lua.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = vq5lua.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		111AA43D0CE23EF900395A6A /* vqlua.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = vqlua.c; path = src/vqlua.c; sourceTree = "<group>"; };
 		111AA45A0CE241D200395A6A /* liblua.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = liblua.dylib; path = "../../../../../Shared/Oss/ObjC/LuaObjCBridge-1.4.2/Source/build/Embedding/liblua.dylib"; sourceTree = SOURCE_ROOT; };
 		111AB25B0CE27E6500395A6A /* vq5objc.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = vq5objc.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		111AB25C0CE27E6500395A6A /* vq5objc-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "vq5objc-Info.plist"; sourceTree = "<group>"; };
@@ -193,11 +187,8 @@
 		111AB2AF0CE282C200395A6A /* Bindings */ = {
 			isa = PBXGroup;
 			children = (
-				111AA43D0CE23EF900395A6A /* vqlua.c */,
 				111AB2600CE27EA900395A6A /* vqobjc.h */,
 				111AB2610CE27EA900395A6A /* vqobjc.m */,
-				110665180CE1ACFA003ED04A /* vqpy.c */,
-				110672450CE218F7003ED04A /* vqrb.c */,
 				11D2FB220CB3A74B007C57D0 /* vqtcl.c */,
 			);
 			name = Bindings;
@@ -382,7 +373,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1106652A0CE1AFB4003ED04A /* vqpy.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -390,7 +380,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				110672460CE218F7003ED04A /* vqrb.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -398,7 +387,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				111AA43E0CE23EF900395A6A /* vqlua.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

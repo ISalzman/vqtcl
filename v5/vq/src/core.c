@@ -545,6 +545,7 @@ static vq_Type SizeCmd_T (vq_Item a[]) {
 CmdDispatch f_commands[] = {
     { "at",         "O:TIIO",   AtCmd_TIIO      },
     { "config",     "S:",       ConfigCmd_      },
+    { "data",       "T:TIX",    DataCmd_TIX     },
     { "empty",      "I:TII",    EmptyCmd_TII    },
     { "iota",       "I:TS",     IotaCmd_TS      },
     { "mdef",       "T:O",      MdefCmd_O       },

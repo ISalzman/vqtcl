@@ -386,7 +386,8 @@ static vq_Table CmdAsTable (Tcl_Obj *obj) {
     Tcl_ListObjGetElements(0, cmd, &ac, &av);
     /* don't use Tcl_EvalObjEx, it forces a string conversion */
     if (Tcl_EvalObjv(context, ac, av, TCL_EVAL_GLOBAL) == TCL_OK)
-        result = ObjAsTable(Tcl_GetObjResult(context));
+        /* TODO: get refcounts right, this hold avoids a crash, but why? */
+        result = vq_hold(ObjAsTable(Tcl_GetObjResult(context)));
     
     ObjDecRef(cmd);
     
@@ -540,6 +541,25 @@ vq_Type EmitCmd_T (vq_Item a[]) {
 #endif
 
 #pragma mark - TCL COMMAND INTERFACE -
+
+vq_Type DataCmd_TIX (vq_Item a[]) {
+    vq_Table meta = a[0].o.a.m;
+    int c, cols = vCount(meta), rows = a[1].o.a.i, objc = a[2].o.b.i;
+    Tcl_Obj **objv = a[2].o.a.p;
+    vq_Table t = vq_new(meta, 0); /* 0 prevents allocation of columns */
+    vCount(t) = rows;
+    for (c = 0; c < cols; ++c)
+        if (--objc >= 0) {
+            vq_Type type = Vq_getInt(meta, c, 1, VQ_nil);
+            Vector v = ListAsVector(type, *objv++);
+            t[c].o.a.m = vq_retain(v);
+            assert(vCount(v) == rows); /* TODO: deal with missing values */
+        }
+    if (objc != 0)
+        return VQ_nil;
+    a->o.a.m = t;
+    return VQ_table;
+}
 
 static int VqObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
     int i, idx, ok = TCL_ERROR;
