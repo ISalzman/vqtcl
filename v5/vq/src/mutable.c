@@ -145,21 +145,24 @@ static void MutVecCleaner (Vector v) {
     vq_release(vInsv(v));
     vq_release(vOrig(v));
     vq_release(vMeta(v));
+    vq_release(vPerm(v));
+    ObjDecRef(vOref(v));
     FreeVector(v);
 }
 static Dispatch muvtab = {
-    "mutable", 4, sizeof(void*), 0,
+    "mutable", 5, sizeof(void*), 0,
         MutVecCleaner, MutVecGetter, MutVecSetter, MutVecReplacer
 };
 int IsMutable (vq_Table t) {
     return vType(t) == &muvtab;
 }
-vq_Table WrapMutable (vq_Table t) {
+vq_Table WrapMutable (vq_Table t, Object_p o) {
     vq_Table meta = vMeta(t);
     int i, cols = vCount(meta);
     vq_Table w = IndirectTable(meta, &muvtab, vCount(t),
                                 3 * vCount(meta) * sizeof(Vector));
     vOrig(w) = vq_retain(t);
+    vOref(w) = ObjIncRef(o);
     /* override to use original columns until a set or replace is done */
     for (i = 0; i < cols; ++i) {
         w[i] = t[i];
@@ -170,15 +173,19 @@ vq_Table WrapMutable (vq_Table t) {
 
 #pragma mark - OPERATOR WRAPPERS -
 
-vq_Type ReplaceCmd_SIIT (vq_Item a[]) {
-    Object_p obj = MutableObject(a[0].o.a.s);
+vq_Type ChangesCmd_T (vq_Item a[]) {
+    a->o.a.p = ChangesAsList(a[0].o.a.m);
+    return VQ_object;
+}
+vq_Type ReplaceCmd_OIIT (vq_Item a[]) {
+    Object_p obj = MutableObject(a[0].o.a.p);
     vq_Table t = ObjAsTable(obj);
     vq_replace(t, a[1].o.a.i, a[2].o.a.i, a[3].o.a.m);
-    UpdateVar(a[0].o.a.s, obj);
+    UpdateVar(a[0].o.a.p, obj);
     return VQ_nil;
 }
-vq_Type SetCmd_SIIO (vq_Item a[]) {
-    Object_p obj = MutableObject(a[0].o.a.s);
+vq_Type SetCmd_OIIO (vq_Item a[]) {
+    Object_p obj = MutableObject(a[0].o.a.p);
     vq_Table t = ObjAsTable(obj);
     int row = a[1].o.a.i, column = a[2].o.a.i;
     vq_Type type = Vq_getInt(vMeta(t), column, 1, VQ_nil) & VQ_TYPEMASK;
@@ -186,18 +193,18 @@ vq_Type SetCmd_SIIO (vq_Item a[]) {
         if (row >= vCount(t))
             vCount(t) = row + 1;
         vq_set(t, row, column, type, a[3]);
-        UpdateVar(a[0].o.a.s, obj);
+        UpdateVar(a[0].o.a.p, obj);
     }
     return VQ_nil;
 }
-vq_Type UnsetCmd_SII (vq_Item a[]) {
-    Object_p obj = MutableObject(a[0].o.a.s);
+vq_Type UnsetCmd_OII (vq_Item a[]) {
+    Object_p obj = MutableObject(a[0].o.a.p);
     vq_Table t = ObjAsTable(obj);
     int row = a[1].o.a.i, column = a[2].o.a.i;
     if (row >= vCount(t))
         vCount(t) = row + 1;
     vq_set(t, row, column, VQ_nil, a[0]);
-    UpdateVar(a[0].o.a.s, obj);
+    UpdateVar(a[0].o.a.p, obj);
     return VQ_nil;
 }
 

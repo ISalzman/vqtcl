@@ -61,6 +61,8 @@ typedef vq_Table Vector;
 #define vData(vecptr)   ((vecptr)[-3].o.b.p)
 #define vInsv(vecptr)   ((vecptr)[-4].o.a.m)
 #define vDelv(vecptr)   ((vecptr)[-4].o.b.m)
+#define vOref(vecptr)   ((vecptr)[-5].o.a.p)
+#define vPerm(vecptr)   ((vecptr)[-5].o.b.p)
 
 typedef struct vq_Dispatch_s {
     const char *name;                   /* type name, introspection */
@@ -86,11 +88,12 @@ typedef void           *Object_p;
 Object_p (ObjIncRef) (Object_p obj);
 void (ObjDecRef) (Object_p obj);
 
-void (UpdateVar) (const char *s, Object_p obj);
+void (UpdateVar) (Object_p ref, Object_p val);
 vq_Table (ObjAsMetaTable) (Object_p obj);
 vq_Table (ObjAsTable) (Object_p obj);
 int (ObjToItem) (vq_Type type, vq_Item *item);
-Object_p (MutableObject) (const char* s);
+Object_p (ChangesAsList) (vq_Table table);
+Object_p (MutableObject) (Object_p obj);
 Object_p (ItemAsObj) (vq_Type type, vq_Item item);
 
 /* memory management in core.c */
@@ -163,11 +166,12 @@ void (RangeDelete) (Vector *vecp, int off, int count);
 /* mutable.c */
 
 int (IsMutable) (vq_Table t);
-vq_Table (WrapMutable) (vq_Table t);
+vq_Table (WrapMutable) (vq_Table t, Object_p o);
 
-vq_Type (ReplaceCmd_SIIT) (vq_Item a[]);
-vq_Type (SetCmd_SIIO) (vq_Item a[]);
-vq_Type (UnsetCmd_SII) (vq_Item a[]);
+vq_Type (ChangesCmd_T) (vq_Item a[]);
+vq_Type (ReplaceCmd_OIIT) (vq_Item a[]);
+vq_Type (SetCmd_OIIO) (vq_Item a[]);
+vq_Type (UnsetCmd_OII) (vq_Item a[]);
 
 /* buffer.c */
 

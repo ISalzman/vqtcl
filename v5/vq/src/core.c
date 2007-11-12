@@ -552,9 +552,10 @@ CmdDispatch f_commands[] = {
     { "open",       "T:S",      OpenCmd_S       },
 #endif
 #if VQ_MOD_MUTABLE
-    { "replace",    "V:SIIT",   ReplaceCmd_SIIT },
-    { "set",        "V:SIIO",   SetCmd_SIIO     },
-    { "unset",      "V:SII",    UnsetCmd_SII    },
+    { "changes",    "O:T",      ChangesCmd_T    },
+    { "replace",    "V:OIIT",   ReplaceCmd_OIIT },
+    { "set",        "V:OIIO",   SetCmd_OIIO     },
+    { "unset",      "V:OII",    UnsetCmd_OII    },
 #endif
 #if VQ_MOD_NULLABLE
     { "rflip",      "O:OII",    RflipCmd_OII    },

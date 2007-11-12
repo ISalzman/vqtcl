@@ -205,6 +205,13 @@ static Tcl_Obj* ColumnAsList (vq_Item colref, int rows, int mode) {
     }
     return list;
 }
+static Tcl_Obj* VectorAsList (Vector v) {
+    vq_Item item;
+    if (v == 0)
+        return Tcl_NewObj();
+    item.o.a.m = v;
+    return ColumnAsList (item, vCount(v), -1);
+}
 static Tcl_Obj* MetaTableAsList (vq_Table meta) {
     Tcl_Obj *result = Tcl_NewListObj(0, 0);
     if (meta != 0) {
@@ -267,7 +274,6 @@ static Tcl_Obj* TableAsList (vq_Table table) {
                 }
             }
     }
-
     return result;
 }
 Tcl_Obj* ItemAsObj (vq_Type type, vq_Item item) {
@@ -360,6 +366,27 @@ vq_Type LoadCmd_O (vq_Item a[]) {
 #endif
 
 #if VQ_MOD_MUTABLE
+Tcl_Obj* ChangesAsList (vq_Table table) {
+    int c, rows = vCount(table), cols = vCount(vq_meta(table));
+    Tcl_Obj *result = Tcl_NewListObj(0, 0);
+    if (IsMutable(table)) {
+        Tcl_ListObjAppendElement(0, result, Tcl_NewStringObj("mutable", 7));
+        Tcl_ListObjAppendElement(0, result, vOref(table));
+        Tcl_ListObjAppendElement(0, result, VectorAsList(vDelv(table)));
+        Tcl_ListObjAppendElement(0, result, VectorAsList(vPerm(table)));
+        Tcl_ListObjAppendElement(0, result, VectorAsList(vInsv(table)));
+        if (rows > 0)
+            for (c = 0; c < cols; ++c) {
+                Vector *vecp = (Vector*) vData(table) + 3 * c;
+                Tcl_ListObjAppendElement(0, result, VectorAsList(vecp[0]));
+                if (vecp[0] != 0 && vCount(vecp[0]) > 0) {
+                    Tcl_ListObjAppendElement(0, result, VectorAsList(vecp[1]));
+                    Tcl_ListObjAppendElement(0, result, VectorAsList(vecp[2]));
+                }
+            }
+    }
+    return result;
+}
 static void InvalidateNonTableReps (Tcl_Obj *obj) {
     assert(obj->typePtr == &f_tableObjType);
     if (obj->internalRep.twoPtrValue.ptr2 != 0) {
@@ -368,9 +395,10 @@ static void InvalidateNonTableReps (Tcl_Obj *obj) {
     }
     Tcl_InvalidateStringRep(obj);
 }
-Tcl_Obj* MutableObject (const char* s) {
+Tcl_Obj* MutableObject (Tcl_Obj *o) {
     vq_Table t;
     Tcl_Obj *obj;
+    const char *s = Tcl_GetString(o);
     assert(s[0] == '@');
     obj = Tcl_GetVar2Ex(context, s+1, 0, TCL_LEAVE_ERR_MSG | TCL_GLOBAL_ONLY);
     if (obj != 0) {
@@ -379,7 +407,7 @@ Tcl_Obj* MutableObject (const char* s) {
         t = ObjAsTable(obj);
         assert(obj->typePtr == &f_tableObjType);
         if (!IsMutable(t) || vRefs(t) > 1)
-            t = WrapMutable(t);
+            t = WrapMutable(t, o);
         if (t != obj->internalRep.twoPtrValue.ptr1) {
             vq_release(obj->internalRep.twoPtrValue.ptr1);
             obj->internalRep.twoPtrValue.ptr1 = vq_retain(t);
@@ -389,10 +417,11 @@ Tcl_Obj* MutableObject (const char* s) {
     /* TODO: check for leaks when obj is a duplicate */
     return obj;
 }
-void UpdateVar (const char *s, Tcl_Obj *obj) {
+void UpdateVar (Tcl_Obj *ref, Tcl_Obj *val) {
+    const char *s = Tcl_GetString(ref);
     assert(s[0] == '@');
-    InvalidateNonTableReps(obj);
-    Tcl_SetVar2Ex(context, s+1, 0, obj, TCL_LEAVE_ERR_MSG | TCL_GLOBAL_ONLY);
+    InvalidateNonTableReps(val);
+    Tcl_SetVar2Ex(context, s+1, 0, val, TCL_LEAVE_ERR_MSG | TCL_GLOBAL_ONLY);
 }
 #endif
 
