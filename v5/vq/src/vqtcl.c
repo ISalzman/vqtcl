@@ -304,7 +304,10 @@ static Tcl_Obj* TableAsList (vq_Table table) {
     int c, rows = vCount(table), cols = vCount(meta);
     Tcl_Obj *result = Tcl_NewListObj(0, 0);
 
-    if (meta == vq_meta(meta)) {
+    if (IsMutable(table)) {
+        ObjDecRef(result);
+        result = ChangesAsList(table);
+    } else if (meta == vq_meta(meta)) {
         if (rows > 0) {
             Tcl_ListObjAppendElement(0, result, Tcl_NewStringObj("mdef", 4));
             Tcl_ListObjAppendElement(0, result, MetaTableAsList(table));

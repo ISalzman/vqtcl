@@ -170,7 +170,6 @@ void (RangeDelete) (Vector *vecp, int off, int count);
 int (IsMutable) (vq_Table t);
 vq_Table (WrapMutable) (vq_Table t, Object_p o);
 
-vq_Type (ChangesCmd_T) (vq_Item a[]);
 vq_Type (ReplaceCmd_OIIT) (vq_Item a[]);
 vq_Type (SetCmd_OIIO) (vq_Item a[]);
 vq_Type (UnsetCmd_OII) (vq_Item a[]);

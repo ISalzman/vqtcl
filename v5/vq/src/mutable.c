@@ -178,10 +178,6 @@ vq_Table WrapMutable (vq_Table t, Object_p o) {
 
 #pragma mark - OPERATOR WRAPPERS -
 
-vq_Type ChangesCmd_T (vq_Item a[]) {
-    a->o.a.p = ChangesAsList(a[0].o.a.m);
-    return VQ_object;
-}
 vq_Type ReplaceCmd_OIIT (vq_Item a[]) {
     Object_p obj = MutableObject(a[0].o.a.p);
     vq_Table t = ObjAsTable(obj);
