@@ -73,7 +73,8 @@ test 9 {} {
 
 test 10 {} {
     set s [vdump [vq at $t 0 0 ""]]
-    # hack: squeeze the output to fit one one line by removing some spaces
+    # hack alert: squeeze the output of each line by removing some spaces
+    # just so the comparison text below fits in archaic 80-char lines! :)
     set s [regsub -all -line \
             {^ (...) (...) (...) (...) (.{5}) (.{7})} $s {\1\2\3\4\5\6}]
     set s [regsub -all -line \
