@@ -63,4 +63,32 @@ test 18 {} {
     vq size {data {mdef A} 3 {x y z}}
 } 3
 
+test 19 {} {
+    vdump 7
+} {  (7 rows, no columns)}
+
+test 20 {} {
+    vdump ""
+} { \
+  name  type  subt
+  ----  ----  ----}
+
+test 21 {} {
+    vdump [vq meta ""]
+} { \
+  name  type  subt
+  ----  ----  ----
+  name     5    #0
+  type     1    #0
+  subt     7    #0}
+
+test 22 {} {
+    vdump [vq iota 3 ABC]
+} { \
+  ABC
+  ---
+    0
+    1
+    2}
+
 ::tcltest::cleanupTests

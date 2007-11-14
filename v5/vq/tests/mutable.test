@@ -108,7 +108,15 @@ test 14 {all cells are non-empty} {
     set r
 } {1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0}
 
-test 15 {unset some data} {
+test 15 {} {
+    vdump $t
+} { \
+  n  i  l  f    d    s  b  t  o
+  -  -  -  ---  ---  -  -  -  -
+  ?  1  1  1.0  1.0  1  1  1  1
+  ?  1  2  3.0  4.0  5  6  7  8}
+
+test 16 {unset some data} {
     foreach x {0 1 2 3 4 5 6 7 8} {
         vq unset @t [expr {$x%2}] $x
     }
@@ -124,7 +132,7 @@ test 15 {unset some data} {
     {0 2} {0 1} 1\
     {0 2} {1 2} 8}
 
-test 16 {data table with some missing values} {
+test 17 {data table with some missing values} {
     set t [vq new $m]
     foreach x {0 1 2 3 4 5 6 7 8} {
         vq set @t 1 $x $x
@@ -141,7 +149,7 @@ test 16 {data table with some missing values} {
     {1 2} {0 1} 7\
     {1 2} {0 1} 8}
 
-test 17 {get all values} {
+test 18 {get all values} {
     set r {}
     foreach x {0 1 2 3 4 5 6} {
         lappend r [vq at $t 0 $x 99] [vq at @t 1 $x 99]
@@ -149,7 +157,15 @@ test 17 {get all values} {
     set r
 } {99 99 99 1 99 2 99.0 3.0 99.0 4.0 99 5 99 6}
 
-test 18 {set and unset some values} {
+test 19 {} {
+    vdump $t
+} { \
+  n  i  l  f    d    s  b  t  o
+  -  -  -  ---  ---  -  -  -  -
+  ?  ?  ?  ?    ?    ?  ?  ?  ?
+  ?  1  2  3.0  4.0  5  6  7  8}
+
+test 20 {set and unset some values} {
     vq set @t 0 4 0.1
     vq unset @t 0 5 ;# redundant
     foreach x {0 1 2 3 4 5 6 7 8} {
@@ -168,7 +184,7 @@ test 18 {set and unset some values} {
     {1 2} {0 1} 14\
     {0 2} {0 2} {16 8}}
   
-test 19 {get all values again} {
+test 21 {get all values again} {
     set r {}
     foreach x {0 1 2 3 4 5 6 7 8} {
         lappend r [vq at $t 0 $x 99] [vq at @t 1 $x 99]
@@ -176,91 +192,99 @@ test 19 {get all values again} {
     set r
 } {99 99 99 2 4 2 99.0 6.0 8.0 4.0 99 10 12 6 99 14 16 8}
 
-test 20 {set over existing data} {
+test 22 {} {
+    vdump $t
+} { \
+  n  i  l  f    d    s   b   t   o 
+  -  -  -  ---  ---  --  --  --  --
+  ?  ?  4  ?    8.0  ?   12  ?   16
+  ?  2  2  6.0  4.0  10  6   14  8 }
+
+test 23 {set over existing data} {
     set t [vq iota 5 N]
     vq set @t 2 0 99
     set t
 } {mutable @t {} {} {} {2 3} {0 1} 99}
 
-test 21 {unset over existing data} {
+test 24 {unset over existing data} {
     set t [vq iota 5 N]
     vq unset @t 2 0
     set t
 } {mutable @t {} {} {} {2 3} {} {}}
 
-test 22 {get empty state of modified iota} {
+test 25 {get empty state of modified iota} {
     set r {}
     foreach i {0 1 2 3 4} { lappend r [vq empty $t $i 0]}
     set r
 } {0 0 1 0 0}
 
-test 23 {get contents of modified iota} {
+test 26 {get contents of modified iota} {
     set r {}
     foreach i {0 1 2 3 4} { lappend r [vq at $t $i 0 -1]}
     set r
 } {0 1 -1 3 4}
 
-test 24 {insert some empty rows} {
+test 27 {insert some empty rows} {
     set t [vq iota 4 N]
     vq replace @t 2 0 5
     set t
 } {mutable @t {} {} {2 7} {}}
 
-test 25 {delete some rows} {
+test 28 {delete some rows} {
     set t [vq iota 9 N]
     vq replace @t 2 5 0
     set t
 } {mutable @t {2 7} {} {} {}}
 
-test 26 {delete some rows, then insert some empty ones} {
+test 29 {delete some rows, then insert some empty ones} {
     set t [vq iota 9 N]
     vq replace @t 2 5 0
     vq replace @t 2 0 3
     set t
 } {mutable @t {2 7} {} {2 5} {}}
 
-test 27 {insert some empty rows, then delete inside} {
+test 30 {insert some empty rows, then delete inside} {
     set t [vq iota 4 N]
     vq replace @t 2 0 5
     vq replace @t 3 3 0
     set t
 } {mutable @t {} {} {2 4} {}}
 
-test 28 {insert some empty rows, then delete around} {
+test 31 {insert some empty rows, then delete around} {
     set t [vq iota 6 N]
     vq replace @t 3 0 3
     vq replace @t 2 5 0
     set t
 } {mutable @t {2 4} {} {} {}}
 
-test 29 {insert some filled rows} {
+test 32 {insert some filled rows} {
     set t [vq iota 4 N]
     vq replace @t 2 0 [vq iota 5 N]
     set t
 } {mutable @t {} {} {2 7} {2 7} {0 5} {0 1 2 3 4}}
 
-test 30 {insert some empty, then filled rows} {
+test 33 {insert some empty, then filled rows} {
     set t [vq iota 4 N]
     vq replace @t 2 0 2
     vq replace @t 3 0 [vq iota 5 N]
     set t
 } {mutable @t {} {} {2 9} {3 8} {0 5} {0 1 2 3 4}}
 
-test 31 {insert some rows, then delete inside} {
+test 34 {insert some rows, then delete inside} {
     set t [vq iota 4 N]
     vq replace @t 2 0 [vq iota 5 N]
     vq replace @t 3 3 0
     set t
 } {mutable @t {} {} {2 4} {2 4} {0 2} {0 4}}
 
-test 32 {insert some rows, then delete around} {
+test 35 {insert some rows, then delete around} {
     set t [vq iota 6 N]
     vq replace @t 3 0 [vq iota 3 N]
     vq replace @t 2 5 0
     set t
 } {mutable @t {2 4} {} {} {}}
 
-test 33 {more ranges} {
+test 36 {more ranges} {
     set t [vq iota 10 N]
     for {set x 9} {$x >= 0} {incr x -1} {
         vq replace @t $x 0 2
@@ -270,7 +294,7 @@ test 33 {more ranges} {
 } {mutable @t {} {} {0 2 3 5 6 8 9 11 12 14 15 17 18 20 21 23 24 26 27 29}\
     {28 29} {0 1} -1}
 
-test 34 {access to ranges} {
+test 37 {access to ranges} {
     set r {}
     foreach x {0 1 2 3 4 25 26 27 28 29} {
         lappend r [vq at $t $x 0 -9]

@@ -56,3 +56,50 @@ testConstraint tcl$tcl_version  1
 testConstraint vfs              [expr {![catch { package require vfs }]}]
 
 set testsInited 1
+
+# table pretty-printer, using a minimal set of operators: at, empty, meta, size
+
+proc vdump {vid {maxrows 20}} {
+    set rows [vq size $vid]
+    set cols [vq size [vq meta $vid]]
+    if {$cols == 0} { return "  ($rows rows, no columns)" }
+    if {$rows > $maxrows} { set rows $maxrows }
+    for {set c 0} {$c < $cols} {incr c} {
+        set name [vq at [vq meta $vid] $c 0 ""]
+        set type [string index "NILFDSBTO" [vq at [vq meta $vid] $c 1 0]]
+        set data {}
+        for {set r 0} {$r < $rows} {incr r} {
+            if {[vq empty $vid $r $c]} {
+                lappend data ?
+            } else {
+                set x [vq at $vid $r $c 0]
+                switch $type {
+                    B       { lappend data [string length $x]b }
+                    T       { lappend data #[vq size $x] }
+                    default { lappend data $x }
+                }
+            }
+        }
+        set width [string length $name]
+        foreach z $data {
+            if {[string length $z] > $width} { set width [string length $z] }
+        }
+        if {$width > 50} { set width 50 }
+        switch $type {
+            B - I - L - F - D - T   { append fmt "  " %${width}s }
+            default                 { append fmt "  " %-$width.${width}s }
+        }
+        append hdr "  " [format %-${width}s $name]
+        append bar "  " [string repeat - $width]
+        lappend d $data
+    }
+    set r [list $hdr $bar]
+    for {set i 0} {$i < $rows} {incr i} {
+        if {$i >= $maxrows} break
+        set cmd [list format $fmt]
+        foreach x $d { lappend cmd [regsub -all {[^ -~]} [lindex $x $i] .] }
+        lappend r [eval $cmd]
+    }
+    if {[vq size $vid] > $maxrows} { lappend r [string map {- .} $bar] }
+    ::join $r \n
+}
