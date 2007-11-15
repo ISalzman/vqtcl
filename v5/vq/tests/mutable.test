@@ -310,4 +310,28 @@ test 38 {access to ranges} {
     set r
 } {-9 -9 0 -9 -9 -9 8 -9 -1 9}
 
+test 39 {nested references are independent} {
+    set t [vq iota 3 N]
+    vq set @t 1 0 11
+    set u @t
+    vq set @u 1 0 22
+    list [vq at $t 1 0 99] [vq at $u 1 0 99]
+} {11 22}
+
+test 40 {copy of original is independent} {
+    set t [vq iota 3 N]
+    vq set @t 1 0 11
+    set u $t
+    vq set @u 1 0 22
+    list [vq at $t 1 0 99] [vq at $u 1 0 99]
+} {11 22}
+
+test 41 {copy of original does not track changes} {
+    set t [vq iota 3 N]
+    vq set @t 1 0 11
+    set u $t
+    vq set @t 1 0 33
+    list [vq at $t 1 0 99] [vq at $u 1 0 99]
+} {33 11}
+
 ::tcltest::cleanupTests

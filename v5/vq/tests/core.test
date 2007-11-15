@@ -83,6 +83,15 @@ test 21 {} {
   subt     7    #0}
 
 test 22 {} {
+    vdump [vq pass [vq meta ""]]
+} { \
+  name  type  subt
+  ----  ----  ----
+  name     5    #0
+  type     1    #0
+  subt     7    #0}
+  
+test 23 {} {
     vdump [vq iota 3 ABC]
 } { \
   ABC

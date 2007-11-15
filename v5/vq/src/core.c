@@ -530,6 +530,17 @@ static vq_Type NewCmd_T (vq_Item a[]) {
     a->o.a.m = vq_new(a[0].o.a.m, 0);
     return VQ_table;
 }
+static vq_Type PassCmd_T (vq_Item a[]) {
+    vq_Table orig = a[0].o.a.m, t = vq_new(vMeta(orig), 0);
+    int c, cols = vCount(vMeta(orig));
+    vCount(t) = vCount(orig);
+    for (c = 0; c < cols; ++c) {
+        t[c] = orig[c];
+        vq_retain(t[c].o.a.m);
+    }
+    a->o.a.m = t;
+    return VQ_table;
+}
 static vq_Type SizeCmd_T (vq_Item a[]) {
     a->o.a.m = vq_new(0, vq_size(a[0].o.a.m));
     return VQ_table;
@@ -542,10 +553,11 @@ CmdDispatch f_commands[] = {
     { "config",     "S:",       ConfigCmd_      },
     { "data",       "T:TIX",    DataCmd_TIX     },
     { "empty",      "I:TII",    EmptyCmd_TII    },
-    { "iota",       "I:TS",     IotaCmd_TS      },
+    { "iota",       "T:TS",     IotaCmd_TS      },
     { "mdef",       "T:O",      MdefCmd_O       },
     { "meta",       "T:T",      MetaCmd_T       },
     { "new",        "T:T",      NewCmd_T        },
+    { "pass",       "T:T",      PassCmd_T       },
     { "size",       "T:T",      SizeCmd_T       },
 #if VQ_MOD_LOAD
     { "desc2meta",  "T:S",      Desc2MetaCmd_S  },
