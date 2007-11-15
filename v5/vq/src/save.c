@@ -96,6 +96,118 @@ static void EmitPair (EmitInfo *eip, intptr_t offset) {
         EmitVarInt(eip, offset);
 }
 
+static int TopBit (int v) {
+#define Vn(x) (v < (1<<x))
+    return Vn(16) ? Vn( 8) ? Vn( 4) ? Vn( 2) ? Vn( 1) ? v-1 : 1
+                                             : Vn( 3) ?  2 :  3
+                                    : Vn( 6) ? Vn( 5) ?  4 :  5
+                                             : Vn( 7) ?  6 :  7
+                           : Vn(12) ? Vn(10) ? Vn( 9) ?  8 :  9
+                                             : Vn(11) ? 10 : 11
+                                    : Vn(14) ? Vn(13) ? 12 : 13
+                                             : Vn(15) ? 14 : 15
+                  : Vn(24) ? Vn(20) ? Vn(18) ? Vn(17) ? 16 : 17
+                                             : Vn(19) ? 18 : 19
+                                    : Vn(22) ? Vn(21) ? 20 : 21
+                                             : Vn(23) ? 22 : 23
+                           : Vn(28) ? Vn(26) ? Vn(25) ? 24 : 25
+                                             : Vn(27) ? 26 : 27
+                                    : Vn(30) ? Vn(29) ? 28 : 29
+                                             : Vn(31) ? 30 : 31;
+#undef Vn
+}
+static int MinWidth (int lo, int hi) {
+    lo = lo > 0 ? 0 : "444444445555555566666666666666666"[TopBit(~lo)+1] & 7;
+    hi = hi < 0 ? 0 : "012334445555555566666666666666666"[TopBit(hi)+1] & 7;
+    return lo > hi ? lo : hi;
+}
+static int* PackedIntVec (const int *data, int rows, intptr_t *outsize) {
+    int r, width, lo = 0, hi = 0, bits, *result;
+    const int *limit;
+    intptr_t bytes;
+
+    for (r = 0; r < rows; ++r) {
+        if (data[r] < lo) lo = data[r];
+        if (data[r] > hi) hi = data[r];
+    }
+
+    width = MinWidth(lo, hi);
+
+    if (width >= 6) {
+        bytes = rows * (1 << (width-4));
+        result = malloc(bytes);
+        memcpy(result, data, bytes);
+    } else if (rows > 0 && width > 0) {
+        if (rows < 5 && width < 4) {
+            static char fudges[3][4] = {    /* n:    1:  2:  3:  4: */
+                {1,1,1,1},          /* 1-bit entries:    1b  2b  3b  4b */
+                {1,1,1,1},          /* 2-bit entries:    2b  4b  6b  8b */
+                {1,1,2,2},          /* 4-bit entries:    4b  8b 12b 16b */
+            };
+            static char widths[3][4] = {    /* n:    1:  2:  3:  4: */
+                {3,3,2,2},          /* 1-bit entries:    4b  4b  2b  2b */
+                {3,3,2,2},          /* 2-bit entries:    4b  4b  2b  2b */
+                {3,3,3,3},          /* 4-bit entries:    4b  4b  4b  4b */
+            };
+            bytes = fudges[width-1][rows-1];
+            width = widths[width-1][rows-1];
+        } else
+            bytes = (((intptr_t) rows << width) + 14) >> 4; /* round up */
+            
+        result = malloc(bytes);
+        if (width < 4)
+            memset(result, 0, bytes);
+
+        limit = data + rows;
+        bits = 0;
+
+        switch (width) {
+            case 1: { /* 1 bit, 8 per byte */
+                char* q = (char*) result;
+                while (data < limit) {
+                    *q |= (*data++ & 1) << bits; ++bits; q += bits >> 3; 
+                    bits &= 7;
+                }
+                break;
+            }
+            case 2: { /* 2 bits, 4 per byte */
+                char* q = (char*) result;
+                while (data < limit) {
+                    *q |= (*data++ & 3) << bits; bits += 2; q += bits >> 3; 
+                    bits &= 7;
+                }
+                break;
+            }
+            case 3: { /* 4 bits, 2 per byte */
+                char* q = (char*) result;
+                while (data < limit) {
+                    *q |= (*data++ & 15) << bits; bits += 4; q += bits >> 3;
+                    bits &= 7;
+                }
+                break;
+            }
+            case 4: { /* 1-byte (char) */
+                char* q = (char*) result;
+                while (data < limit)
+                    *q++ = (char) *data++;
+                break;
+            }
+            case 5: { /* 2-byte (short) */
+                short* q = (short*) result;
+                while (data < limit)
+                    *q++ = (short) *data++;
+                break;
+            }
+        }
+    } else {
+        bytes = 0;
+        result = NULL;
+    }
+
+    *outsize = bytes;
+    return result;
+}
+
 static int EmitFixCol (EmitInfo *eip, vq_Item column, vq_Type type) {
     int r, rows = vCount(column.o.a.m), *tempvec;
     void *buffer;
@@ -110,7 +222,8 @@ static int EmitFixCol (EmitInfo *eip, vq_Item column, vq_Type type) {
                 GetItem(r, &item);
                 tempvec[r] = item.o.a.i;
             }
-            buffer = tempvec;
+            buffer = PackedIntVec(tempvec, rows, &bufsize);
+            free(tempvec); /* TODO: avoid extra copy & malloc */
             break;
         case VQ_long:
             bufsize = rows * sizeof(int64_t);
