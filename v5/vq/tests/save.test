@@ -131,44 +131,54 @@ test 18 {} {
 } {data {mdef A:T} 2 {{data {mdef B} 2 {1 2}} {data {mdef C} 3 {3 4 5}}}}
 
 test 19 {0-bit ints} {
-    vq load [vq emit [vq data {mdef A:I} 3 {0 0 0}]]
-} {data {mdef A:I} 3 {0 0 0}}
+    set z [vq emit {data {mdef A:I} 3 {0 0 0}}]
+    list [string length $z] [vq load $z]
+} {31 {data {mdef A:I} 3 {0 0 0}}}
 
 test 20 {1-bit ints} {
-    vq load [vq emit [vq data {mdef A:I} 9 {0 1 1 0 1 0 0 0 1}]]
-} {data {mdef A:I} 9 {0 1 1 0 1 0 0 0 1}}
+    set z [vq emit {data {mdef A:I} 9 {0 1 1 0 1 0 0 0 1}}]
+    list [string length $z] [vq load $z]
+} {34 {data {mdef A:I} 9 {0 1 1 0 1 0 0 0 1}}}
 
 test 21 {2-bit ints} {
-    vq load [vq emit [vq data {mdef A:I} 7 {0 1 2 3 2 1 0}]]
-} {data {mdef A:I} 7 {0 1 2 3 2 1 0}}
+    set z [vq emit {data {mdef A:I} 7 {0 1 2 3 2 1 0}}]
+    list [string length $z] [vq load $z]
+} {34 {data {mdef A:I} 7 {0 1 2 3 2 1 0}}}
 
 test 22 {4-bit ints} {
-    vq load [vq emit [vq data {mdef A:I} 6 {0 1 14 15 2 13}]]
-} {data {mdef A:I} 6 {0 1 14 15 2 13}}
+    set z [vq emit {data {mdef A:I} 6 {0 1 14 15 2 13}}]
+    list [string length $z] [vq load $z]
+} {35 {data {mdef A:I} 6 {0 1 14 15 2 13}}}
     
 test 23 {8-bit ints} {
-    vq load [vq emit [vq data {mdef A:I} 4 {0 -1 100 -100}]]
-} {data {mdef A:I} 4 {0 -1 100 -100}}
+    set z [vq emit {data {mdef A:I} 4 {0 -1 100 -100}}]
+    list [string length $z] [vq load $z]
+} {36 {data {mdef A:I} 4 {0 -1 100 -100}}}
     
 test 24 {16-bit ints} {
-    vq load [vq emit [vq data {mdef A:I} 3 {1234 2345 3456}]]
-} {data {mdef A:I} 3 {1234 2345 3456}}
+    set z [vq emit {data {mdef A:I} 3 {1234 2345 3456}}]
+    list [string length $z] [vq load $z]
+} {38 {data {mdef A:I} 3 {1234 2345 3456}}}
     
 test 25 {32-bit ints} {
-    vq load [vq emit [vq data {mdef A:I} 3 {123456 0 -654321}]]
-} {data {mdef A:I} 3 {123456 0 -654321}}
+    set z [vq emit {data {mdef A:I} 3 {123456 0 -654321}}]
+    list [string length $z] [vq load $z]
+} {44 {data {mdef A:I} 3 {123456 0 -654321}}}
     
 test 26 {64-bit ints} {
-    vq load [vq emit [vq data {mdef A:L} 2 {12345678901 23456789012}]]
-} {data {mdef A:L} 2 {12345678901 23456789012}}
+    set z [vq emit {data {mdef A:L} 2 {12345678901 23456789012}}]
+    list [string length $z] [vq load $z]
+} {48 {data {mdef A:L} 2 {12345678901 23456789012}}}
 
 test 27 {32-bit floats} {
-    vq load [vq emit [vq data {mdef A:F} 3 {1.25 2.5 3.75}]]
-} {data {mdef A:F} 3 {1.25 2.5 3.75}}
+    set z [vq emit {data {mdef A:F} 3 {1.25 2.5 3.75}}]
+    list [string length $z] [vq load $z]
+} {44 {data {mdef A:F} 3 {1.25 2.5 3.75}}}
 
 test 28 {64-bit floats} {
-    vq load [vq emit [vq data {mdef A:D} 2 {1234567.25 2345678.75}]]
-} {data {mdef A:D} 2 {1234567.25 2345678.75}}
+    set z [vq emit {data {mdef A:D} 2 {1234567.25 2345678.75}}]
+    list [string length $z] [vq load $z]
+} {48 {data {mdef A:D} 2 {1234567.25 2345678.75}}}
 
 test 29 {} {
     set v [vq iota 10000 A]
@@ -184,8 +194,8 @@ test 31 {F117, 2006-12-16} {
     binary scan $z H* w
     regsub -all {..} [string replace $w 0 3 4?4?] {& }
 } {4? 4? 1a 00 00 00 00 26 31 00 02 80 83 41 3a 53\
-     82 82 88 81 8a 80 80 00 00 00 00 00 00 16 80 00\
-     00 0b 00 00 00 0b }
+   82 82 88 81 8a 80 80 00 00 00 00 00 00 16 80 00\
+   00 0b 00 00 00 0b }
     
 test 32 {F117, 2006-12-16} {
     vq load [vq emit [vq data {mdef A} 2 {1 {}}]]
