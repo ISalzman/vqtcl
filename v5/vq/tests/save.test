@@ -179,4 +179,20 @@ test 30 {} {
     string length [vq emit $v]
 } 20035
 
+test 31 {F117, 2006-12-16} {
+    set z [vq emit [vq data {mdef A} 2 {1 {}}]]
+    binary scan $z H* w
+    regsub -all {..} [string replace $w 0 3 4?4?] {& }
+} {4? 4? 1a 00 00 00 00 26 31 00 02 80 83 41 3a 53\
+     82 82 88 81 8a 80 80 00 00 00 00 00 00 16 80 00\
+     00 0b 00 00 00 0b }
+    
+test 32 {F117, 2006-12-16} {
+    vq load [vq emit [vq data {mdef A} 2 {1 {}}]]
+} {data {mdef A} 2 {1 {}}}
+    
+test 33 {} {
+    vq load [vq emit [vq data {mdef A} 2 {{} 1}]]
+} {data {mdef A} 2 {{} 1}}
+
 ::tcltest::cleanupTests
