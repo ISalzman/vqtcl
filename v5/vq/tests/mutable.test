@@ -318,7 +318,15 @@ test 39 {nested references are independent} {
     list [vq at $t 1 0 99] [vq at $u 1 0 99]
 } {11 22}
 
-test 40 {copy of original is independent} {
+test 40 {nested references both track original} {
+    set t [vq iota 3 N]
+    vq set @t 1 0 11
+    set u @t
+    vq set @t 1 0 33
+    list [vq at $t 1 0 99] [vq at @u 1 0 99]
+} {33 33}
+
+test 41 {copy of original is independent} {
     set t [vq iota 3 N]
     vq set @t 1 0 11
     set u $t
@@ -326,7 +334,7 @@ test 40 {copy of original is independent} {
     list [vq at $t 1 0 99] [vq at $u 1 0 99]
 } {11 22}
 
-test 41 {copy of original does not track changes} {
+test 42 {copy of original does not track changes} {
     set t [vq iota 3 N]
     vq set @t 1 0 11
     set u $t
