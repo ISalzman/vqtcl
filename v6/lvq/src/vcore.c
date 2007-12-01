@@ -1,9 +1,10 @@
 #include <stdlib.h>
 
-typedef struct vq_Item *vq_View;
+typedef struct vq_Item vq_Item, *vq_View;
 
 struct vq_Item {
-    int a, b;
+    vq_View a;
+    int b;
 };
 
 static vq_View vq_meta (vq_View v) {
