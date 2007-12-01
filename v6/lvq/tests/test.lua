@@ -1,8 +1,7 @@
 #!/usr/local/bin/lua5.1
 
-require "lvq"
-print(lvq._VERSION)
-print(lvq._DESCRIPTION)
+require 'lvq'
+print(lvq._VERSION, '\n')
 
 m=lvq.view(nil, 0)
 print(m)

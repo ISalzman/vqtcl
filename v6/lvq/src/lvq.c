@@ -1,3 +1,8 @@
+/*  Extension interface code.
+    This file is part of LuaVlerq.
+    See lvq.h for full copyright notice.
+    $Id$  */
+
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"

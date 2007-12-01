@@ -1,3 +1,8 @@
+/*  Core definitions and code.
+    This file is part of LuaVlerq.
+    See lvq.h for full copyright notice.
+    $Id$  */
+
 #include <stdlib.h>
 
 typedef struct vq_Item vq_Item, *vq_View;

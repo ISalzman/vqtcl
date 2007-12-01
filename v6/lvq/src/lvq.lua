@@ -1,6 +1,7 @@
---[[  $Id$
-      LuaVlerq wrapper.  
-]]--  This file is part of LuaVlerq.  See lvq.h for copyright notice.
+--[[  Wrapper module.  
+      This file is part of LuaVlerq.
+      See lvq.h for full copyright notice.
+      $Id$  ]]--
 
 local core = require "lvq.core"
 
