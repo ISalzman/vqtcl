@@ -1,5 +1,7 @@
 /* tvq.c - Tcl binding for Vlerq */
 
+#if defined(VQ_EMBED_LUA)
+
 #define luaall_c
 
 #include "lapi.c"
@@ -32,6 +34,8 @@
 #include "loslib.c"
 #include "lstrlib.c"
 #include "ltablib.c"
+
+#endif
 
 #include "lvq.c"
 
