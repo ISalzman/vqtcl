@@ -5,9 +5,7 @@
 
 #include "lua.h"
 #include "lauxlib.h"
-#include "lualib.h"
 #include "lvq.h"
-
 #include "vcore.c"
 
 #include <string.h>
@@ -47,16 +45,6 @@ static int row_index (lua_State *L) {
 static int row2string (lua_State *L) {
     vq_Item *vi = checkrow(L, 1);
     lua_pushfstring(L, "row[%d]", vi->b);
-    return 1;
-}
-
-static int lvq_view (lua_State *L) {
-    vq_View *metap = (vq_View*) lua_touserdata(L, 1);
-    int size = luaL_checkint(L, 2);
-    vq_View *viewp = (vq_View*) lua_newuserdata(L, sizeof(vq_View));
-    luaL_getmetatable(L, "LuaVlerq.view");
-    lua_setmetatable(L, -2);
-    *viewp = vq_new(*metap, size);
     return 1;
 }
 
@@ -112,6 +100,16 @@ static const struct luaL_reg vqlib_view_m[] = {
     {NULL, NULL},
 };
 
+static int lvq_view (lua_State *L) {
+    vq_View *metap = (vq_View*) lua_touserdata(L, 1);
+    int size = luaL_checkint(L, 2);
+    vq_View *viewp = (vq_View*) lua_newuserdata(L, sizeof(vq_View));
+    luaL_getmetatable(L, "LuaVlerq.view");
+    lua_setmetatable(L, -2);
+    *viewp = vq_new(*metap, size);
+    return 1;
+}
+
 static const struct luaL_reg vqlib_f[] = {
     {"view", lvq_view},
     {NULL, NULL},
@@ -119,10 +117,7 @@ static const struct luaL_reg vqlib_f[] = {
 
 static void set_info (lua_State *L) {
     lua_pushliteral (L, "_COPYRIGHT");
-    lua_pushliteral (L, "Copyright (C) 2007 Jean-Claude Wippler");
-    lua_settable (L, -3);
-    lua_pushliteral (L, "_DESCRIPTION");
-    lua_pushliteral (L, "Lua Views and Queries");
+    lua_pushliteral (L, "Copyright (C) 1996-2007 Jean-Claude Wippler");
     lua_settable (L, -3);
     lua_pushliteral (L, "_VERSION");
     lua_pushliteral (L, "LuaVlerq 1.6.0");
