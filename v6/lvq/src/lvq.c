@@ -45,7 +45,7 @@ static int row2string (lua_State *L) {
     return 1;
 }
 
-static int lvq_new (lua_State *L) {
+static int lvq_view (lua_State *L) {
     vq_View *metap = (vq_View*) lua_touserdata(L, 1);
     int size = luaL_checkint(L, 2);
     vq_View *viewp = (vq_View*) lua_newuserdata(L, sizeof(vq_View));
@@ -108,7 +108,7 @@ static const struct luaL_reg vqlib_view_m[] = {
 };
 
 static const struct luaL_reg vqlib_f[] = {
-    {"new", lvq_new},
+    {"view", lvq_view},
     {NULL, NULL},
 };
 
@@ -125,17 +125,17 @@ static void set_info (lua_State *L) {
 }
 
 int luaopen_lvq_core (lua_State *L) {
-    luaL_newmetatable(L, "LuaVlerq.view");
-    lua_pushstring(L, "__index");
-    lua_pushvalue(L, -2);
-    lua_settable(L, -3);
-    luaL_register(L, NULL, vqlib_view_m);
-    
     luaL_newmetatable(L, "LuaVlerq.row");
     lua_pushstring(L, "__index");
     lua_pushvalue(L, -2);
     lua_settable(L, -3);
     luaL_register(L, NULL, vqlib_row_m);
+    
+    luaL_newmetatable(L, "LuaVlerq.view");
+    lua_pushstring(L, "__index");
+    lua_pushvalue(L, -2);
+    lua_settable(L, -3);
+    luaL_register(L, NULL, vqlib_view_m);
     
     luaL_register(L, "lvq", vqlib_f);
     set_info (L);
