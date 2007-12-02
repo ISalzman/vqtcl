@@ -1,8 +1,8 @@
-all: vq
+all: vqx
 	
-vq: vq.c
-	gcc -o $@ -I../lua/src -I../lvq/src -DLUA_USE_POSIX -Os vq.c
-	#strip $@
+vqx: vqx.c
+	gcc -o $@ -I../lua/src -I../lvq/src -DLUA_USE_POSIX -Os vqx.c
+	strip $@
 
 clean:
-	rm -f vq
+	rm -f vqx
