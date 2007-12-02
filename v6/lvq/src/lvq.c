@@ -1,12 +1,13 @@
 /*  Lua extension binding.
-    This file is part of LuaVlerq.
-    See lvq.h for full copyright notice.
-    $Id$  */
+    $Id$
+    This file is part of Vlerq, see lvq.h for the full copyright notice.  */
 
 #include "lua.h"
 #include "lauxlib.h"
 #include "lvq.h"
+
 #include "vcore.c"
+#include "vopdef.c"
 
 #include <string.h>
 
@@ -159,29 +160,9 @@ static int view_empty (lua_State *L) {
     return 1;
 }
 
-static int view_iota (lua_State *L) {
-    LVQ_ARGS(L,A,"VS");
-    return pushview(L, IotaView(vq_size(A[0].o.a.v), A[1].o.a.s));
-}
-
 static int view_meta (lua_State *L) {
     LVQ_ARGS(L,A,"V");
     return pushview(L, vq_meta(A[0].o.a.v));
-}
-
-static int view_pass (lua_State *L) {
-    vq_View orig, t;
-    int c, cols;
-    LVQ_ARGS(L,A,"V");
-    orig = A[0].o.a.v;
-    t = vq_new(vMeta(orig), 0);
-    cols = vCount(vMeta(orig));
-    vCount(t) = vCount(orig);
-    for (c = 0; c < cols; ++c) {
-        t[c] = orig[c];
-        vq_retain(t[c].o.a.v);
-    }
-    return pushview(L, t);
 }
 
 static int view_gc (lua_State *L) {
@@ -221,15 +202,31 @@ static int view2string (lua_State *L) {
     return 1;
 }
 
+#if VQ_MOD_OPDEF
+
+static int view_iota (lua_State *L) {
+    LVQ_ARGS(L,A,"VS");
+    return pushview(L, IotaView(vq_size(A[0].o.a.v), A[1].o.a.s));
+}
+
+static int view_pass (lua_State *L) {
+    LVQ_ARGS(L,A,"V");
+    return pushview(L, PassView(A[0].o.a.v));
+}
+
+#endif
+
 static const struct luaL_reg vqlib_view_m[] = {
     {"empty", view_empty},
-    {"iota", view_iota},
     {"meta", view_meta},
-    {"pass", view_pass},
     {"__gc", view_gc},
     {"__index", view_index},
     {"__len", view_len},
     {"__tostring", view2string},
+#if VQ_MOD_OPDEF
+    {"iota", view_iota},
+    {"pass", view_pass},
+#endif
     {NULL, NULL},
 };
 
@@ -251,6 +248,9 @@ int luaopen_lvq_core (lua_State *L) {
 #endif
 #if VQ_MOD_MUTABLE
                         " mutable"
+#endif
+#if VQ_MOD_OPDEF
+                        " opdef"
 #endif
 #if VQ_MOD_NULLABLE
                         " nullable"

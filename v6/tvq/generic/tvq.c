@@ -1,7 +1,6 @@
 /*  Tcl extension binding.
-    This file is part of LuaVlerq.
-    See lvq.h for full copyright notice.
-    $Id$  */
+    $Id$
+    This file is part of Vlerq, see lvq.h for the full copyright notice.  */
 
 #if defined(VQ_EMBED_LUA)
 

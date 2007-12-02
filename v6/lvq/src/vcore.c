@@ -1,9 +1,6 @@
 /*  Vlerq core definitions and code.
-    This file is part of LuaVlerq.
-    See lvq.h for full copyright notice.
-    $Id$  */
-
-/* Vlerq core */
+    $Id$
+    This file is part of Vlerq, see lvq.h for the full copyright notice.  */
 
 #include "vdefs.h"
 
@@ -185,35 +182,35 @@ static void ObjectVecCleaner (Vector v) {
 }
 
 static Dispatch nvtab = {
-    "nilvec", 2, -1, 0, FreeVector, NilVecGetter, NilVecSetter, 0 
+    "nilvec", 2, -1, 0, FreeVector, NilVecGetter, NilVecSetter
 };
 static Dispatch ivtab = {
-    "intvec", 2, 4, 0, FreeVector, IntVecGetter, IntVecSetter, 0 
+    "intvec", 2, 4, 0, FreeVector, IntVecGetter, IntVecSetter
 };
 static Dispatch lvtab = {
-    "longvec", 2, 8, 0, FreeVector, LongVecGetter, LongVecSetter, 0  
+    "longvec", 2, 8, 0, FreeVector, LongVecGetter, LongVecSetter 
 };
 static Dispatch fvtab = {
-    "floatvec", 2, 4, 0, FreeVector, FloatVecGetter, FloatVecSetter, 0  
+    "floatvec", 2, 4, 0, FreeVector, FloatVecGetter, FloatVecSetter 
 };
 static Dispatch dvtab = {
-    "doublevec", 2, 8, 0, FreeVector, DoubleVecGetter, DoubleVecSetter, 0  
+    "doublevec", 2, 8, 0, FreeVector, DoubleVecGetter, DoubleVecSetter 
 };
 static Dispatch svtab = {
     "stringvec", 2, sizeof(void*), 0, 
-    StringVecCleaner, StringVecGetter, StringVecSetter, 0
+    StringVecCleaner, StringVecGetter, StringVecSetter
 };
 static Dispatch bvtab = {
     "bytesvec", 2, sizeof(vq_Item), 0, 
-    BytesVecCleaner, BytesVecGetter, BytesVecSetter, 0
+    BytesVecCleaner, BytesVecGetter, BytesVecSetter
 };
 static Dispatch tvtab = {
     "viewvec", 2, sizeof(void*), 0, 
-    ViewVecCleaner, ViewVecGetter, ViewVecSetter, 0
+    ViewVecCleaner, ViewVecGetter, ViewVecSetter
 };
 static Dispatch ovtab = {
     "objvec", 2, sizeof(void*), 0, 
-    ObjectVecCleaner, ObjectVecGetter, ObjectVecSetter, 0
+    ObjectVecCleaner, ObjectVecGetter, ObjectVecSetter
 };
 
 Vector AllocDataVec (vq_Type type, int rows) {
@@ -257,7 +254,7 @@ static void ViewCleaner (Vector v) {
 }
 /* TODO: support row replaces (and insert/delete) on standard views */
 static Dispatch vtab = {
-    "view", 2, sizeof(vq_Item), 0, ViewCleaner, 0, 0, 0 
+    "view", 2, sizeof(vq_Item), 0, ViewCleaner
 };
 
 vq_View vq_new (vq_View meta, int rows) {
@@ -298,41 +295,6 @@ vq_View EmptyMetaView (void) {
         Vq_setView(mm, 2, 2, meta);
     }
     return meta;
-}
-
-#pragma mark - IOTA VIRTUAL TABLE -
-
-void IndirectCleaner (Vector v) {
-    vq_release(vMeta(v));
-    FreeVector(v);
-}
-vq_View IndirectView (vq_View meta, Dispatch *vtabp, int rows, int extra) {
-    int i, cols = vCount(meta);
-    vq_View t = AllocVector(vtabp, cols * sizeof *t + extra);
-    assert(vtabp->prefix >= 3);
-    vMeta(t) = vq_retain(meta);
-    vData(t) = t + cols;
-    vCount(t) = rows;
-    for (i = 0; i < cols; ++i) {
-        t[i].o.a.v = t;
-        t[i].o.b.i = i;
-    }
-    return t;
-}
-
-static vq_Type IotaGetter (int row, vq_Item *item) {
-    item->o.a.i = row;
-    return VQ_int;
-}
-static Dispatch iotatab = {
-    "iota", 3, 0, 0, IndirectCleaner, IotaGetter, 0, 0
-};
-vq_View IotaView (int rows, const char *name) {
-    vq_View meta = vq_new(vq_meta(0), 1);
-    Vq_setString(meta, 0, 0, name);
-    Vq_setInt(meta, 0, 1, VQ_int);
-    Vq_setView(meta, 0, 2, EmptyMetaView());
-    return IndirectView(meta, &iotatab, rows, 0);
 }
 
 #pragma mark - CORE TABLE FUNCTIONS -
@@ -455,16 +417,6 @@ const char* TypeAsString (int type, char *buf) {
 #pragma mark - OPERATOR WRAPPERS -
 
 #if 0
-static vq_Type AtCmd_VIIO (vq_Item a[]) {
-    vq_View t = a[0].o.a.v;
-    vq_Type type = Vq_getInt(vMeta(t), a[2].o.a.i, 1, VQ_nil) & VQ_TYPEMASK;
-    if (type != VQ_nil && ObjToItem(type, a+3)) {
-        *a = vq_get(t, a[1].o.a.i, a[2].o.a.i, type, a[3]);
-        return type;
-    }
-    *a = a[3];
-    return VQ_object;
-}
 static vq_Type MdefCmd_O (vq_Item a[]) {
     a->o.a.v = ObjAsMetaView(a[0].o.a.p);
     return VQ_view;

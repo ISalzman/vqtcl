@@ -1,7 +1,6 @@
 /*  Vlerq core public C header.
-    This file is part of LuaVlerq.
-    See lvq.h for full copyright notice.
-    $Id$  */
+    $Id$
+    This file is part of Vlerq, see lvq.h for the full copyright notice.  */
 
 #include <stdint.h>
 #include <unistd.h>

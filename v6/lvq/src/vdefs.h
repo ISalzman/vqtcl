@@ -1,7 +1,6 @@
 /*  Vlerq private C header.
-    This file is part of LuaVlerq.
-    See lvq.h for full copyright notice.
-    $Id$  */
+    $Id$
+    This file is part of Vlerq, see lvq.h for the full copyright notice.  */
 
 #ifndef VQ_DEFS_H
 #define VQ_DEFS_H
@@ -24,6 +23,10 @@
 
 #ifndef VQ_MOD_MUTABLE
 #define VQ_MOD_MUTABLE VQ_MOD_ALL
+#endif
+
+#ifndef VQ_MOD_OPDEF
+#define VQ_MOD_OPDEF VQ_MOD_ALL
 #endif
 
 #ifndef VQ_MOD_NULLABLE
@@ -121,7 +124,6 @@ Vector (AllocDataVec) (vq_Type type, int rows);
 vq_View (EmptyMetaView) (void);
 void (IndirectCleaner) (Vector v);
 vq_View (IndirectView) (vq_View meta, Dispatch *vtab, int rows, int extra);
-vq_View (IotaView) (int rows, const char *name);
 
 /* utility wrappers in core.c */
 
@@ -178,6 +180,11 @@ vq_View (WrapMutable) (vq_View t, Object_p o);
 vq_Type (ReplaceCmd_OIIV) (vq_Item a[]);
 vq_Type (SetCmd_OIIO) (vq_Item a[]);
 vq_Type (UnsetCmd_OII) (vq_Item a[]);
+
+/* vopdef.c */
+
+vq_View (IotaView) (int rows, const char *name);
+vq_View (PassView) (vq_View v);
 
 /* buffer.c */
 
