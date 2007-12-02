@@ -36,7 +36,7 @@
 #include <stdio.h>
 
 int main (int argc, char **argv) {
-    lua_State *L=lua_open();
+    lua_State *L = lua_open();
     luaL_openlibs(L);
     
     lua_pushcfunction(L, luaopen_lvq_core);
@@ -45,8 +45,8 @@ int main (int argc, char **argv) {
     
     luaL_dostring(L, "package.loaded['lvq.core'] = lvq");
     
-    if (argc>1 && luaL_dofile(L,argv[1])!=0)
-         fprintf(stderr,"%s\n",lua_tostring(L,-1));
+    if (argc > 1 && luaL_dofile(L,argv[1]) != 0)
+         fprintf(stderr,"%s\n", lua_tostring(L, -1));
     
     lua_close(L);
     return 0;
