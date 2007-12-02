@@ -70,6 +70,7 @@ static void UpdateLuaStrRep (Tcl_Obj *obj) {
     char buf[50];
     int n = sprintf(buf, "luaobj#%d", (int) obj->internalRep.twoPtrValue.ptr2);
     obj->bytes = strcpy(malloc(n+1), buf);
+    obj->length = n;
 }
 
 static int SetLuaFromAnyRep (Tcl_Interp *interp, Tcl_Obj *obj) {
@@ -95,10 +96,6 @@ static int LuaCallback (lua_State *L) {
     Tcl_Obj **o = lua_touserdata(L, -2), *list = *o;
     Tcl_Interp* ip = lua_touserdata(L, -1);
     int i, n = lua_gettop(L) - 2;
-    if (list == NULL || ip == NULL) {
-        lua_pushstring(L, "LuaCallback not called with proper args");
-        lua_error(L);
-    }
     list = Tcl_DuplicateObj(list);
     Tcl_IncrRefCount(list);
     for (i = 1; i <= n; ++i) {
@@ -127,12 +124,6 @@ static int LuaCallback (lua_State *L) {
 }
 
 static int LuaObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
-#if 0
-    if (objc > 1)
-        luaL_dostring(data, Tcl_GetString(objv[1]));
-    Tcl_AppendResult(interp, "bla bla", NULL);
-    return TCL_OK;
-#endif
     int v, i, len;
     char *ptr, *fmt;
     double d;
