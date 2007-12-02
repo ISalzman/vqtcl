@@ -12,6 +12,7 @@ test 1 {} {
 } {}
 
 test 2 {} {
+    tvq "gs" dofile "../lvq/src/lvq.lua"
     tvq "gs" dofile "../lvq/tests/test.lua"
 } {}
 

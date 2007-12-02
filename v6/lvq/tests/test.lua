@@ -24,7 +24,7 @@ print(33)
 --print(m.blah)
 
 mt=getmetatable(m)
-for k,v in pairs(mt) do print(k,v) end
+--for k,v in pairs(mt) do print(k,v) end
 
 function mt.blah (v)
   print("v:", v, type(v))
@@ -33,15 +33,9 @@ end
 
 print(m.blah)
 print(m:blah())
+print(44)
 
 mm=m:meta():meta()
-print(mm[1][1])
-print(mm[1].name)
-print(mm[2].name)
-print(mm[3].name)
-print(mm[1].type)
-print(mm[2].type)
-print(mm[3].type)
-print(#mm[1].subv)
-print(#mm[2].subv)
-print(#mm[3].subv)
+print(mm:dump())
+print()
+print(lvq.view(12345):dump())
