@@ -30,6 +30,23 @@ static int pushview (lua_State *L, vq_View v) {
     return 1;
 }
 
+static int pushitem (lua_State *L, vq_Type type, vq_Item *itemp) {
+    if (itemp == NULL)
+        return 0;
+    switch (type) {
+        case VQ_nil:    lua_pushnil(L); break;
+        case VQ_int:    lua_pushinteger(L, itemp->o.a.i); break;
+        case VQ_long:   lua_pushnumber(L, itemp->w); break;
+        case VQ_float:  lua_pushnumber(L, itemp->o.a.f); break;
+        case VQ_double: lua_pushnumber(L, itemp->d); break;
+        case VQ_string: lua_pushstring(L, itemp->o.a.s); break;
+        case VQ_bytes:  lua_pushlstring(L, itemp->o.a.p, itemp->o.b.i); break;
+        case VQ_view:   pushview(L, itemp->o.a.v); break;
+        case VQ_object: lua_pushnumber(L, -1); assert(0); break;
+    }
+    return 1;
+}
+
 static void parseargs(lua_State *L, vq_Item *buf, const char *desc) {
     int i;
     size_t n;
@@ -43,76 +60,90 @@ static void parseargs(lua_State *L, vq_Item *buf, const char *desc) {
                         buf[i].o.b.i = n;
                         break;
             case 'R':   buf[i] = *checkrow(L, i+1); break;
-            case 'V':   buf[i].o.a.m = checkview(L, i+1); break;
+            case 'V':   buf[i].o.a.v = checkview(L, i+1); break;
         }
 }
 
-#define LVQ_ARGS(L,args,desc) vq_Item args[10]; parseargs(L, args, desc)
-
-static int row_call (lua_State *L) {
-    LVQ_ARGS(L,A,"RI");
-    lua_pushinteger(L, A[0].o.b.i * 1000 + A[1].o.a.i);
-    return 1;
-}
+#define LVQ_ARGS(state,args,desc) \
+            vq_Item args[sizeof(desc)-1]; \
+            parseargs(state, args, desc)
 
 static int row_gc (lua_State *L) {
     vq_Item *vi = lua_touserdata(L, 1); assert(vi != NULL);
-    vq_release(vi->o.a.m);
+    vq_release(vi->o.a.v);
     return 0;
 }
 
 static int row_index (lua_State *L) {
-    LVQ_ARGS(L,A,"RS");
-    lua_pushinteger(L, strlen(A[1].o.a.s));
-    return 1;
+    vq_View v;
+    vq_Item item;
+    int r, c, cols;
+    LVQ_ARGS(L,A,"R");
+    v = A[0].o.a.v;
+    r = A[0].o.b.i;
+    cols = vCount(vMeta(v));
+    if (lua_isnumber(L, 2))
+        c = lua_tointeger(L, 2) - 1;
+    else {
+        const char *s = luaL_checkstring(L, 2);
+        /* TODO: optimize this dumb linear search */
+        for (c = 0; c < cols; ++c)
+            if (strcmp(s, Vq_getString(v, c, 0, "")) == 0)
+                break;
+    }    
+    if (r < 0 || r >= vCount(v) || c < 0 || c >= cols)
+        return 0;
+    item = v[c];
+    return pushitem(L, GetItem(r, &item), &item);
+}
+
+static int row_toindex (lua_State *L) {
+    return 0;
 }
 
 static int row2string (lua_State *L) {
     LVQ_ARGS(L,A,"R");
-    lua_pushfstring(L, "row:%p,%d", A[0].o.a.p, A[0].o.b.i);
+    lua_pushfstring(L, "row:%p,%d", A[0].o.a.p, A[0].o.b.i + 1);
     return 1;
 }
 
 static const struct luaL_reg vqlib_row_m[] = {
-    {"__call", row_call},
     {"__gc", row_gc},
     {"__index", row_index},
+    {"__toindex", row_index},
     {"__tostring", row2string},
     {NULL, NULL},
 };
 
 static int view_empty (lua_State *L) {
     LVQ_ARGS(L,A,"VII");
-    lua_pushboolean(L, vq_empty(A[0].o.a.m, A[1].o.a.i, A[2].o.a.i));
+    lua_pushboolean(L, vq_empty(A[0].o.a.v, A[1].o.a.i, A[2].o.a.i));
     return 1;
 }
 
 static int view_iota (lua_State *L) {
     LVQ_ARGS(L,A,"VS");
-    pushview(L, IotaView(vq_size(A[0].o.a.m), A[1].o.a.s));
-    return 1;
+    return pushview(L, IotaView(vq_size(A[0].o.a.v), A[1].o.a.s));
 }
 
 static int view_meta (lua_State *L) {
     LVQ_ARGS(L,A,"V");
-    pushview(L, vq_meta(A[0].o.a.m));
-    return 1;
+    return pushview(L, vq_meta(A[0].o.a.v));
 }
 
 static int view_pass (lua_State *L) {
     vq_View orig, t;
     int c, cols;
     LVQ_ARGS(L,A,"V");
-    orig = A[0].o.a.m;
+    orig = A[0].o.a.v;
     t = vq_new(vMeta(orig), 0);
     cols = vCount(vMeta(orig));
     vCount(t) = vCount(orig);
     for (c = 0; c < cols; ++c) {
         t[c] = orig[c];
-        vq_retain(t[c].o.a.m);
+        vq_retain(t[c].o.a.v);
     }
-    pushview(L, t);
-    return VQ_view;
+    return pushview(L, t);
 }
 
 static int view_gc (lua_State *L) {
@@ -126,8 +157,8 @@ static int view_index (lua_State *L) {
         vq_Item *rp;
         LVQ_ARGS(L,A,"VI");
         rp = lua_newuserdata(L, sizeof *rp);
-        rp->o.a.m = vq_retain(A[0].o.a.m);
-        rp->o.b.i = A[1].o.a.i;
+        rp->o.a.v = vq_retain(A[0].o.a.v);
+        rp->o.b.i = A[1].o.a.i - 1;
         luaL_getmetatable(L, "LuaVlerq.row");
         lua_setmetatable(L, -2);
     } else {
@@ -142,13 +173,13 @@ static int view_index (lua_State *L) {
 
 static int view_len (lua_State *L) {
     LVQ_ARGS(L,A,"V");
-    lua_pushinteger(L, vq_size(A[0].o.a.m));
+    lua_pushinteger(L, vq_size(A[0].o.a.v));
     return 1;
 }
 
 static int view2string (lua_State *L) {
     LVQ_ARGS(L,A,"V");
-    lua_pushfstring(L, "view:%p#%d:ISV", A[0].o.a.m, vq_size(A[0].o.a.m));
+    lua_pushfstring(L, "view:%p#%d:ISV", A[0].o.a.v, vq_size(A[0].o.a.v));
     return 1;
 }
 
@@ -167,8 +198,7 @@ static const struct luaL_reg vqlib_view_m[] = {
 static int lvq_view (lua_State *L) {
     int size = luaL_checkint(L, 1);
     vq_View meta = lua_isnoneornil(L, 2) ? NULL : checkview(L, 2);
-    pushview(L, vq_new(meta, size));
-    return 1;
+    return pushview(L, vq_new(meta, size));
 }
 
 static const struct luaL_reg vqlib_f[] = {

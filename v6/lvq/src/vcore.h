@@ -35,7 +35,7 @@ typedef union vq_Item_u {
             const char            *s;
             const uint8_t         *b;
             void                  *p;
-            union vq_Item_u       *m;
+            union vq_Item_u       *v;
             void                 (*c)(void*);
             struct vq_Dispatch_s  *h;
             int                   *n;

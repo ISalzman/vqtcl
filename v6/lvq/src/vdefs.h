@@ -59,13 +59,13 @@ typedef vq_View Vector;
 
 #define vType(vecptr)   ((vecptr)[-1].o.a.h)
 #define vRefs(vecptr)   ((vecptr)[-1].o.b.i)
-#define vMeta(vecptr)   ((vecptr)[-2].o.a.m)    /* same slot as vLimit */
+#define vMeta(vecptr)   ((vecptr)[-2].o.a.v)    /* same slot as vLimit */
 #define vLimit(vecptr)  ((vecptr)[-2].o.a.i)    /* same slot as vMeta */
 #define vCount(vecptr)  ((vecptr)[-2].o.b.i)
-#define vOrig(vecptr)   ((vecptr)[-3].o.a.m)
+#define vOrig(vecptr)   ((vecptr)[-3].o.a.v)
 #define vData(vecptr)   ((vecptr)[-3].o.b.p)
-#define vInsv(vecptr)   ((vecptr)[-4].o.a.m)
-#define vDelv(vecptr)   ((vecptr)[-4].o.b.m)
+#define vInsv(vecptr)   ((vecptr)[-4].o.a.v)
+#define vDelv(vecptr)   ((vecptr)[-4].o.b.v)
 #define vOref(vecptr)   ((vecptr)[-5].o.a.p)
 #define vPerm(vecptr)   ((vecptr)[-5].o.b.p)
 

@@ -77,7 +77,7 @@ static vq_Type BytesVecGetter (int row, vq_Item *item) {
 }
 static vq_Type ViewVecGetter (int row, vq_Item *item) {
     vq_View *p = item->o.a.p;
-    item->o.a.m = p[row];
+    item->o.a.v = p[row];
     return VQ_view;
 }
 static vq_Type ObjectVecGetter (int row, vq_Item *item) {
@@ -136,7 +136,7 @@ static void BytesVecSetter (Vector v, int row, int col, const vq_Item *item) {
 static void ViewVecSetter (Vector v, int row, int col, const vq_Item *item) {
     vq_View *p = (vq_View*) v, x = p[row];
     VQ_UNUSED(col);
-    p[row] = item != 0 ? vq_retain(item->o.a.m) : 0;
+    p[row] = item != 0 ? vq_retain(item->o.a.v) : 0;
     vq_release(x);
 }
 static void ObjectVecSetter (Vector v, int row, int col, const vq_Item *item) {
@@ -251,7 +251,7 @@ Vector AllocDataVec (vq_Type type, int rows) {
 static void ViewCleaner (Vector v) {
     int i, n = vCount(vMeta(v));
     for (i = 0; i < n; ++i)
-        vq_release(v[i].o.a.m);
+        vq_release(v[i].o.a.v);
     vq_release(vMeta(v));
     FreeVector(v);
 }
@@ -271,7 +271,7 @@ vq_View vq_new (vq_View meta, int rows) {
         int i, n = vCount(meta);
         for (i = 0; i < n; ++i) {
             int type = Vq_getInt(meta, i, 1, VQ_nil) & VQ_TYPEMASK;
-            t[i].o.a.m = vq_retain(AllocDataVec(type, rows));
+            t[i].o.a.v = vq_retain(AllocDataVec(type, rows));
         }
     }
     return t;
@@ -283,12 +283,12 @@ vq_View EmptyMetaView (void) {
         vq_View mm = AllocVector(&vtab, 3 * sizeof *mm);
         vMeta(mm) = mm; /* circular */
         vCount(mm) = 3;
-        mm[0].o.a.m = vq_retain(AllocDataVec(VQ_string, 3));
-        mm[1].o.a.m = vq_retain(AllocDataVec(VQ_int, 3));
-        mm[2].o.a.m = vq_retain(AllocDataVec(VQ_view, 3));
+        mm[0].o.a.v = vq_retain(AllocDataVec(VQ_string, 3));
+        mm[1].o.a.v = vq_retain(AllocDataVec(VQ_int, 3));
+        mm[2].o.a.v = vq_retain(AllocDataVec(VQ_view, 3));
         Vq_setString(mm, 0, 0, "name");
         Vq_setString(mm, 1, 0, "type");
-        Vq_setString(mm, 2, 0, "subt");
+        Vq_setString(mm, 2, 0, "subv");
         Vq_setInt(mm, 0, 1, VQ_string);
         Vq_setInt(mm, 1, 1, VQ_int);
         Vq_setInt(mm, 2, 1, VQ_view);
@@ -314,7 +314,7 @@ vq_View IndirectView (vq_View meta, Dispatch *vtabp, int rows, int extra) {
     vData(t) = t + cols;
     vCount(t) = rows;
     for (i = 0; i < cols; ++i) {
-        t[i].o.a.m = t;
+        t[i].o.a.v = t;
         t[i].o.b.i = i;
     }
     return t;
@@ -338,7 +338,7 @@ vq_View IotaView (int rows, const char *name) {
 #pragma mark - CORE TABLE FUNCTIONS -
 
 vq_Type GetItem (int row, vq_Item *item) {
-    Vector v = item->o.a.m;
+    Vector v = item->o.a.v;
     if (v == 0)
         return VQ_nil;
     assert(vType(v)->getter != 0);
@@ -371,7 +371,7 @@ vq_Item vq_get (vq_View t, int row, int column, vq_Type type, vq_Item def) {
 void vq_set (vq_View t, int row, int col, vq_Type type, vq_Item val) {
     /* use view setter if defined, else column setter */
     if (vType(t)->setter == 0) {
-        t = t[col].o.a.m;
+        t = t[col].o.a.v;
         assert(t != 0 && vType(t)->setter != 0);
     }
     /* TODO: copy-on-write of columns if refcount > 1 */
@@ -399,9 +399,9 @@ const char *Vq_getString (vq_View t, int row, int col, const char *def) {
 }
 vq_View Vq_getView (vq_View t, int row, int col, vq_View def) {
     vq_Item item;
-    item.o.a.m = def;
+    item.o.a.v = def;
     item = vq_get(t, row, col, VQ_view, item);
-    return item.o.a.m;
+    return item.o.a.v;
 }
 
 void Vq_setEmpty (vq_View t, int row, int col) {
@@ -420,7 +420,7 @@ void Vq_setString (vq_View t, int row, int col, const char *val) {
 }
 void Vq_setView (vq_View t, int row, int col, vq_View val) {
     vq_Item item;
-    item.o.a.m = val;
+    item.o.a.v = val;
     vq_set(t, row, col, val != 0 ? VQ_view : VQ_nil, item);
 }
 
@@ -456,7 +456,7 @@ const char* TypeAsString (int type, char *buf) {
 
 #if 0
 static vq_Type AtCmd_VIIO (vq_Item a[]) {
-    vq_View t = a[0].o.a.m;
+    vq_View t = a[0].o.a.v;
     vq_Type type = Vq_getInt(vMeta(t), a[2].o.a.i, 1, VQ_nil) & VQ_TYPEMASK;
     if (type != VQ_nil && ObjToItem(type, a+3)) {
         *a = vq_get(t, a[1].o.a.i, a[2].o.a.i, type, a[3]);
@@ -466,7 +466,7 @@ static vq_Type AtCmd_VIIO (vq_Item a[]) {
     return VQ_object;
 }
 static vq_Type MdefCmd_O (vq_Item a[]) {
-    a->o.a.m = ObjAsMetaView(a[0].o.a.p);
+    a->o.a.v = ObjAsMetaView(a[0].o.a.p);
     return VQ_view;
 }
 #endif
