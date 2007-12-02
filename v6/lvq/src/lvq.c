@@ -1,4 +1,4 @@
-/*  Extension interface code.
+/*  Lua extension binding.
     This file is part of LuaVlerq.
     See lvq.h for full copyright notice.
     $Id$  */

@@ -8,13 +8,15 @@ test 0 {} {
 } $version
 
 test 1 {} {
-    tvq new ""
-} {bla bla}
+    tvq "go" type blah
+} {}
 
 test 2 {} {
-    lua { dofile "../lvq/tests/test.lua" }
-    lua { assert(dostring "?") }
-    lua { print "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" }
-} {bla bla}
+    tvq "gs" dofile "../lvq/tests/test.lua"
+} {}
+
+test 3 {} {
+    list [catch { tvq "gt" assert 0 } e] $e
+} {1 {assertion failed!}}
 
 ::tcltest::cleanupTests
