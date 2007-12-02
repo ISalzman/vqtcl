@@ -89,6 +89,7 @@ static vq_Type ObjectVecGetter (int row, vq_Item *item) {
 static void NilVecSetter (Vector v, int row, int col, const vq_Item *item) {
     char *p = (char*) v;
     int bit = 1 << (row&7);
+    VQ_UNUSED(col);
     if (item != 0)
         p[row/8] |= bit;
     else
@@ -96,27 +97,33 @@ static void NilVecSetter (Vector v, int row, int col, const vq_Item *item) {
 }
 static void IntVecSetter (Vector v, int row, int col, const vq_Item *item) {
     int *p = (int*) v;
+    VQ_UNUSED(col);
     p[row] = item != 0 ? item->o.a.i : 0;
 }
 static void LongVecSetter (Vector v, int row, int col, const vq_Item *item) {
     int64_t *p = (int64_t*) v;
+    VQ_UNUSED(col);
     p[row] = item != 0 ? item->w : 0;
 }
 static void FloatVecSetter (Vector v, int row, int col, const vq_Item *item) {
     float *p = (float*) v;
+    VQ_UNUSED(col);
     p[row] = item != 0 ? item->o.a.f : 0;
 }
 static void DoubleVecSetter (Vector v, int row, int col, const vq_Item *item) {
     double *p = (double*) v;
+    VQ_UNUSED(col);
     p[row] = item != 0 ? item->d : 0;
 }
 static void StringVecSetter (Vector v, int row, int col, const vq_Item *item) {
     const char **p = (const char**) v, *x = p[row];
+    VQ_UNUSED(col);
     p[row] = item != 0 ? strcpy(malloc(strlen(item->o.a.s)+1), item->o.a.s) : 0;
     free((void*) x);
 }
 static void BytesVecSetter (Vector v, int row, int col, const vq_Item *item) {
     vq_Item *p = (vq_Item*) v, x = p[row];
+    VQ_UNUSED(col);
     if (item != 0) {
         p[row].o.a.p = memcpy(malloc(item->o.b.i), item->o.a.p, item->o.b.i);
         p[row].o.b.i = item->o.b.i;
@@ -128,12 +135,18 @@ static void BytesVecSetter (Vector v, int row, int col, const vq_Item *item) {
 }
 static void ViewVecSetter (Vector v, int row, int col, const vq_Item *item) {
     vq_View *p = (vq_View*) v, x = p[row];
+    VQ_UNUSED(col);
     p[row] = item != 0 ? vq_retain(item->o.a.m) : 0;
     vq_release(x);
 }
 static void ObjectVecSetter (Vector v, int row, int col, const vq_Item *item) {
+    VQ_UNUSED(v);
+    VQ_UNUSED(row);
+    VQ_UNUSED(col);
+    VQ_UNUSED(item);
 /*
     Object_p *p = (Object_p*) v, x = p[row];
+    VQ_UNUSED(col);
     p[row] = item != 0 ? ObjIncRef(item->o.a.p) : 0;
     ObjDecRef(x);
 */
@@ -161,6 +174,7 @@ static void ViewVecCleaner (Vector v) {
     FreeVector(v);
 }
 static void ObjectVecCleaner (Vector v) {
+    VQ_UNUSED(v);
 /*
     int i;
     Object_p *p = (Object_p*) v;
@@ -348,6 +362,7 @@ int vq_empty (vq_View t, int row, int column) {
 }
 vq_Item vq_get (vq_View t, int row, int column, vq_Type type, vq_Item def) {
     vq_Item item;
+    VQ_UNUSED(type); /* TODO: is this really not used? */
     if (row < 0 || row >= vCount(t) || column < 0 || column >= vCount(vMeta(t)))
         return def;
     item = t[column];
@@ -450,61 +465,11 @@ static vq_Type AtCmd_VIIO (vq_Item a[]) {
     *a = a[3];
     return VQ_object;
 }
-#endif
-static vq_Type ConfigCmd_ (vq_Item a[]) {
-    a->o.a.s = VQ_VERSION
-#if VQ_MOD_LOAD
-            " load"
-#endif
-#if VQ_MOD_MUTABLE
-            " mutable"
-#endif
-#if VQ_MOD_NULLABLE
-            " nullable"
-#endif
-#if VQ_MOD_SAVE
-            " save"
-#endif
-        ;
-    return VQ_string;
-}
-static vq_Type EmptyCmd_VII (vq_Item a[]) {
-    a->o.a.i = vq_empty(a[0].o.a.m, a[1].o.a.i, a[2].o.a.i);
-    return VQ_int;
-}
-static vq_Type IotaCmd_VS (vq_Item a[]) {
-    a->o.a.m = IotaView(vq_size(a[0].o.a.m), a[1].o.a.s);
-    return VQ_view;
-}
-#if 0
 static vq_Type MdefCmd_O (vq_Item a[]) {
     a->o.a.m = ObjAsMetaView(a[0].o.a.p);
     return VQ_view;
 }
 #endif
-static vq_Type MetaCmd_V (vq_Item a[]) {
-    a->o.a.m = vq_meta(a[0].o.a.m);
-    return VQ_view;
-}
-static vq_Type NewCmd_V (vq_Item a[]) {
-    a->o.a.m = vq_new(a[0].o.a.m, 0);
-    return VQ_view;
-}
-static vq_Type PassCmd_V (vq_Item a[]) {
-    vq_View orig = a[0].o.a.m, t = vq_new(vMeta(orig), 0);
-    int c, cols = vCount(vMeta(orig));
-    vCount(t) = vCount(orig);
-    for (c = 0; c < cols; ++c) {
-        t[c] = orig[c];
-        vq_retain(t[c].o.a.m);
-    }
-    a->o.a.m = t;
-    return VQ_view;
-}
-static vq_Type SizeCmd_V (vq_Item a[]) {
-    a->o.a.m = vq_new(0, vq_size(a[0].o.a.m));
-    return VQ_view;
-}
 
 #pragma mark - OPERATOR DISPATCH -
 

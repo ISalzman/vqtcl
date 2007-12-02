@@ -6,7 +6,8 @@
 #include <stdint.h>
 #include <unistd.h>
 
-#define VQ_VERSION "1.6.0"
+#define VQ_VERSION "1.6"
+#define VQ_RELEASE "1.6.0"
 #define VQ_COPYRIGHT "Copyright (C) 1996-2007 Jean-Claude Wippler"
 
 #define VQ_TYPES "NILFDSBTO"

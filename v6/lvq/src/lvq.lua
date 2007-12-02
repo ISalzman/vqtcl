@@ -7,7 +7,7 @@ local lvq = require "lvq.core"
 
 module ("lvq", package.seeall)
 
-assert(_VERSION == "LuaVlerq 1.6.0")
+assert(_VERSION == "LuaVlerq 1.6")
 
 local m={}
 
