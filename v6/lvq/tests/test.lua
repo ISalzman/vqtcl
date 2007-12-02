@@ -33,9 +33,27 @@ end
 
 print(m.blah)
 print(m:blah())
-print(44)
 
+print(44)
+m:p()
+m:meta():p()
+m:meta():meta():p()
+
+print(55)
 mm=m:meta():meta()
-print(mm:dump())
-print()
-print(lvq.view(12345):dump())
+
+t=lvq.view(2,mm)
+t[1].name='first'
+t[1].type=5
+t[2].name='age'
+t[2].type=1
+t:p()
+
+v=lvq.view(3,t)
+v[1].first='joe'
+v[1].age=8
+v[2].first='philip'
+v[2].age=35
+v[3].first='inez'
+v[3].age=21
+v:p()

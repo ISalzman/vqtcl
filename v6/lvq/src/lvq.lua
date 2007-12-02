@@ -23,11 +23,9 @@ function mt.hrepeat (v, n)
   if n==0 then 
     return lvq.view(#v)
   end
-  local w={}
-  for i=1,n do
-    table.insert(w, v)
-  end
-  return mt.pair(unpack(w))
+  local w=v
+  for i=2,n do w = w .. v end
+  return w
 end
 
 function mt.vrepeat (v, n)
@@ -79,13 +77,17 @@ function mt.dump (vw, maxrows)
   local dashes = string.format(fmt, unpack(seps))
   -- collect all output
   local out = {}
-  table.insert(out, string.format(fmt, unpack(names)))
-  table.insert(out, dashes)
-  for _,row in ipairs(data) do
-    table.insert(out, string.format(fmt, unpack(row)))
+  out[1] = string.format(fmt, unpack(names))
+  out[2] = dashes
+  for r,row in ipairs(data) do
+    out[r+2] = string.format(fmt, unpack(row))
   end
   if #vw > #data then
     table.insert(out, (string.gsub(dashes, '-', '.')))
   end
   return table.concat(out, '\n')
+end
+
+function mt:p ()
+  print(self:dump())
 end

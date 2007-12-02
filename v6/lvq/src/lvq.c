@@ -47,6 +47,24 @@ static int pushitem (lua_State *L, vq_Type type, vq_Item *itemp) {
     return 1;
 }
 
+static vq_Item toitem (lua_State *L, int t, vq_Type type) {
+    vq_Item item;
+    size_t n;
+    switch (type) {
+        case VQ_nil:    break;
+        case VQ_int:    item.o.a.i = luaL_checkinteger(L, t); break;
+        case VQ_long:   item.w = (int64_t) luaL_checknumber(L, t); break;
+        case VQ_float:  item.o.a.f = (float) luaL_checknumber(L, t); break;
+        case VQ_double: item.d = luaL_checknumber(L, t); break;
+        case VQ_string: item.o.a.s = luaL_checkstring(L, t); break;
+        case VQ_bytes:  item.o.a.s = luaL_checklstring(L, t, &n);
+                        item.o.b.i = n; break;
+        case VQ_view:   item.o.a.v = checkview(L, t); break;
+        case VQ_object: assert(0); break;
+    }
+    return item;
+}
+
 static void parseargs(lua_State *L, vq_Item *buf, const char *desc) {
     int i;
     size_t n;
@@ -54,6 +72,7 @@ static void parseargs(lua_State *L, vq_Item *buf, const char *desc) {
         switch (desc[i]) {
             default:    assert(0);
             case 0:     return;
+            case '-':   break;
             case 'I':   buf[i].o.a.i = luaL_checkinteger(L, i+1); break;
             case 'D':   buf[i].d = luaL_checknumber(L, i+1); break;
             case 'S':   buf[i].o.a.s = luaL_checklstring(L, i+1, &n);
@@ -74,30 +93,49 @@ static int row_gc (lua_State *L) {
     return 0;
 }
 
-static int row_index (lua_State *L) {
-    vq_View v;
-    vq_Item item;
-    int r, c, cols;
-    LVQ_ARGS(L,A,"R");
-    v = A[0].o.a.v;
-    r = A[0].o.b.i;
-    cols = vCount(vMeta(v));
+static int rowlookup (lua_State *L, vq_View v) {
+    vq_View meta = vMeta(v);
+    int c, cols = vCount(meta);
     if (lua_isnumber(L, 2))
         c = lua_tointeger(L, 2) - 1;
     else {
         const char *s = luaL_checkstring(L, 2);
         /* TODO: optimize this dumb linear search */
         for (c = 0; c < cols; ++c)
-            if (strcmp(s, Vq_getString(v, c, 0, "")) == 0)
+            if (strcmp(s, Vq_getString(meta, c, 0, "")) == 0)
                 break;
-    }    
-    if (r < 0 || r >= vCount(v) || c < 0 || c >= cols)
+    }   
+    return 0 <= c && c < cols ? c : -1;
+}
+
+static int row_index (lua_State *L) {
+    vq_View v;
+    vq_Item item;
+    int r, c;
+    LVQ_ARGS(L,A,"R");
+    v = A[0].o.a.v;
+    r = A[0].o.b.i;
+    c = rowlookup(L, v);
+    if (r < 0 || r >= vCount(v) || c < 0)
         return 0;
     item = v[c];
     return pushitem(L, GetItem(r, &item), &item);
 }
 
-static int row_toindex (lua_State *L) {
+static int row_newindex (lua_State *L) {
+    vq_View v;
+    vq_Item item;
+    vq_Type type;
+    int r, c;
+    LVQ_ARGS(L,A,"R");
+    v = A[0].o.a.v;
+    r = A[0].o.b.i;
+    c = rowlookup(L, v);
+    if (c < 0 || r < 0 || r >= vCount(v))
+        return 0;
+    type = Vq_getInt(vMeta(v), c, 1, VQ_nil) & VQ_TYPEMASK;
+    item = toitem(L, 3, type);
+    vq_set(v, r, c, type, item);
     return 0;
 }
 
@@ -110,7 +148,7 @@ static int row2string (lua_State *L) {
 static const struct luaL_reg vqlib_row_m[] = {
     {"__gc", row_gc},
     {"__index", row_index},
-    {"__toindex", row_index},
+    {"__newindex", row_newindex},
     {"__tostring", row2string},
     {NULL, NULL},
 };
