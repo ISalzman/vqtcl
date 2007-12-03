@@ -90,3 +90,11 @@ end
 function mt:p (...)
   print(self:dump(...))
 end
+
+function mt.save (v,f) 
+  local s = v:emit()
+  local f=io.open(f,'wb')
+  f:write(s)
+  f:close()
+  return #s
+end

@@ -58,3 +58,16 @@ vv=lvq.open('../data/simple.db')
 print(vv)
 vv[1].v:p()
 print(lvq.open('../data/alltypes.db'))
+
+s=v:emit()
+print(#s)
+f=io.open('haha.db','wb')
+f:write(s)
+f:close()
+
+lvq.open('haha.db'):p()
+os.remove('haha.db')
+
+print(v:save('hehe.db'))
+lvq.open('hehe.db'):p()
+os.remove('hehe.db')

@@ -277,6 +277,27 @@ static int view_pass (lua_State *L) {
 
 #endif
 
+#if VQ_MOD_SAVE
+
+static void* EmitDataFun (void *buf, const void *ptr, intptr_t len) {
+    luaL_addlstring(buf, ptr, len);
+    return buf;
+}
+
+static int view_emit (lua_State *L) {
+    int e;
+    luaL_Buffer b;
+    LVQ_ARGS(L,A,"V");
+    luaL_buffinit(L, &b);   
+    e = ViewSave(A[0].o.a.v, &b, NULL, EmitDataFun) < 0;
+    luaL_pushresult(&b);
+    if (e)
+        return luaL_error(L, "error in view emit");
+    return 1;
+}
+
+#endif
+
 static const struct luaL_reg vqlib_view_m[] = {
     {"empty", view_empty},
     {"meta", view_meta},
@@ -287,6 +308,9 @@ static const struct luaL_reg vqlib_view_m[] = {
 #if VQ_MOD_OPDEF
     {"iota", view_iota},
     {"pass", view_pass},
+#endif
+#if VQ_MOD_SAVE
+    {"emit", view_emit},
 #endif
     {NULL, NULL},
 };
