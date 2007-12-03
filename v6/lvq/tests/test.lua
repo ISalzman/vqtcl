@@ -81,3 +81,7 @@ print(type(mv[1].age))
 mv:p()
 print(vvv:type())
 print(mv:type())
+
+lvq.view(4):iota('N'):p()
+--lvq.view(4):iota('N',3):p()
+--lvq.view(4):iota('N',0):p()

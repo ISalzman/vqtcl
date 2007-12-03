@@ -27,18 +27,20 @@ vq_View IndirectView (vq_View meta, Dispatch *vtabp, int rows, int extra) {
 }
 
 static vq_Type IotaGetter (int row, vq_Item *item) {
-    item->o.a.i = row;
+    item->o.a.i = row + vOffs(item->o.a.v);
     return VQ_int;
 }
 static Dispatch iotatab = {
     "iota", 3, 0, 0, IndirectCleaner, IotaGetter
 };
-vq_View IotaView (int rows, const char *name) {
-    vq_View meta = vq_new(vq_meta(0), 1);
+vq_View IotaView (int rows, const char *name, int base) {
+    vq_View v, meta = vq_new(vq_meta(0), 1);
     Vq_setString(meta, 0, 0, name);
     Vq_setInt(meta, 0, 1, VQ_int);
     Vq_setView(meta, 0, 2, EmptyMetaView());
-    return IndirectView(meta, &iotatab, rows, 0);
+    v = IndirectView(meta, &iotatab, rows, 0);
+    vOffs(v) = base;
+    return v;
 }
 
 #pragma mark - PASS AS NEW VIEW -

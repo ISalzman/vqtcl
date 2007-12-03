@@ -70,6 +70,7 @@ typedef vq_View Vector;
 #define vLimit(vecptr)  ((vecptr)[-2].o.a.i)    /* same slot as vMeta */
 #define vCount(vecptr)  ((vecptr)[-2].o.b.i)
 #define vOrig(vecptr)   ((vecptr)[-3].o.a.v)
+#define vOffs(vecptr)   ((vecptr)[-3].o.a.i)
 #define vData(vecptr)   ((vecptr)[-3].o.b.p)
 #define vInsv(vecptr)   ((vecptr)[-4].o.a.v)
 #define vDelv(vecptr)   ((vecptr)[-4].o.b.v)
@@ -187,7 +188,7 @@ vq_Type (UnsetCmd_OII) (vq_Item a[]);
 
 /* vopdef.c */
 
-vq_View (IotaView) (int rows, const char *name);
+vq_View (IotaView) (int rows, const char *name, int base);
 vq_View (PassView) (vq_View v);
 
 /* buffer.c */

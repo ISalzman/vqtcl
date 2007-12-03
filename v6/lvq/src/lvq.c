@@ -295,8 +295,9 @@ static int view_replace (lua_State *L) {
 #if VQ_MOD_OPDEF
 
 static int view_iota (lua_State *L) {
+    int base = luaL_optinteger(L, 3, 1);
     LVQ_ARGS(L,A,"VS");
-    return pushview(L, IotaView(vq_size(A[0].o.a.v), A[1].o.a.s));
+    return pushview(L, IotaView(vq_size(A[0].o.a.v), A[1].o.a.s, base));
 }
 
 static int view_pass (lua_State *L) {
