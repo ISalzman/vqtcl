@@ -13,20 +13,30 @@ test 1 {} {
     tvq "go" type blah
 } userdata
 
-test 2 {} {
-    tvq "gs" dofile "../lvq/src/lvq.lua"
+test 2 {} skip {
+    tvq "gs" print "Looney tickles!"
 } {}
 
 test 3 {} {
+    tvq "gs" dofile "../lvq/src/lvq.lua"
+} {}
+
+test 4 {} {
     list [catch { tvq "gt" assert 0 } e] $e
 } {1 {assertion failed!}}
 
-test 4 {} {
+test 5 {} {
     luas { return 1+2*3 }
 } 7
 
-test 5 {} {
+test 6 {} skip {
     tvq "gs" dofile "../lvq/tests/test.lua"
 } {}
+
+test 7 {} -body {
+    luas { function setglobal(x,y) _G[x]= y end }
+    tvq gsc setglobal tcl eval
+    tvq gs tcl { puts "Hello Tcl!" }
+} -output "Hello Tcl!\n"
 
 ::tcltest::cleanupTests

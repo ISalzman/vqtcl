@@ -58,7 +58,7 @@ extern Tcl_ObjType f_luaObjType;
 static void FreeLuaIntRep (Tcl_Obj *obj) {
     lua_State *L = obj->internalRep.twoPtrValue.ptr1;
     int t = (int) obj->internalRep.twoPtrValue.ptr2;
-    lua_unref(L, t);
+    luaL_unref(L, LUA_REGISTRYINDEX, t);
 }
 
 static void DupLuaIntRep (Tcl_Obj *src, Tcl_Obj *obj) {
@@ -129,10 +129,11 @@ static Tcl_Obj* LuaAsTclObj (lua_State *L, int i) {
 }
 
 static int LuaCallback (lua_State *L) {
-    Tcl_Obj **o = lua_touserdata(L, -2), *list = *o;
-    Tcl_Interp* ip = lua_touserdata(L, -1);
-    int i, n = lua_gettop(L) - 2;
-    list = Tcl_DuplicateObj(list);
+    Tcl_Obj *list, **o = lua_touserdata(L, lua_upvalueindex(1));
+    Tcl_Interp* ip = lua_touserdata(L, lua_upvalueindex(2));
+    int i, n = lua_gettop(L);
+    assert(o != NULL);
+    list = Tcl_DuplicateObj(*o);
     Tcl_IncrRefCount(list);
     for (i = 1; i <= n; ++i)
         Tcl_ListObjAppendElement(ip, list, LuaAsTclObj(L, i));
@@ -197,15 +198,13 @@ static int LuaObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *co
                 if (obj->typePtr == &f_luaObjType) { // unbox
                     lua_State *L = obj->internalRep.twoPtrValue.ptr1;
                     int t = (int) obj->internalRep.twoPtrValue.ptr2;
-                    lua_pushvalue(L, t);
+                    lua_rawgeti(L, LUA_REGISTRYINDEX, t);
                     break;
                 } // else fall through
             case 'c': {
-                Tcl_Obj **op = (Tcl_Obj**) lua_newuserdata(L, sizeof *op);
+                Tcl_Obj **op = newtypeddata(L, sizeof *op, "Vlerq.tcl");
                 *op = obj;
               	Tcl_IncrRefCount(*op);
-                luaL_getmetatable(L, "Vlerq.tcl");
-                lua_setmetatable(L, -2);
                 if (fmt[-1] == 'c') {
                   	lua_pushlightuserdata(L, interp);
                   	lua_pushcclosure(L, LuaCallback, 2);
@@ -232,8 +231,7 @@ static void LuaDelProc (ClientData data) {
 }
 
 static int tclobj_jc (lua_State *L) {
-    Tcl_Obj *p = lua_touserdata(L, -1);
-    assert(p != NULL);
+    Tcl_Obj *p = lua_touserdata(L, -1); assert(p != NULL);
     Tcl_DecrRefCount(p);
     return 0;
 }
@@ -249,17 +247,17 @@ DLLEXPORT int Tvq_Init (Tcl_Interp *interp) {
     
     luaL_openlibs(L);
 
-    lua_pushcfunction(L, luaopen_lvq_core);
-    lua_pushstring(L, "lvq.core");
-    lua_call(L, 1, 0);
-    luaL_dostring(L, "package.loaded['lvq.core'] = lvq");
-
     luaL_newmetatable(L, "Vlerq.tcl");
     lua_pushstring(L, "__gc");
     lua_pushcfunction(L, tclobj_jc);
     lua_settable(L, -3);
 
-    luaL_dostring(L, "function dostring (x) return loadstring(x)() end");
+    lua_pushcfunction(L, luaopen_lvq_core);
+    lua_pushstring(L, "lvq.core");
+    lua_call(L, 1, 0);
+
+    luaL_dostring(L, "package.loaded['lvq.core'] = lvq; "
+                     "function dostring (x) return loadstring(x)() end");
     
     Tcl_CreateObjCommand(interp, "tvq", LuaObjCmd, L, NULL);
     return Tcl_PkgProvide(interp, "tvq", PACKAGE_VERSION);

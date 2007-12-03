@@ -27,11 +27,16 @@ static vq_View checkview (lua_State *L, int t) {
     return *(vq_View*) ud;
 }
 
-static int pushview (lua_State *L, vq_View v) {
-    vq_View *vp = lua_newuserdata(L, sizeof *vp);
-    *vp = vq_retain(v);
-    luaL_getmetatable(L, "Vlerq.view");
+static void *newtypeddata (lua_State *L, size_t bytes, const char *tag) {
+    void *p = lua_newuserdata(L, bytes);
+    luaL_getmetatable(L, tag);
     lua_setmetatable(L, -2);
+    return p;
+}
+
+static int pushview (lua_State *L, vq_View v) {
+    vq_View *vp = newtypeddata(L, sizeof *vp, "Vlerq.view");
+    *vp = vq_retain(v);
     return 1;
 }
 
@@ -188,11 +193,9 @@ static int view_index (lua_State *L) {
     if (lua_isnumber(L, 2)) {
         vq_Item *rp;
         LVQ_ARGS(L,A,"VI");
-        rp = lua_newuserdata(L, sizeof *rp);
+        rp = newtypeddata(L, sizeof *rp, "Vlerq.row");
         rp->o.a.v = vq_retain(A[0].o.a.v);
         rp->o.b.i = A[1].o.a.i - 1;
-        luaL_getmetatable(L, "Vlerq.row");
-        lua_setmetatable(L, -2);
     } else {
         const char* s = luaL_checkstring(L, 2);
         if (!luaL_getmetafield(L, 1, s))
