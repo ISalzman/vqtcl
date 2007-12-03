@@ -1,4 +1,4 @@
-/* Load views from a Metakit-format memory map.
+/*  Load views from a Metakit-format memory map.
     $Id$
     This file is part of Vlerq, see lvq.h for the full copyright notice.  */
 

@@ -53,7 +53,7 @@ function mt.dump (vw, maxrows)
   if #meta == 0 then return '  ('..#vw..' rows, 0 columns)' end
   for c = 1,#meta do
     local t = meta[c].type
-    desc = desc..'  %%'..(t == 5 and '-' or '')..'%ds'
+    desc = desc..'  %%'..(t == 5 and '-' or '+')..'%ds'
     funs[c] = renderers[t]
     names[c] = meta[c].name
     widths[c] = #names[c]
@@ -76,7 +76,7 @@ function mt.dump (vw, maxrows)
   local dashes = fmt:format(unpack(seps))
   -- collect all output
   local out = {}
-  out[1] = fmt:format(unpack(names))
+  out[1] = fmt:gsub('+','-'):format(unpack(names))
   out[2] = dashes
   for r,row in ipairs(data) do
     out[r+2] = fmt:format(unpack(row))

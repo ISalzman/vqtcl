@@ -10,6 +10,10 @@
 #include "vopdef.c"
 #include "vreader.c"
 #include "vload.c"
+#include "vbuffer.c"
+#include "vsave.c"
+#include "vnullable.c"
+#include "vmutable.c"
 
 static vq_Item * checkrow (lua_State *L, int t) {
     void *ud = luaL_checkudata(L, t, "LuaVlerq.row");

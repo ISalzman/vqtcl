@@ -5,7 +5,8 @@ CONFIG = ./config
 include $(CONFIG)
 
 SRCS = src/$T.c src/$T.h src/vcore.c src/vcore.h src/vdefs.h src/vopdef.c \
-	src/vreader.c src/vload.c
+	src/vreader.c src/vload.c src/vbuffer.c src/vsave.c src/vnullable.c \
+	src/vmutable.c
 OBJS = src/$T.o
 LUAS = src/$T.lua
 

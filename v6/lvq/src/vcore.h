@@ -42,7 +42,7 @@ typedef union vq_Item_u {
         union {
             int               i;
             void             *p;
-            union vq_Item_u  *m;
+            union vq_Item_u  *v;
         } b;
     }        o;
     int64_t  w;
