@@ -9,8 +9,6 @@
 #include "vcore.c"
 #include "vopdef.c"
 
-#include <string.h>
-
 static vq_Item * checkrow (lua_State *L, int t) {
     void *ud = luaL_checkudata(L, t, "LuaVlerq.row");
     luaL_argcheck(L, ud != NULL, t, "'row' expected");
@@ -71,14 +69,10 @@ static void parseargs(lua_State *L, vq_Item *buf, const char *desc) {
     for (i = 0; desc[i]; ++i) {
         vq_Type type;
         switch (desc[i]) {
-            default:    assert(0); /* might fall through */
             case 0:     return;
-            case 'I':   type = VQ_int; break;
-            case 'D':   type = VQ_double; break;
-            case 'S':   type = VQ_string; break;
-            case 'V':   type = VQ_view; break;
             case 'R':   buf[i] = *checkrow(L, i+1); continue;
             case '-':   continue;
+            default:    type = CharAsType(desc[i]); break;
         }
         buf[i] = toitem(L, i+1, type);
     }
@@ -192,7 +186,6 @@ static int view_len (lua_State *L) {
 static void viewstruct (luaL_Buffer *B, vq_View meta) {
     int c;
     char buf[30];
-    luaL_addchar(B, '(');
     for (c = 0; c < vCount(meta); ++c) {
         int type = Vq_getInt(meta, c, 1, VQ_nil);
         if ((type & VQ_TYPEMASK) == VQ_view) {
@@ -200,14 +193,16 @@ static void viewstruct (luaL_Buffer *B, vq_View meta) {
             if (m != NULL) {
                 if (m == meta)
                     luaL_addchar(B, '^');
-                else
+                else {
+                    luaL_addchar(B, '(');
                     viewstruct(B, m);
+                    luaL_addchar(B, ')');
+                }
                 continue;
             }
         }
         luaL_addstring(B, TypeAsString(type, buf));
     }
-    luaL_addchar(B, ')');
 }
 
 static int view2string (lua_State *L) {
