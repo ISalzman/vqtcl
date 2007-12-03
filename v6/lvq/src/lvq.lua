@@ -87,13 +87,13 @@ function mt.dump (vw, maxrows)
   return table.concat(out, '\n')
 end
 
-function mt:p (...)
-  print(self:dump(...))
+function mt.p (v, ...)
+  print(v:dump(...))
 end
 
-function mt.save (v,f) 
+function mt.save (v, fn) 
   local s = v:emit()
-  local f=io.open(f,'wb')
+  local f=io.open(fn,'wb') -- only created if emit completes successfully
   f:write(s)
   f:close()
   return #s
