@@ -9,7 +9,7 @@
 #define VQ_RELEASE "1.6.0"
 #define VQ_COPYRIGHT "Copyright (C) 1996-2007 Jean-Claude Wippler"
 
-#define VQ_TYPES "NILFDSBTO"
+#define VQ_TYPES "NILFDSBVO"
 
 typedef enum { 
     VQ_nil, 

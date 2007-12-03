@@ -68,20 +68,20 @@ static vq_Item toitem (lua_State *L, int t, vq_Type type) {
 
 static void parseargs(lua_State *L, vq_Item *buf, const char *desc) {
     int i;
-    size_t n;
-    for (i = 0; desc[i]; ++i)
+    for (i = 0; desc[i]; ++i) {
+        vq_Type type;
         switch (desc[i]) {
-            default:    assert(0);
+            default:    assert(0); /* might fall through */
             case 0:     return;
-            case '-':   break;
-            case 'I':   buf[i].o.a.i = luaL_checkinteger(L, i+1); break;
-            case 'D':   buf[i].d = luaL_checknumber(L, i+1); break;
-            case 'S':   buf[i].o.a.s = luaL_checklstring(L, i+1, &n);
-                        buf[i].o.b.i = n;
-                        break;
-            case 'R':   buf[i] = *checkrow(L, i+1); break;
-            case 'V':   buf[i].o.a.v = checkview(L, i+1); break;
+            case 'I':   type = VQ_int; break;
+            case 'D':   type = VQ_double; break;
+            case 'S':   type = VQ_string; break;
+            case 'V':   type = VQ_view; break;
+            case 'R':   buf[i] = *checkrow(L, i+1); continue;
+            case '-':   continue;
         }
+        buf[i] = toitem(L, i+1, type);
+    }
 }
 
 #define LVQ_ARGS(state,args,desc) \
@@ -89,60 +89,55 @@ static void parseargs(lua_State *L, vq_Item *buf, const char *desc) {
             parseargs(state, args, desc)
 
 static int row_gc (lua_State *L) {
-    vq_Item *vi = lua_touserdata(L, 1); assert(vi != NULL);
-    vq_release(vi->o.a.v);
+    vq_Item *pi = lua_touserdata(L, 1); assert(pi != NULL);
+    vq_release(pi->o.a.v);
     return 0;
 }
 
-static int rowlookup (lua_State *L, vq_View v) {
-    vq_View meta = vMeta(v);
-    int c, cols = vCount(meta);
-    if (lua_isnumber(L, 2))
+static int rowcolcheck (lua_State *L, vq_View *pv, int *pr) {
+    vq_View v, meta;
+    int r, c, cols;
+    vq_Item *item = checkrow(L, 1);
+    *pv = v = item->o.a.v;
+    *pr = r = item->o.b.i;
+    meta = vMeta(v);
+    cols = vCount(meta);
+    if (r < 0 || r >= vCount(v))
+        return luaL_error(L, "row index %d out of range", r+1);
+    if (lua_isnumber(L, 2)) {
         c = lua_tointeger(L, 2) - 1;
-    else {
+        if (c < 0 || c >= cols)
+            return luaL_error(L, "column index %d out of range", c+1);
+    } else {
         const char *s = luaL_checkstring(L, 2);
         /* TODO: optimize this dumb linear search */
         for (c = 0; c < cols; ++c)
             if (strcmp(s, Vq_getString(meta, c, 0, "")) == 0)
-                break;
+                return c;
+        return luaL_error(L, "column '%s' not found", s);
     }   
-    return 0 <= c && c < cols ? c : -1;
+    return c;
 }
 
 static int row_index (lua_State *L) {
     vq_View v;
-    vq_Item item;
-    int r, c;
-    LVQ_ARGS(L,A,"R");
-    v = A[0].o.a.v;
-    r = A[0].o.b.i;
-    c = rowlookup(L, v);
-    if (r < 0 || r >= vCount(v) || c < 0)
-        return 0;
-    item = v[c];
+    int r, c = rowcolcheck(L, &v, &r);
+    vq_Item item = v[c];
     return pushitem(L, GetItem(r, &item), &item);
 }
 
 static int row_newindex (lua_State *L) {
     vq_View v;
-    vq_Item item;
-    vq_Type type;
-    int r, c;
-    LVQ_ARGS(L,A,"R");
-    v = A[0].o.a.v;
-    r = A[0].o.b.i;
-    c = rowlookup(L, v);
-    if (c < 0 || r < 0 || r >= vCount(v))
-        return 0;
-    type = Vq_getInt(vMeta(v), c, 1, VQ_nil) & VQ_TYPEMASK;
-    item = toitem(L, 3, type);
+    int r, c = rowcolcheck(L, &v, &r);
+    vq_Type type = Vq_getInt(vMeta(v), c, 1, VQ_nil) & VQ_TYPEMASK;
+    vq_Item item = toitem(L, 3, type);
     vq_set(v, r, c, type, item);
     return 0;
 }
 
 static int row2string (lua_State *L) {
     LVQ_ARGS(L,A,"R");
-    lua_pushfstring(L, "row:%p,%d", A[0].o.a.p, A[0].o.b.i + 1);
+    lua_pushfstring(L, "row %p %d", A[0].o.a.p, A[0].o.b.i+1);
     return 1;
 }
 
@@ -182,10 +177,8 @@ static int view_index (lua_State *L) {
         lua_setmetatable(L, -2);
     } else {
         const char* s = luaL_checkstring(L, 2);
-        if (!luaL_getmetafield(L, 1, s)) {
-            lua_pushfstring(L, "view operator not found: %s", s);
-            lua_error(L);
-        }
+        if (!luaL_getmetafield(L, 1, s))
+            return luaL_error(L, "unknown '%s' view operator", s);
     }
     return 1;
 }
@@ -196,9 +189,24 @@ static int view_len (lua_State *L) {
     return 1;
 }
 
+static void viewdesc (luaL_Buffer *B, vq_View meta) {
+    int c;
+    char buf[30];
+    for (c = 0; c < vCount(meta); ++c) {
+        luaL_addstring(B, TypeAsString(Vq_getInt(meta, c, 1, VQ_nil), buf));
+    }
+}
+
 static int view2string (lua_State *L) {
+    vq_View v;
+    luaL_Buffer b;
     LVQ_ARGS(L,A,"V");
-    lua_pushfstring(L, "view:%p#%d:ISV", A[0].o.a.v, vq_size(A[0].o.a.v));
+    v = A[0].o.a.v;
+    lua_pushfstring(L, "view %p #%d ", v, vq_size(v));
+    luaL_buffinit(L, &b);
+    viewdesc(&b, vMeta(v));
+    luaL_pushresult(&b);
+    lua_concat(L, 2);
     return 1;
 }
 

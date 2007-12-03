@@ -115,11 +115,7 @@ static int LuaCallback (lua_State *L) {
     }
     i = Tcl_EvalObjEx(ip, list, TCL_EVAL_DIRECT);
     Tcl_DecrRefCount(list);
-    if (i != TCL_OK) {
-        lua_pushstring(L, Tcl_GetStringResult(ip));
-        lua_error(L);
-    }
-    return 0;
+    return i == TCL_OK ? 0 : luaL_error(L, "tvq: %s", Tcl_GetStringResult(ip));
 }
 
 static int LuaObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {

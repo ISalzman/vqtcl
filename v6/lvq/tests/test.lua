@@ -16,9 +16,9 @@ print(#m:meta():meta():meta())
 print(22)
 print(#m)
 print(m[55])
-print(m[55][66])
-print(m[55].abc)
-print(m[55]['abc'])
+--print(m[55][66])
+--print(m[55].abc)
+--print(m[55]['abc'])
 print(33)
 --m[1].abc=3
 --print(m.blah)
@@ -47,6 +47,7 @@ t[1].name='first'
 t[1].type=5
 t[2].name='age'
 t[2].type=1
+print(t)
 t:p()
 
 v=lvq.view(3,t)
@@ -56,4 +57,5 @@ v[2].first='philip'
 v[2].age=35
 v[3].first='inez'
 v[3].age=21
+print(v)
 v:p()
