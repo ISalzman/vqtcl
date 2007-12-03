@@ -8,6 +8,8 @@
 
 #include "vcore.c"
 #include "vopdef.c"
+#include "vreader.c"
+#include "vload.c"
 
 static vq_Item * checkrow (lua_State *L, int t) {
     void *ud = luaL_checkudata(L, t, "LuaVlerq.row");
@@ -218,6 +220,37 @@ static int view2string (lua_State *L) {
     return 1;
 }
 
+#if VQ_MOD_LOAD
+
+/*
+vq_Type lvq_load (lua_State *L) {
+    Vector map;
+    Tcl_Obj *obj = a[0].o.a.p;
+    ObjToItem(VQ_bytes, &a[0]);
+    map = OpenMappedBytes(a[0].o.a.p, a[0].o.b.i, obj);
+    if (map == 0)
+        return VQ_nil;
+    a->o.a.m = MapToTable(map);
+    return VQ_table;
+}
+*/
+
+static int lvq_open (lua_State *L) {
+    Vector map;
+    LVQ_ARGS(L,A,"S");
+    map = OpenMappedFile(A[0].o.a.s);
+    if (map == 0)
+        return luaL_error(L, "cannot map '%s' file", A[0].o.a.s);
+    return pushview(L, MapToView(map));
+}
+
+static int lvq_meta (lua_State *L) {
+    LVQ_ARGS(L,A,"S");
+    return pushview(L, DescToMeta(A[0].o.a.s, -1));
+}
+
+#endif
+
 #if VQ_MOD_OPDEF
 
 static int view_iota (lua_State *L) {
@@ -254,6 +287,11 @@ static int lvq_view (lua_State *L) {
 
 static const struct luaL_reg vqlib_f[] = {
     {"view", lvq_view},
+#if VQ_MOD_LOAD
+    /* {"load", lvq_load}, */
+    {"meta", lvq_meta},
+    {"open", lvq_open},
+#endif
     {NULL, NULL},
 };
 

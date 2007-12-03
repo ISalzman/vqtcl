@@ -42,11 +42,7 @@ m:meta():meta():p()
 print(55)
 mm=m:meta():meta()
 
-t=lvq.view(2,mm)
-t[1].name='first'
-t[1].type=5
-t[2].name='age'
-t[2].type=1
+t=lvq.meta('first,age:I')
 print(t)
 t:p()
 
@@ -59,3 +55,6 @@ v[3].first='inez'
 v[3].age=21
 print(v)
 v:p()
+
+lvq.open('../data/simple.db')[1].v:p()
+lvq.open('../data/alltypes.db')[1].v:p()

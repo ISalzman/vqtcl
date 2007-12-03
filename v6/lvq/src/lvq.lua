@@ -69,24 +69,24 @@ function mt.dump (vw, maxrows)
     end
   end
   -- set up formats and separators
-  local seps, fmt = {}, string.format(desc, unpack(widths))
+  local seps, fmt = {}, desc:format(unpack(widths))
   for i,w in ipairs(widths) do
     seps[i] = string.rep('-', w)
   end
-  local dashes = string.format(fmt, unpack(seps))
+  local dashes = fmt:format(unpack(seps))
   -- collect all output
   local out = {}
-  out[1] = string.format(fmt, unpack(names))
+  out[1] = fmt:format(unpack(names))
   out[2] = dashes
   for r,row in ipairs(data) do
-    out[r+2] = string.format(fmt, unpack(row))
+    out[r+2] = fmt:format(unpack(row))
   end
   if #vw > #data then
-    table.insert(out, (string.gsub(dashes, '-', '.')))
+    table.insert(out, (dashes:gsub('-', '.')))
   end
   return table.concat(out, '\n')
 end
 
-function mt:p ()
-  print(self:dump())
+function mt:p (...)
+  print(self:dump(...))
 end
