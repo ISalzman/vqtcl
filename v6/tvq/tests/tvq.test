@@ -25,7 +25,7 @@ test 4 {} {
     luas { return 1+2*3 }
 } 7
 
-test 5 {} skip {
+test 5 {} {
     tvq "gs" dofile "../lvq/tests/test.lua"
 } {}
 

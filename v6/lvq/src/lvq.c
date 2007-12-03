@@ -136,9 +136,13 @@ static int row_index (lua_State *L) {
 
 static int row_newindex (lua_State *L) {
     vq_View v;
+    vq_Item item;
+    vq_Type type = VQ_nil;
     int r, c = rowcolcheck(L, &v, &r);
-    vq_Type type = Vq_getInt(vMeta(v), c, 1, VQ_nil) & VQ_TYPEMASK;
-    vq_Item item = toitem(L, 3, type);
+    if (!lua_isnil(L, 3)) {
+        type = Vq_getInt(vMeta(v), c, 1, VQ_nil) & VQ_TYPEMASK;
+        item = toitem(L, 3, type);
+    }
     vq_set(v, r, c, type, item);
     return 0;
 }
@@ -159,7 +163,7 @@ static const struct luaL_reg vqlib_row_m[] = {
 
 static int view_empty (lua_State *L) {
     LVQ_ARGS(L,A,"VII");
-    lua_pushboolean(L, vq_empty(A[0].o.a.v, A[1].o.a.i, A[2].o.a.i));
+    lua_pushboolean(L, vq_empty(A[0].o.a.v, A[1].o.a.i-1, A[2].o.a.i-1));
     return 1;
 }
 

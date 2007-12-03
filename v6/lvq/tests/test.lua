@@ -69,9 +69,15 @@ print(lvq.open('../data/alltypes.db'))
 --os.remove('tmp1.db')
 
 print(v:save('tmp2.db'))
-lvq.open('tmp2.db'):p()
+vvv=lvq.open('tmp2.db')
 os.remove('tmp2.db')
 
-v:mutable():replace(1,1,lvq.view(0)):p()
-print(v:type())
-print(v:mutable():type())
+mv=vvv:mutable()
+mv:replace(1,1,lvq.view(0))
+mv[2].first = 'shirley'
+mv[1].age = nil
+print(mv:empty(1,2))
+print(type(mv[1].age))
+mv:p()
+print(vvv:type())
+print(mv:type())

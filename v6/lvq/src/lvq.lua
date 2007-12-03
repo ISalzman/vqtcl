@@ -63,7 +63,8 @@ function mt.dump (vw, maxrows)
   for r = 1,maxrows do
     data[r] = {}
     for c,f in ipairs(funs) do
-      local x = f(vw[r][c])
+      local x = vw[r][c]
+      x = x and f(x) or '' -- show nil as empty string
       data[r][c] = x
       widths[c] = math.max(widths[c], #x)
     end
