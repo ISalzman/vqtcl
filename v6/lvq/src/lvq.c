@@ -189,12 +189,25 @@ static int view_len (lua_State *L) {
     return 1;
 }
 
-static void viewdesc (luaL_Buffer *B, vq_View meta) {
+static void viewstruct (luaL_Buffer *B, vq_View meta) {
     int c;
     char buf[30];
+    luaL_addchar(B, '(');
     for (c = 0; c < vCount(meta); ++c) {
-        luaL_addstring(B, TypeAsString(Vq_getInt(meta, c, 1, VQ_nil), buf));
+        int type = Vq_getInt(meta, c, 1, VQ_nil);
+        if ((type & VQ_TYPEMASK) == VQ_view) {
+            vq_View m = Vq_getView(meta, c, 2, NULL);
+            if (m != NULL) {
+                if (m == meta)
+                    luaL_addchar(B, '^');
+                else
+                    viewstruct(B, m);
+                continue;
+            }
+        }
+        luaL_addstring(B, TypeAsString(type, buf));
     }
+    luaL_addchar(B, ')');
 }
 
 static int view2string (lua_State *L) {
@@ -204,7 +217,7 @@ static int view2string (lua_State *L) {
     v = A[0].o.a.v;
     lua_pushfstring(L, "view %p #%d ", v, vq_size(v));
     luaL_buffinit(L, &b);
-    viewdesc(&b, vMeta(v));
+    viewstruct(&b, vMeta(v));
     luaL_pushresult(&b);
     lua_concat(L, 2);
     return 1;
