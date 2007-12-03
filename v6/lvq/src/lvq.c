@@ -16,13 +16,13 @@
 #include "vmutable.c"
 
 static vq_Item * checkrow (lua_State *L, int t) {
-    void *ud = luaL_checkudata(L, t, "LuaVlerq.row");
+    void *ud = luaL_checkudata(L, t, "Vlerq.row");
     luaL_argcheck(L, ud != NULL, t, "'row' expected");
     return ud;
 }
 
 static vq_View checkview (lua_State *L, int t) {
-    void *ud = luaL_checkudata(L, t, "LuaVlerq.view");
+    void *ud = luaL_checkudata(L, t, "Vlerq.view");
     luaL_argcheck(L, ud != NULL, t, "'view' expected");
     return *(vq_View*) ud;
 }
@@ -30,7 +30,7 @@ static vq_View checkview (lua_State *L, int t) {
 static int pushview (lua_State *L, vq_View v) {
     vq_View *vp = lua_newuserdata(L, sizeof *vp);
     *vp = vq_retain(v);
-    luaL_getmetatable(L, "LuaVlerq.view");
+    luaL_getmetatable(L, "Vlerq.view");
     lua_setmetatable(L, -2);
     return 1;
 }
@@ -191,7 +191,7 @@ static int view_index (lua_State *L) {
         rp = lua_newuserdata(L, sizeof *rp);
         rp->o.a.v = vq_retain(A[0].o.a.v);
         rp->o.b.i = A[1].o.a.i - 1;
-        luaL_getmetatable(L, "LuaVlerq.row");
+        luaL_getmetatable(L, "Vlerq.row");
         lua_setmetatable(L, -2);
     } else {
         const char* s = luaL_checkstring(L, 2);
@@ -381,10 +381,10 @@ int luaopen_lvq_core (lua_State *L) {
 #endif
                         ;
 
-    luaL_newmetatable(L, "LuaVlerq.row");
+    luaL_newmetatable(L, "Vlerq.row");
     luaL_register(L, NULL, vqlib_row_m);
     
-    luaL_newmetatable(L, "LuaVlerq.view");
+    luaL_newmetatable(L, "Vlerq.view");
     luaL_register(L, NULL, vqlib_view_m);
     
     luaL_register(L, "lvq", vqlib_f);

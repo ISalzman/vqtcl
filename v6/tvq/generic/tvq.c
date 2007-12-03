@@ -204,7 +204,7 @@ static int LuaObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *co
                 Tcl_Obj **op = (Tcl_Obj**) lua_newuserdata(L, sizeof *op);
                 *op = obj;
               	Tcl_IncrRefCount(*op);
-                luaL_getmetatable(L, "LuaVlerq.tclobj");
+                luaL_getmetatable(L, "Vlerq.tcl");
                 lua_setmetatable(L, -2);
                 if (fmt[-1] == 'c') {
                   	lua_pushlightuserdata(L, interp);
@@ -254,7 +254,7 @@ DLLEXPORT int Tvq_Init (Tcl_Interp *interp) {
     lua_call(L, 1, 0);
     luaL_dostring(L, "package.loaded['lvq.core'] = lvq");
 
-    luaL_newmetatable(L, "LuaVlerq.tclobj");
+    luaL_newmetatable(L, "Vlerq.tcl");
     lua_pushstring(L, "__gc");
     lua_pushcfunction(L, tclobj_jc);
     lua_settable(L, -3);
