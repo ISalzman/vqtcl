@@ -3,21 +3,30 @@
 
 source [file join [file dir [info script]] initests.tcl]
 
+interp alias {} luas {} tvq "gs" dostring
+
 test 0 {} {
     package require tvq
 } $version
 
 test 1 {} {
     tvq "go" type blah
-} {}
+} userdata
 
 test 2 {} {
     tvq "gs" dofile "../lvq/src/lvq.lua"
-    tvq "gs" dofile "../lvq/tests/test.lua"
 } {}
 
 test 3 {} {
     list [catch { tvq "gt" assert 0 } e] $e
 } {1 {assertion failed!}}
+
+test 4 {} {
+    luas { return 1+2*3 }
+} 7
+
+test 5 {} skip {
+    tvq "gs" dofile "../lvq/tests/test.lua"
+} {}
 
 ::tcltest::cleanupTests

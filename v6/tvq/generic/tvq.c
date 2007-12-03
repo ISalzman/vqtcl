@@ -39,11 +39,11 @@
 
 #endif
 
-#include "lualib.h"
-#include "lvq.c"
-
 #define USE_TCL_STUBS 1
 #include <tcl.h>
+
+#include "lualib.h"
+#include "lvq.c"
 
 /* stub interface code, removes the need to link with libtclstub*.a */
 #if defined(STATIC_BUILD)
@@ -81,10 +81,47 @@ Tcl_ObjType f_luaObjType = {
     "luaobj", FreeLuaIntRep, DupLuaIntRep, UpdateLuaStrRep, SetLuaFromAnyRep
 };
 
-static Tcl_Obj *LuaAsTclObj (lua_State *L, int t) {
-    Tcl_Obj *obj = Tcl_NewObj();
+int ObjToItem (vq_Type type, vq_Item *item) {
+    switch (type) {
+        case VQ_int:    return Tcl_GetIntFromObj(NULL, item->o.a.p,
+                                                        &item->o.a.i) == TCL_OK;
+        case VQ_long:   return Tcl_GetWideIntFromObj(NULL, item->o.a.p,
+                                            (Tcl_WideInt*) &item->w) == TCL_OK;
+        case VQ_float:
+        case VQ_double: if (Tcl_GetDoubleFromObj(NULL, item->o.a.p,
+                                                            &item->d) != TCL_OK)
+                            return 0;
+                        if (type == VQ_float)
+                            item->o.a.f = (float) item->d;
+                        break;
+        case VQ_string: item->o.a.s = Tcl_GetString(item->o.a.p);
+                        break;
+        case VQ_bytes:  item->o.a.p = Tcl_GetByteArrayFromObj(item->o.a.p,
+                                                                &item->o.b.i);
+                        break;
+        default:        return 0;
+    }
+    return 1;
+}
+
+static Tcl_Obj* LuaAsTclObj (lua_State *L, int i) {
+    Tcl_Obj* obj;
+    if (lua_isnil(L, i)) {
+        return Tcl_NewObj();
+    }
+    if (lua_isnumber(L, i)) {
+        double d = lua_tonumber(L, i);
+        long l = (long) d;
+        return l == d ? Tcl_NewLongObj(l) : Tcl_NewDoubleObj(d);
+    }
+    if (lua_isstring(L, i)) {
+        int len = lua_strlen(L, i);
+        const char* ptr = lua_tostring(L, i);
+        return Tcl_NewByteArrayObj((unsigned char*) ptr, len);
+    }
+    obj = Tcl_NewObj();
     Tcl_InvalidateStringRep(obj);
-    lua_pushvalue(L, t);
+    lua_pushvalue(L, i);
     obj->internalRep.twoPtrValue.ptr1 = L;
     obj->internalRep.twoPtrValue.ptr2 = (void*) luaL_ref(L, LUA_REGISTRYINDEX);
     obj->typePtr = &f_luaObjType;
@@ -97,22 +134,8 @@ static int LuaCallback (lua_State *L) {
     int i, n = lua_gettop(L) - 2;
     list = Tcl_DuplicateObj(list);
     Tcl_IncrRefCount(list);
-    for (i = 1; i <= n; ++i) {
-        Tcl_Obj* elem;
-        if (lua_isnil(L, i)) {
-            elem = Tcl_NewObj();
-        } else if (lua_isnumber(L, i)) {
-            double d = lua_tonumber(L, i);
-            long l = (long) d;
-            elem = l == d ? Tcl_NewLongObj(l) : Tcl_NewDoubleObj(d);
-        } else if (lua_isstring(L, i)) {
-            int len = lua_strlen(L, i);
-            const char* ptr = lua_tostring(L, i);
-            elem = Tcl_NewByteArrayObj((unsigned char*) ptr, len);
-        } else
-            elem = LuaAsTclObj(L, i);
-        Tcl_ListObjAppendElement(ip, list, elem);
-    }
+    for (i = 1; i <= n; ++i)
+        Tcl_ListObjAppendElement(ip, list, LuaAsTclObj(L, i));
     i = Tcl_EvalObjEx(ip, list, TCL_EVAL_DIRECT);
     Tcl_DecrRefCount(list);
     return i == TCL_OK ? 0 : luaL_error(L, "tvq: %s", Tcl_GetStringResult(ip));
@@ -194,11 +217,13 @@ static int LuaObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *co
               	return TCL_ERROR;
         }
     }
-    v = lua_pcall(L, objc - 3, 0, 0);
+    v = lua_pcall(L, objc - 3, 1, 0);
     if (v != 0) {
         Tcl_SetResult(interp, (char*) lua_tostring(L, -1), TCL_VOLATILE);
         return TCL_ERROR;
     }
+    if (!lua_isnil(L, -1))
+        Tcl_SetObjResult(interp, LuaAsTclObj(L, -1));
     return TCL_OK;
 }
 
@@ -208,7 +233,7 @@ static void LuaDelProc (ClientData data) {
 
 static int tclobj_jc (lua_State *L) {
     Tcl_Obj *p = lua_touserdata(L, -1);
-    puts("tclobj: gc");
+    assert(p != NULL);
     Tcl_DecrRefCount(p);
     return 0;
 }
@@ -234,6 +259,8 @@ DLLEXPORT int Tvq_Init (Tcl_Interp *interp) {
     lua_pushcfunction(L, tclobj_jc);
     lua_settable(L, -3);
 
+    luaL_dostring(L, "function dostring (x) return loadstring(x)() end");
+    
     Tcl_CreateObjCommand(interp, "tvq", LuaObjCmd, L, NULL);
     return Tcl_PkgProvide(interp, "tvq", PACKAGE_VERSION);
 }

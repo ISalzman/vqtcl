@@ -55,6 +55,13 @@ static int pushitem (lua_State *L, vq_Type type, vq_Item *itemp) {
 static vq_Item toitem (lua_State *L, int t, vq_Type type) {
     vq_Item item;
     size_t n;
+
+    if (lua_islightuserdata(L, t)) {
+        item.o.a.p = lua_touserdata(L, t);
+        if (ObjToItem(type, &item))
+            return item;
+    }
+
     switch (type) {
         case VQ_nil:    break;
         case VQ_int:    item.o.a.i = luaL_checkinteger(L, t); break;
@@ -67,6 +74,7 @@ static vq_Item toitem (lua_State *L, int t, vq_Type type) {
         case VQ_view:   item.o.a.v = checkview(L, t); break;
         case VQ_object: assert(0); break;
     }
+
     return item;
 }
 

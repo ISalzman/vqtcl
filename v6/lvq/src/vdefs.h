@@ -47,6 +47,10 @@
 #define VQ_BIGENDIAN 1
 #endif
 
+#if !defined(_TCL)
+#define ObjToItem(t,i) 0
+#endif
+
 #define VQ_UNUSED(x)    ((void)(x))	/* to avoid warnings */
 
 /* definitions for use with vq_Type */
