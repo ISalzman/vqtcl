@@ -116,11 +116,11 @@ static int rowcolcheck (lua_State *L, vq_View *pv, int *pr) {
     meta = vMeta(v);
     cols = vCount(meta);
     if (r < 0 || r >= vCount(v))
-        return luaL_error(L, "row index %d out of range", r+1);
+        return luaL_error(L, "row index %d out of range", r);
     if (lua_isnumber(L, 2)) {
-        c = lua_tointeger(L, 2) - 1;
+        c = lua_tointeger(L, 2);
         if (c < 0 || c >= cols)
-            return luaL_error(L, "column index %d out of range", c+1);
+            return luaL_error(L, "column index %d out of range", c);
     } else {
         const char *s = luaL_checkstring(L, 2);
         /* TODO: optimize this dumb linear search */
@@ -154,7 +154,7 @@ static int row_newindex (lua_State *L) {
 
 static int row2string (lua_State *L) {
     LVQ_ARGS(L,A,"R");
-    lua_pushfstring(L, "row %p %d", A[0].o.a.p, A[0].o.b.i+1);
+    lua_pushfstring(L, "row %p %d", A[0].o.a.p, A[0].o.b.i);
     return 1;
 }
 
@@ -168,7 +168,7 @@ static const struct luaL_reg vqlib_row_m[] = {
 
 static int view_empty (lua_State *L) {
     LVQ_ARGS(L,A,"VII");
-    lua_pushboolean(L, vq_empty(A[0].o.a.v, A[1].o.a.i-1, A[2].o.a.i-1));
+    lua_pushboolean(L, vq_empty(A[0].o.a.v, A[1].o.a.i, A[2].o.a.i));
     return 1;
 }
 
@@ -195,7 +195,7 @@ static int view_index (lua_State *L) {
         LVQ_ARGS(L,A,"VI");
         rp = newtypeddata(L, sizeof *rp, "Vlerq.row");
         rp->o.a.v = vq_retain(A[0].o.a.v);
-        rp->o.b.i = A[1].o.a.i - 1;
+        rp->o.b.i = A[1].o.a.i;
     } else {
         const char* s = luaL_checkstring(L, 2);
         if (!luaL_getmetafield(L, 1, s))
@@ -295,7 +295,7 @@ static int view_mutable (lua_State *L) {
 #if VQ_MOD_OPDEF
 
 static int view_iota (lua_State *L) {
-    int base = luaL_optinteger(L, 3, 1);
+    int base = luaL_optinteger(L, 3, 0);
     LVQ_ARGS(L,A,"VS");
     return pushview(L, IotaView(vq_size(A[0].o.a.v), A[1].o.a.s, base));
 }
@@ -369,19 +369,19 @@ static const struct luaL_reg vqlib_f[] = {
 int luaopen_lvq_core (lua_State *L) {
     const char *sconf = "lvq " VQ_RELEASE
 #if VQ_MOD_LOAD
-                        " load"
+                        " lo"
 #endif
 #if VQ_MOD_MUTABLE
-                        " mutable"
+                        " mu"
 #endif
 #if VQ_MOD_OPDEF
-                        " opdef"
+                        " op"
 #endif
 #if VQ_MOD_NULLABLE
-                        " nullable"
+                        " nu"
 #endif
 #if VQ_MOD_SAVE
-                        " save"
+                        " sa"
 #endif
                         ;
 

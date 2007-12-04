@@ -1,6 +1,6 @@
---[[  Wrapper module.  
+--[=[ Wrapper module.  
       $Id$
-      This file is part of LuaVlerq, see lvq.h for full copyright notice.  ]]--
+      This file is part of LuaVlerq, see lvq.h for full copyright notice.  ]=]--
 
 local lvq = require 'lvq.core'
 
@@ -52,10 +52,10 @@ function mt.dump (vw, maxrows)
   local desc, funs, names, widths, meta = '', {}, {}, {}, vw:meta()
   if #meta == 0 then return '  ('..#vw..' rows, 0 columns)' end
   for c = 1,#meta do
-    local t = meta[c].type
+    local t = meta[c-1].type
     desc = desc..'  %%'..(t == 5 and '-' or '+')..'%ds'
     funs[c] = renderers[t]
-    names[c] = meta[c].name
+    names[c] = meta[c-1].name
     widths[c] = #names[c]
   end
   -- collect all data and calculate maximum column widths
@@ -63,7 +63,7 @@ function mt.dump (vw, maxrows)
   for r = 1,maxrows do
     data[r] = {}
     for c,f in ipairs(funs) do
-      local x = vw[r][c]
+      local x = vw[r-1][c-1]
       x = x and f(x) or '' -- show nil as empty string
       data[r][c] = x
       widths[c] = math.max(widths[c], #x)

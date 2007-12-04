@@ -45,18 +45,18 @@ t=lvq.meta('first,age:I')
 t:p()
 
 v=lvq.view(3,t)
-v[1].first='joe'
-v[1].age=8
-v[2].first='philip'
-v[2].age=35
-v[3].first='inez'
-v[3].age=21
+v[0].first='joe'
+v[0].age=8
+v[1].first='philip'
+v[1].age=35
+v[2].first='inez'
+v[2].age=21
 print(v)
 v:p()
 
 vv=lvq.open('../data/simple.db')
 print(vv)
-vv[1].v:p()
+vv[0].v:p()
 print(lvq.open('../data/alltypes.db'))
 
 --s=v:emit()
@@ -74,10 +74,10 @@ os.remove('tmp2.db')
 
 mv=vvv:mutable()
 mv:replace(1,1,lvq.view(0))
-mv[2].first = 'shirley'
-mv[1].age = nil
-print(mv:empty(1,2))
-print(type(mv[1].age))
+mv[1].first = 'shirley'
+mv[0].age = nil
+print(mv:empty(0,1))
+print(type(mv[0].age))
 mv:p()
 print(vvv:type())
 print(mv:type())

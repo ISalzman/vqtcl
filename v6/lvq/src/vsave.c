@@ -310,7 +310,7 @@ static void EmitSubCol (EmitInfo *eip, vq_Item column, int describe, int rows) {
     for (r = 0; r < rows; ++r) {
         vq_Item item = column;
         vq_Type type = GetItem (r, &item);
-        assert(type == VQ_view);
+        assert(type == VQ_view); VQ_UNUSED(type);
         EmitView(eip, item.o.a.v, describe);
     }
     eip->colbuf = origcolbuf;

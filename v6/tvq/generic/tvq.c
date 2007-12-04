@@ -2,7 +2,7 @@
     $Id$
     This file is part of Vlerq, see lvq.h for the full copyright notice.  */
 
-#if defined(VQ_EMBED_LUA)
+#if defined(NDEBUG)
 
 #define luaall_c
 
@@ -463,5 +463,7 @@ DLLEXPORT int Tvq_Init (Tcl_Interp *interp) {
                      "function dostring (x) return loadstring(x)() end");
     
     Tcl_CreateObjCommand(interp, "tvq", LuaObjCmd, L, NULL);
+    
+    assert(strcmp(PACKAGE_VERSION, VQ_RELEASE) == 0);
     return Tcl_PkgProvide(interp, "tvq", PACKAGE_VERSION);
 }

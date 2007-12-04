@@ -1,6 +1,6 @@
 # used by TextMate for F7 on bookie
 
-set mode tvq
+set mode lvq
 
 switch $mode {
     lvq {

@@ -236,7 +236,7 @@ Vector AllocDataVec (vq_Type type, int rows) {
             vtab = &tvtab; bytes = rows * sizeof(vq_View); break;
         case VQ_object:
             vtab = &ovtab; bytes = rows * sizeof(Object_p); break;
-        default: assert(0);
+        default: assert(0); return NULL;
     }
     v = AllocVector(vtab, bytes);
     vCount(v) = vLimit(v) = rows;
