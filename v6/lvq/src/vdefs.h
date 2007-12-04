@@ -102,7 +102,7 @@ Object_p (ObjIncRef) (Object_p obj);
 void (ObjDecRef) (Object_p obj);
 
 void (UpdateVar) (Object_p ref, Object_p val);
-vq_View (ObjAsMetaView) (Object_p obj);
+vq_View (ObjAsMetaView) (void *ip, Object_p obj);
 vq_View (ObjAsView) (Object_p obj);
 int (ObjToItem) (vq_Type type, vq_Item *item);
 Object_p (ChangesAsList) (vq_View view);

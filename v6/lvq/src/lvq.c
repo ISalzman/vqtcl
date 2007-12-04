@@ -210,6 +210,13 @@ static int view_len (lua_State *L) {
     return 1;
 }
 
+static int view_replace (lua_State *L) {
+    LVQ_ARGS(L,A,"VIIV");
+    vq_replace(A[0].o.a.v, A[1].o.a.i, A[2].o.a.i, A[3].o.a.v);
+    lua_pushvalue(L, 1);
+    return 1;
+}
+
 static void viewstruct (luaL_Buffer *B, vq_View meta) {
     int c;
     char buf[30];
@@ -283,13 +290,6 @@ static int view_mutable (lua_State *L) {
     return pushview(L, WrapMutable(A[0].o.a.v, NULL));
 }
 
-static int view_replace (lua_State *L) {
-    LVQ_ARGS(L,A,"VIIV");
-    vq_replace(A[0].o.a.v, A[1].o.a.i, A[2].o.a.i, A[3].o.a.v);
-    lua_pushvalue(L, 1);
-    return 1;
-}
-
 #endif
 
 #if VQ_MOD_OPDEF
@@ -331,6 +331,7 @@ static int view_emit (lua_State *L) {
 static const struct luaL_reg vqlib_view_m[] = {
     {"empty", view_empty},
     {"meta", view_meta},
+    {"replace", view_replace},
     {"type", view_type},
     {"__gc", view_gc},
     {"__index", view_index},
@@ -338,7 +339,6 @@ static const struct luaL_reg vqlib_view_m[] = {
     {"__tostring", view2string},
 #if VQ_MOD_SAVE
     {"mutable", view_mutable},
-    {"replace", view_replace},
 #endif
 #if VQ_MOD_OPDEF
     {"iota", view_iota},

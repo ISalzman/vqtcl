@@ -81,6 +81,228 @@ Tcl_ObjType f_luaObjType = {
     "luaobj", FreeLuaIntRep, DupLuaIntRep, UpdateLuaStrRep, SetLuaFromAnyRep
 };
 
+static Tcl_Obj* LuaAsTclObj (lua_State *L, int t) {
+    Tcl_Obj* obj;
+    if (lua_isnil(L, t)) {
+        return Tcl_NewObj();
+    }
+    if (lua_isnumber(L, t)) {
+        double d = lua_tonumber(L, t);
+        long l = (long) d;
+        return l == d ? Tcl_NewLongObj(l) : Tcl_NewDoubleObj(d);
+    }
+    if (lua_isstring(L, t)) {
+        int len = lua_strlen(L, t);
+        const char* ptr = lua_tostring(L, t);
+        return Tcl_NewByteArrayObj((unsigned char*) ptr, len);
+    }
+    obj = Tcl_NewObj();
+    Tcl_InvalidateStringRep(obj);
+    lua_pushvalue(L, t);
+    obj->internalRep.twoPtrValue.ptr1 = L;
+    obj->internalRep.twoPtrValue.ptr2 = (void*) luaL_ref(L, LUA_REGISTRYINDEX);
+    obj->typePtr = &f_luaObjType;
+    return obj;
+}
+
+vq_View ObjAsMetaView (void *ip, Tcl_Obj *obj) {
+    int r, rows, objc;
+    Object_p *objv, entry;
+    const char *name, *sep;
+    vq_Type type;
+    vq_View table;
+
+    if (Tcl_ListObjLength(ip, obj, &rows) != TCL_OK)
+        return 0;
+
+    table = vq_new(vMeta(EmptyMetaView()), rows);
+
+    for (r = 0; r < rows; ++r) {
+        Tcl_ListObjIndex(0, obj, r, &entry);
+        if (Tcl_ListObjGetElements(ip, entry, &objc, &objv) != TCL_OK ||
+                objc < 1 || objc > 2)
+            return 0;
+
+        name = Tcl_GetString(objv[0]);
+        sep = strchr(name, ':');
+        type = objc > 1 ? VQ_view : VQ_string;
+
+        if (sep != 0) {
+            int n = sep - name;
+            char *buf = memcpy(malloc(n+1), name, n);
+            buf[n] = 0;
+            if (sep[1] != 0)
+                type = StringAsType(sep+1);
+            Vq_setString(table, r, 0, buf);
+            free(buf);
+        } else
+            Vq_setString(table, r, 0, name);
+
+        Vq_setInt(table, r, 1, type);
+
+        if (objc > 1) {
+            vq_View t = ObjAsMetaView(ip, objv[1]);
+            if (t == 0)
+                return 0;
+            Vq_setView(table, r, 2, t);
+        } else
+            Vq_setView(table, r, 2, EmptyMetaView());
+    }
+
+    return table;
+}
+
+static Tcl_Obj* MetaViewAsList (vq_View meta) {
+    Tcl_Obj *result = Tcl_NewListObj(0, 0);
+    if (meta != 0) {
+        vq_Type type;
+        int rowNum;
+        vq_View subt;
+        Tcl_Obj *fieldobj;
+        char buf[30];
+
+        for (rowNum = 0; rowNum < vCount(meta); ++rowNum) {
+            fieldobj = Tcl_NewStringObj(Vq_getString(meta, rowNum, 0, ""), -1);
+            type = Vq_getInt(meta, rowNum, 1, VQ_nil);
+            switch (type) {
+                case VQ_string:
+                    break;
+                case VQ_view:
+                    subt = Vq_getView(meta, rowNum, 2, 0);
+                    assert(subt != 0);
+                    if (vCount(subt) > 0) {
+                        fieldobj = Tcl_NewListObj(1, &fieldobj);
+                        Tcl_ListObjAppendElement(0, fieldobj,
+                                                        MetaViewAsList(subt));
+                        break;
+                    }
+                default:
+                    Tcl_AppendToObj(fieldobj, ":", 1);
+                    Tcl_AppendToObj(fieldobj, TypeAsString(type, buf), 1);
+                    break;
+            }
+            Tcl_ListObjAppendElement(0, result, fieldobj);
+        }
+    }
+    return result;
+}
+
+static Tcl_Obj* ColumnAsList (vq_Item colref, int rows, int mode) {
+    int i;
+    Tcl_Obj *list = Tcl_NewListObj(0, 0);
+#if VQ_MOD_NULLABLE
+    if (mode == 0) {
+        Vector ranges = 0;
+        for (i = 0; i < rows; ++i) {
+            vq_Item item = colref;
+            if (GetItem(i, &item) == VQ_nil)
+                RangeFlip(&ranges, i, 1);
+        }
+        mode = -2;
+        rows = vCount(ranges);
+        colref.o.a.v = ranges;
+    }
+#endif
+    for (i = 0; i < rows; ++i) {
+        vq_Item item = colref;
+        vq_Type type = GetItem(i, &item);
+        if (mode < 0 || (mode > 0 && type != VQ_nil))
+            Tcl_ListObjAppendElement(0, list, ItemAsObj(type, item));
+        else if (mode == 0 && type == VQ_nil)
+            Tcl_ListObjAppendElement(0, list, Tcl_NewIntObj(i));
+    }
+#if VQ_MOD_NULLABLE
+    if (mode == -2)
+        vq_release(colref.o.a.v);
+#endif
+    return list;
+}
+
+static Tcl_Obj* VectorAsList (Vector v) {
+    vq_Item item;
+    if (v == 0)
+        return Tcl_NewObj();
+    item.o.a.v = v;
+    return ColumnAsList (item, vCount(v), -1);
+}
+
+Tcl_Obj* ChangesAsList (vq_View table) {
+    int c, rows = vCount(table), cols = vCount(vq_meta(table));
+    Tcl_Obj *result = Tcl_NewListObj(0, 0);
+    if (IsMutable(table)) {
+        Tcl_ListObjAppendElement(0, result, Tcl_NewStringObj("mutable", 7));
+        Tcl_ListObjAppendElement(0, result, vOref(table));
+        Tcl_ListObjAppendElement(0, result, VectorAsList(vDelv(table)));
+        Tcl_ListObjAppendElement(0, result, VectorAsList(vPerm(table)));
+        Tcl_ListObjAppendElement(0, result, VectorAsList(vInsv(table)));
+        if (rows > 0)
+            for (c = 0; c < cols; ++c) {
+                Vector *vecp = (Vector*) vData(table) + 3 * c;
+                Tcl_ListObjAppendElement(0, result, VectorAsList(vecp[0]));
+                if (vecp[0] != 0 && vCount(vecp[0]) > 0) {
+                    Tcl_ListObjAppendElement(0, result, VectorAsList(vecp[1]));
+                    Tcl_ListObjAppendElement(0, result, VectorAsList(vecp[2]));
+                }
+            }
+    }
+    return result;
+}
+
+static Tcl_Obj* ViewAsList (vq_View table) {
+    vq_View meta = vq_meta(table);
+    int c, rows = vCount(table), cols = vCount(meta);
+    Tcl_Obj *result = Tcl_NewListObj(0, 0);
+
+    if (IsMutable(table)) {
+        Tcl_DecrRefCount(result);
+        result = ChangesAsList(table);
+    } else if (meta == vq_meta(meta)) {
+        if (rows > 0) {
+            Tcl_ListObjAppendElement(0, result, Tcl_NewStringObj("mdef", 4));
+            Tcl_ListObjAppendElement(0, result, MetaViewAsList(table));
+        }
+    } else if (cols == 0) {
+        Tcl_ListObjAppendElement(0, result, Tcl_NewIntObj(rows));
+    } else {
+        Tcl_ListObjAppendElement(0, result, Tcl_NewStringObj("data", 4));
+        Tcl_ListObjAppendElement(0, result, ViewAsList(meta));
+        Tcl_ListObjAppendElement(0, result, Tcl_NewIntObj(rows));
+        if (rows > 0)
+            for (c = 0; c < cols; ++c) {
+                int length;
+                Tcl_Obj *list = ColumnAsList(table[c], rows, 1);
+                Tcl_ListObjAppendElement(0, result, list);
+                Tcl_ListObjLength(0, list, &length);
+                if (length != 0 && length != rows) {
+                    list = ColumnAsList(table[c], rows, 0);
+                    Tcl_ListObjAppendElement(0, result, list);
+                }
+            }
+    }
+    return result;
+}
+
+Tcl_Obj* ItemAsObj (vq_Type type, vq_Item item) {
+    switch (type) {
+        case VQ_nil:    break;
+        case VQ_int:    return Tcl_NewIntObj(item.o.a.i);
+        case VQ_long:   return Tcl_NewWideIntObj(item.w);
+        case VQ_float:  return Tcl_NewDoubleObj(item.o.a.f);
+        case VQ_double: return Tcl_NewDoubleObj(item.d);
+        case VQ_string: if (item.o.a.s == 0)
+                            break;
+                        return Tcl_NewStringObj(item.o.a.s, -1);
+        case VQ_bytes:  if (item.o.a.p == 0)
+                            break;
+                        return Tcl_NewByteArrayObj(item.o.a.p, item.o.b.i);
+        case VQ_view:   if (item.o.a.v == 0)
+                            break;
+                        return ViewAsList(item.o.a.v);/* FIXME: LuaAsTclObj ! */
+        case VQ_object: return item.o.a.p;
+    }
+    return Tcl_NewObj();
+}
+
 int ObjToItem (vq_Type type, vq_Item *item) {
     switch (type) {
         case VQ_int:    return Tcl_GetIntFromObj(NULL, item->o.a.p,
@@ -102,30 +324,6 @@ int ObjToItem (vq_Type type, vq_Item *item) {
         default:        return 0;
     }
     return 1;
-}
-
-static Tcl_Obj* LuaAsTclObj (lua_State *L, int i) {
-    Tcl_Obj* obj;
-    if (lua_isnil(L, i)) {
-        return Tcl_NewObj();
-    }
-    if (lua_isnumber(L, i)) {
-        double d = lua_tonumber(L, i);
-        long l = (long) d;
-        return l == d ? Tcl_NewLongObj(l) : Tcl_NewDoubleObj(d);
-    }
-    if (lua_isstring(L, i)) {
-        int len = lua_strlen(L, i);
-        const char* ptr = lua_tostring(L, i);
-        return Tcl_NewByteArrayObj((unsigned char*) ptr, len);
-    }
-    obj = Tcl_NewObj();
-    Tcl_InvalidateStringRep(obj);
-    lua_pushvalue(L, i);
-    obj->internalRep.twoPtrValue.ptr1 = L;
-    obj->internalRep.twoPtrValue.ptr2 = (void*) luaL_ref(L, LUA_REGISTRYINDEX);
-    obj->typePtr = &f_luaObjType;
-    return obj;
 }
 
 static int LuaCallback (lua_State *L) {
