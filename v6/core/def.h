@@ -1,11 +1,11 @@
 /*  Vlerq private C header.
     $Id$
-    This file is part of Vlerq, see lvq.h for the full copyright notice.  */
+    This file is part of Vlerq, see core/vlerq.h for full copyright notice.  */
 
 #ifndef VQ_DEFS_H
 #define VQ_DEFS_H
 
-#include "vcore.h"
+#include "vlerq.h"
 
 #include <assert.h>
 #include <stdlib.h>

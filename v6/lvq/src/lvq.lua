@@ -1,6 +1,6 @@
---[=[ Wrapper module.  
+--[[  Wrapper module.  
       $Id$
-      This file is part of LuaVlerq, see lvq.h for full copyright notice.  ]=]--
+      This file is part of Vlerq, see core/vlerq.h for full copyright notice. ]]
 
 local lvq = require 'lvq.core'
 

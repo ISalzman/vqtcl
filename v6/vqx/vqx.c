@@ -1,6 +1,6 @@
 /*  Vlerq standalone executable.
     $Id$
-    This file is part of Vlerq, see lvq.h for the full copyright notice.  */
+    This file is part of Vlerq, see core/vlerq.h for full copyright notice.  */
 
 #define luaall_c
 

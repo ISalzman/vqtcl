@@ -1,19 +1,20 @@
 /*  Lua extension binding.
     $Id$
-    This file is part of Vlerq, see lvq.h for the full copyright notice.  */
+    This file is part of Vlerq, see core/vlerq.h for full copyright notice.  */
 
 #include "lua.h"
 #include "lauxlib.h"
-#include "lvq.h"
 
-#include "vcore.c"
-#include "vopdef.c"
-#include "vreader.c"
-#include "vload.c"
-#include "vbuffer.c"
-#include "vsave.c"
-#include "vnullable.c"
-#include "vmutable.c"
+#include "vlerq.c"
+#include "opdef.c"
+#include "reader.c"
+#include "load.c"
+#include "buffer.c"
+#include "save.c"
+#include "nullable.c"
+#include "mutable.c"
+
+LUA_API int luaopen_lvq_core (lua_State *L); /* forward */
 
 static vq_Item * checkrow (lua_State *L, int t) {
     void *ud = luaL_checkudata(L, t, "Vlerq.row");
@@ -408,7 +409,7 @@ static const struct luaL_reg vqlib_f[] = {
     {NULL, NULL},
 };
 
-int luaopen_lvq_core (lua_State *L) {
+LUA_API int luaopen_lvq_core (lua_State *L) {
     const char *sconf = "lvq " VQ_RELEASE
 #if VQ_MOD_LOAD
                         " lo"

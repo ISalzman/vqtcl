@@ -1,8 +1,8 @@
 /*  Memory-mapped file and and reader interface.
     $Id$
-    This file is part of Vlerq, see lvq.h for the full copyright notice.  */
+    This file is part of Vlerq, see core/vlerq.h for full copyright notice.  */
 
-#include "vdefs.h"
+#include "def.h"
 
 #if VQ_MOD_LOAD
 

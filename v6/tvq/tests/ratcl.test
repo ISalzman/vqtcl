@@ -1,0 +1,10 @@
+#!/usr/bin/env tclsh
+# %renumber<^\s*test >%
+
+source [file join [file dir [info script]] initests.tcl]
+
+test 0 {} {
+    package require tvq
+} $version
+
+::tcltest::cleanupTests
