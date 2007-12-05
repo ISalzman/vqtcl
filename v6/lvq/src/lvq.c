@@ -53,7 +53,7 @@ static int pushitem (lua_State *L, vq_Type type, vq_Item *itemp) {
         case VQ_string: lua_pushstring(L, itemp->o.a.s); break;
         case VQ_bytes:  lua_pushlstring(L, itemp->o.a.p, itemp->o.b.i); break;
         case VQ_view:   pushview(L, itemp->o.a.v); break;
-        case VQ_object: lua_rawgeti(L, LUA_ENVIRONINDEX, itemp->o.a.i); break;
+        case VQ_object: lua_rawgeti(L, LUA_REGISTRYINDEX, itemp->o.a.i); break;
     }
     return 1;
 }
@@ -79,7 +79,7 @@ static vq_Item toitem (lua_State *L, int t, vq_Type type) {
                         item.o.b.i = n; break;
         case VQ_view:   item.o.a.v = checkview(L, t); break;
         case VQ_object: lua_pushvalue(L, t);
-                        item.o.a.i = luaL_ref(L, LUA_ENVIRONINDEX);
+                        item.o.a.i = luaL_ref(L, LUA_REGISTRYINDEX);
                          /* FIXME: cleanup */
                         break;
     }
@@ -312,15 +312,15 @@ static int view_pass (lua_State *L) {
 }
 
 static void VirtualCleaner (Vector v) {
-    lua_unref(vData(v), vOffs(v));
+    lua_unref((lua_State*) vData(v), vOffs(v));
     FreeVector(v);
 }
 
 static vq_Type VirtualGetter (int row, vq_Item *item) {
     vq_View v = item->o.a.v;
     int col = item->o.b.i;
-    lua_State *L = vData(v);
-    lua_rawgeti(L, LUA_ENVIRONINDEX, vOffs(v));
+    lua_State *L = (lua_State*) vData(v);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, vOffs(v));
     lua_pushinteger(L, row);
     lua_pushinteger(L, col);
     lua_call(L, 2, 1);
@@ -339,7 +339,7 @@ static int view_virtual (lua_State *L) {
     LVQ_ARGS(L,A,"VIO");
     v = IndirectView(A[0].o.a.v, &Virtualtab, A[1].o.a.i, 0);
     vOffs(v) = A[2].o.a.i;
-    vData(v) = L;
+    vData(v) = (void*) L;
     return pushview(L, v);
 }
 
@@ -427,9 +427,6 @@ LUA_API int luaopen_lvq_core (lua_State *L) {
                         " sa"
 #endif
                         ;
-
-    lua_newtable(L);
-    lua_replace(L, LUA_ENVIRONINDEX); /* PiL2, p.254 */
 
     luaL_newmetatable(L, "Vlerq.row");
     luaL_register(L, NULL, vqlib_row_m);

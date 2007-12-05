@@ -73,7 +73,7 @@ typedef vq_View Vector;
 
 #define vOrig(vecptr)   ((vecptr)[-3].o.a.v)    /* same slot as vOffs */
 #define vOffs(vecptr)   ((vecptr)[-3].o.a.i)    /* same slot as vOrig */
-#define vData(vecptr)   ((vecptr)[-3].o.b.p)
+#define vData(vecptr)   ((vecptr)[-3].o.b.v)
 
 #define vInsv(vecptr)   ((vecptr)[-4].o.a.v)
 #define vDelv(vecptr)   ((vecptr)[-4].o.b.v)

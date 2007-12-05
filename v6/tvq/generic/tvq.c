@@ -58,7 +58,7 @@ extern Tcl_ObjType f_luaObjType;
 static void FreeLuaIntRep (Tcl_Obj *obj) {
     lua_State *L = obj->internalRep.twoPtrValue.ptr1;
     int t = (int) obj->internalRep.twoPtrValue.ptr2;
-    luaL_unref(L, LUA_ENVIRONINDEX, t);
+    luaL_unref(L, LUA_REGISTRYINDEX, t);
 }
 
 static void DupLuaIntRep (Tcl_Obj *src, Tcl_Obj *obj) {
@@ -105,7 +105,7 @@ static Tcl_Obj* LuaAsTclObj (lua_State *L, int t) {
             obj->internalRep.twoPtrValue.ptr1 = L;
             lua_pushvalue(L, t);
             obj->internalRep.twoPtrValue.ptr2 = 
-                                        (void*) luaL_ref(L, LUA_ENVIRONINDEX);
+                                        (void*) luaL_ref(L, LUA_REGISTRYINDEX);
             obj->typePtr = &f_luaObjType;
             return obj;
         }
@@ -382,7 +382,7 @@ static int LuaObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *co
                       	break;
             case 'r':   if (Tcl_GetIntFromObj(interp, obj, &v) != TCL_OK)
                       	    return TCL_ERROR;
-                      	lua_rawgeti(L, LUA_ENVIRONINDEX, v);
+                      	lua_rawgeti(L, LUA_REGISTRYINDEX, v);
                       	break;
             case 'b':   ptr = (void*) Tcl_GetByteArrayFromObj(obj, &len);
                       	lua_pushlstring(L, ptr, len);
@@ -395,7 +395,7 @@ static int LuaObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *co
                       	break;
             case 'o':   if (obj->typePtr == &f_luaObjType) { // unbox
                             int r = (int) obj->internalRep.twoPtrValue.ptr2;
-                            lua_rawgeti(L, LUA_ENVIRONINDEX, r);
+                            lua_rawgeti(L, LUA_REGISTRYINDEX, r);
                             break;
                         } // else fall through
             case 'c':   op = newtypeddata(L, sizeof *op, "Vlerq.tcl");

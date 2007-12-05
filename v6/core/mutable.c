@@ -144,7 +144,7 @@ static void MutVecReplacer (vq_View t, int offset, int delrows, vq_View data) {
         RangeInsert(&vInsv(t), offset, insrows, 1);
 }
 static void MutVecCleaner (Vector v) {
-    Vector *data = vData(v);
+    Vector *data = (Vector*) vData(v);
     int i = 3 * vCount(vMeta(v));
     while (--i >= 0)
         vq_release(data[i]);

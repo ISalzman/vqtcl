@@ -93,22 +93,22 @@ static vq_Type Rgetter_i0 (int row, vq_Item *item) {
     return VQ_int;
 }
 static vq_Type Rgetter_i1 (int row, vq_Item *item) {
-    const char *ptr = vData(item->o.a.v);
+    const char *ptr = (const char*) vData(item->o.a.v);
     item->o.a.i = (ptr[row>>3] >> (row&7)) & 1;
     return VQ_int;
 }
 static vq_Type Rgetter_i2 (int row, vq_Item *item) {
-    const char *ptr = vData(item->o.a.v);
+    const char *ptr = (const char*) vData(item->o.a.v);
     item->o.a.i = (ptr[row>>2] >> 2*(row&3)) & 3;
     return VQ_int;
 }
 static vq_Type Rgetter_i4 (int row, vq_Item *item) {
-    const char *ptr = vData(item->o.a.v);
+    const char *ptr = (const char*) vData(item->o.a.v);
     item->o.a.i = (ptr[row>>1] >> 4*(row&1)) & 15;
     return VQ_int;
 }
 static vq_Type Rgetter_i8 (int row, vq_Item *item) {
-    const char *ptr = vData(item->o.a.v);
+    const char *ptr = (const char*) vData(item->o.a.v);
     item->o.a.i = (int8_t) ptr[row];
     return VQ_int;
 }
@@ -147,27 +147,27 @@ static vq_Type Rgetter_f64 (int row, vq_Item *item) {
 }
 #else
 static vq_Type Rgetter_i16 (int row, vq_Item *item) {
-    const char *ptr = vData(item->o.a.v);
+    const char *ptr = (const char*) vData(item->o.a.v);
     item->o.a.i = ((short*) ptr)[row];
     return VQ_int;
 }
 static vq_Type Rgetter_i32 (int row, vq_Item *item) {
-    const char *ptr = vData(item->o.a.v);
+    const char *ptr = (const char*) vData(item->o.a.v);
     item->o.a.i = ((const int*) ptr)[row];
     return VQ_int;
 }
 static vq_Type Rgetter_i64 (int row, vq_Item *item) {
-    const char *ptr = vData(item->o.a.v);
+    const char *ptr = (const char*) vData(item->o.a.v);
     item->w = ((const int64_t*) ptr)[row];
     return VQ_long;
 }
 static vq_Type Rgetter_f32 (int row, vq_Item *item) {
-    const char *ptr = vData(item->o.a.v);
+    const char *ptr = (const char*) vData(item->o.a.v);
     item->o.a.f = ((const float*) ptr)[row];
     return VQ_float;
 }
 static vq_Type Rgetter_f64 (int row, vq_Item *item) {
-    const char *ptr = vData(item->o.a.v);
+    const char *ptr = (const char*) vData(item->o.a.v);
     item->d = ((const double*) ptr)[row];
     return VQ_double;
 }
