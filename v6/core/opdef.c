@@ -35,9 +35,7 @@ static Dispatch iotatab = {
 };
 vq_View IotaView (int rows, const char *name, int base) {
     vq_View v, meta = vq_new(vq_meta(0), 1);
-    Vq_setString(meta, 0, 0, name);
-    Vq_setInt(meta, 0, 1, VQ_int);
-    Vq_setView(meta, 0, 2, EmptyMetaView());
+    Vq_setMetaRow(meta, 0, name, VQ_int, NULL);
     v = IndirectView(meta, &iotatab, rows, 0);
     vOffs(v) = base;
     return v;

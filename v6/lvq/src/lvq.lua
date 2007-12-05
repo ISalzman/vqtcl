@@ -76,7 +76,7 @@ vops.vconcat = lvq.vconcat -- function (v1, v2)
 vops._ccat   = lvq._ccat   -- function (meta, v1, v2)
 
 function vops.ccat (a, b)
-  return vops._pair(vops.vconcat(a:meta(), b:meta()), a, b)
+  return vops._ccat(vops.vconcat(a:meta(), b:meta()), a, b)
 end
 
 vops.__concat = vops.ccat       -- .. operator

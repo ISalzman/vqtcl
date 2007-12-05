@@ -348,10 +348,11 @@ static int LuaCallback (lua_State *L) {
 }
 
 static int LuaObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
+    lua_State *L = data;
     int v, i, len;
     char *ptr, *fmt;
     double d;
-    lua_State *L = data;
+    Tcl_Obj **op;
     if (objc < 2) {
       Tcl_WrongNumArgs(interp, objc, objv, "fmt ?args ...?");
       return TCL_ERROR;
@@ -364,61 +365,49 @@ static int LuaObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *co
     for (i = 2; *fmt; ++i) {
         Tcl_Obj *obj = objv[i];
         switch (*fmt++) {
-            case 't':
-              	if (Tcl_GetIntFromObj(interp, obj, &v) != TCL_OK)
-              	    return TCL_ERROR;
-                if (v >= 0)
-                    lua_pushboolean(L, v);
-                else
-              	    lua_pushnil(L);
-              	break;
-            case 'i':
-              	if (Tcl_GetIntFromObj(interp, obj, &v) != TCL_OK)
-              	    return TCL_ERROR;
-              	lua_pushinteger(L, v);
-              	break;
-            case 'd':
-              	if (Tcl_GetDoubleFromObj(interp, obj, &d) != TCL_OK)
-              	    return TCL_ERROR;
-              	lua_pushnumber(L, d);
-              	break;
-            case 'r':
-              	if (Tcl_GetIntFromObj(interp, obj, &v) != TCL_OK)
-              	    return TCL_ERROR;
-              	lua_rawgeti(L, LUA_ENVIRONINDEX, v);
-              	break;
-            case 'b':
-              	ptr = (void*) Tcl_GetByteArrayFromObj(obj, &len);
-              	lua_pushlstring(L, ptr, len);
-              	break;
-            case 's':
-              	ptr = Tcl_GetStringFromObj(obj, &len);
-              	lua_pushlstring(L, ptr, len);
-              	break;
-            case 'g':
-              	ptr = Tcl_GetStringFromObj(obj, NULL);
-              	lua_getglobal(L, ptr);
-              	break;
-            case 'o':
-                if (obj->typePtr == &f_luaObjType) { // unbox
-                    lua_State *L = obj->internalRep.twoPtrValue.ptr1;
-                    int t = (int) obj->internalRep.twoPtrValue.ptr2;
-                    lua_rawgeti(L, LUA_ENVIRONINDEX, t);
-                    break;
-                } // else fall through
-            case 'c': {
-                Tcl_Obj **op = newtypeddata(L, sizeof *op, "Vlerq.tcl");
-                *op = obj;
-              	Tcl_IncrRefCount(*op);
-                if (fmt[-1] == 'c') {
-                  	lua_pushlightuserdata(L, interp);
-                  	lua_pushcclosure(L, LuaCallback, 2);
-              	}
-              	break;
-          	}
-            default:
-              	Tcl_SetResult(interp, "unknown format specifier", TCL_STATIC);
-              	return TCL_ERROR;
+            case 't':   if (Tcl_GetIntFromObj(interp, obj, &v) != TCL_OK)
+                      	    return TCL_ERROR;
+                        if (v >= 0)
+                            lua_pushboolean(L, v);
+                        else
+                      	    lua_pushnil(L);
+                      	break;
+            case 'i':   if (Tcl_GetIntFromObj(interp, obj, &v) != TCL_OK)
+                      	    return TCL_ERROR;
+                      	lua_pushinteger(L, v);
+                      	break;
+            case 'd':   if (Tcl_GetDoubleFromObj(interp, obj, &d) != TCL_OK)
+                      	    return TCL_ERROR;
+                      	lua_pushnumber(L, d);
+                      	break;
+            case 'r':   if (Tcl_GetIntFromObj(interp, obj, &v) != TCL_OK)
+                      	    return TCL_ERROR;
+                      	lua_rawgeti(L, LUA_ENVIRONINDEX, v);
+                      	break;
+            case 'b':   ptr = (void*) Tcl_GetByteArrayFromObj(obj, &len);
+                      	lua_pushlstring(L, ptr, len);
+                      	break;
+            case 's':   ptr = Tcl_GetStringFromObj(obj, &len);
+                      	lua_pushlstring(L, ptr, len);
+                      	break;
+            case 'g':   ptr = Tcl_GetStringFromObj(obj, NULL);
+                      	lua_getglobal(L, ptr);
+                      	break;
+            case 'o':   if (obj->typePtr == &f_luaObjType) { // unbox
+                            int r = (int) obj->internalRep.twoPtrValue.ptr2;
+                            lua_rawgeti(L, LUA_ENVIRONINDEX, r);
+                            break;
+                        } // else fall through
+            case 'c':   op = newtypeddata(L, sizeof *op, "Vlerq.tcl");
+                        *op = obj;
+                      	Tcl_IncrRefCount(*op);
+                        if (fmt[-1] == 'c') {
+                          	lua_pushlightuserdata(L, interp);
+                          	lua_pushcclosure(L, LuaCallback, 2);
+                      	}
+                      	break;
+            default:    Tcl_SetResult(interp, "unknown format", TCL_STATIC);
+                      	return TCL_ERROR;
         }
     }
     v = lua_pcall(L, objc-3, 1, 0);
@@ -426,10 +415,6 @@ static int LuaObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *co
         Tcl_SetObjResult(interp, LuaAsTclObj(L, -1));
     lua_pop(L, 1);
     return v == 0 ? TCL_OK : TCL_ERROR;
-}
-
-static void LuaDelProc (ClientData data) {
-    lua_close(data);    
 }
 
 static int tclobj_gc (lua_State *L) {
@@ -445,7 +430,7 @@ DLLEXPORT int Tvq_Init (Tcl_Interp *interp) {
         return TCL_ERROR;
 
     L = lua_open();
-    Tcl_CreateExitHandler(LuaDelProc, L);
+    Tcl_CreateExitHandler((Tcl_ExitProc*) lua_close, L);
     
     luaL_openlibs(L);
 

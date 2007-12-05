@@ -50,11 +50,8 @@ static vq_View ParseDesc (char **desc, const char **nbuf, int *tbuf, vq_View *sb
 
     result = vq_new(vMeta(empty), cols);
 
-    for (c = 0; c < cols; ++c) {
-        Vq_setString(result, c, 0, names[c]);
-        Vq_setInt(result, c, 1, types[c]);
-        Vq_setView(result, c, 2, subts[c]);
-    }
+    for (c = 0; c < cols; ++c)
+        Vq_setMetaRow(result, c, names[c], types[c], subts[c]);
     
     return result;
 }

@@ -283,16 +283,10 @@ vq_View EmptyMetaView (void) {
         mm[0].o.a.v = vq_retain(AllocDataVec(VQ_string, 3));
         mm[1].o.a.v = vq_retain(AllocDataVec(VQ_int, 3));
         mm[2].o.a.v = vq_retain(AllocDataVec(VQ_view, 3));
-        Vq_setString(mm, 0, 0, "name");
-        Vq_setString(mm, 1, 0, "type");
-        Vq_setString(mm, 2, 0, "subv");
-        Vq_setInt(mm, 0, 1, VQ_string);
-        Vq_setInt(mm, 1, 1, VQ_int);
-        Vq_setInt(mm, 2, 1, VQ_view);
         meta = vq_new(mm, 0); /* retained forever */
-        Vq_setView(mm, 0, 2, meta);
-        Vq_setView(mm, 1, 2, meta);
-        Vq_setView(mm, 2, 2, meta);
+        Vq_setMetaRow(mm, 0, "name", VQ_string, meta);
+        Vq_setMetaRow(mm, 1, "type", VQ_int, meta);
+        Vq_setMetaRow(mm, 2, "subv", VQ_view, meta);
     }
     return meta;
 }
@@ -384,6 +378,11 @@ void Vq_setView (vq_View t, int row, int col, vq_View val) {
     vq_Item item;
     item.o.a.v = val;
     vq_set(t, row, col, val != 0 ? VQ_view : VQ_nil, item);
+}
+void Vq_setMetaRow (vq_View m, int row, const char *nam, int typ, vq_View sub) {
+    Vq_setString(m, row, 0, nam);
+    Vq_setInt(m, row, 1, typ);
+    Vq_setView(m, row, 2, sub != NULL ? sub : EmptyMetaView());
 }
 
 #pragma mark - TYPE DESCRIPTORS -

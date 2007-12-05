@@ -1,6 +1,6 @@
 /*  Vlerq core public C header.
     $Id$
-    This file is part of Vlerq, see below for the full copyright notice.  */
+    This file is part of Vlerq, see text at end for full copyright notice.  */
 
 #include <stdint.h>
 #include <unistd.h>
@@ -58,24 +58,25 @@ void    (vq_release) (vq_View t);
 
 /* core view functions */
 
-vq_View     (vq_new) (vq_View t, int rows);
-vq_View    (vq_meta) (vq_View t);
-int        (vq_size) (vq_View t);
-int       (vq_empty) (vq_View t, int row, int col);
-vq_Item     (vq_get) (vq_View t, int row, int col, vq_Type type, vq_Item def);
-void        (vq_set) (vq_View t, int row, int col, vq_Type type, vq_Item val);
-void    (vq_replace) (vq_View t, int start, int count, vq_View data);
+vq_View   (vq_new) (vq_View t, int rows);
+vq_View  (vq_meta) (vq_View t);
+int      (vq_size) (vq_View t);
+int     (vq_empty) (vq_View t, int row, int col);
+vq_Item   (vq_get) (vq_View t, int row, int col, vq_Type type, vq_Item def);
+void      (vq_set) (vq_View t, int row, int col, vq_Type type, vq_Item val);
+void  (vq_replace) (vq_View t, int start, int count, vq_View data);
 
 /* wrappers */
 
-int            (Vq_getInt) (vq_View t, int row, int col, int def);
-const char *(Vq_getString) (vq_View t, int row, int col, const char *def);
-vq_View       (Vq_getView) (vq_View t, int row, int col, vq_View def);
-
-void         (Vq_setEmpty) (vq_View t, int row, int col);
-void           (Vq_setInt) (vq_View t, int row, int col, int val);
-void        (Vq_setString) (vq_View t, int row, int col, const char *val);
-void          (Vq_setView) (vq_View t, int row, int col, vq_View val);
+int             (Vq_getInt) (vq_View t, int row, int col, int def);
+const char  *(Vq_getString) (vq_View t, int row, int col, const char *def);
+vq_View        (Vq_getView) (vq_View t, int row, int col, vq_View def);
+           
+void          (Vq_setEmpty) (vq_View t, int row, int col);
+void            (Vq_setInt) (vq_View t, int row, int col, int val);
+void         (Vq_setString) (vq_View t, int row, int col, const char *val);
+void           (Vq_setView) (vq_View t, int row, int col, vq_View val);
+void        (Vq_setMetaRow) (vq_View t, int row, const char *, int, vq_View);
 
 /*  Copyright (C) 1996-2007 Jean-Claude Wippler.  All rights reserved.
   
