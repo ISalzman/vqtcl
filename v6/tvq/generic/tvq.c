@@ -414,19 +414,11 @@ static int LuaObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *co
               	return TCL_ERROR;
         }
     }
-    v = lua_pcall(L, objc - 3, 1, 0);
-    if (v != 0) {
-/*
-        luaL_where(L, 1);
-        lua_pushvalue(L, -2);
-        lua_concat(L, 2);
-*/
-        Tcl_SetResult(interp, (char*) lua_tostring(L, -1), TCL_VOLATILE);
-        return TCL_ERROR;
-    }
+    v = lua_pcall(L, objc-3, 1, 0);
     if (!lua_isnil(L, -1))
         Tcl_SetObjResult(interp, LuaAsTclObj(L, -1));
-    return TCL_OK;
+    lua_pop(L, 1);
+    return v == 0 ? TCL_OK : TCL_ERROR;
 }
 
 static void LuaDelProc (ClientData data) {

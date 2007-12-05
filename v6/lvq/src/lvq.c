@@ -316,12 +316,17 @@ static void VirtualCleaner (Vector v) {
 }
 
 static vq_Type VirtualGetter (int row, vq_Item *item) {
-    lua_State *L = vData(item->o.a.v);
-    lua_rawgeti(L, LUA_ENVIRONINDEX, vOffs(item->o.a.v));
+    vq_View v = item->o.a.v;
+    int col = item->o.b.i;
+    lua_State *L = vData(v);
+    lua_rawgeti(L, LUA_ENVIRONINDEX, vOffs(v));
     lua_pushinteger(L, row);
-    lua_pushinteger(L, item->o.b.i);
+    lua_pushinteger(L, col);
     lua_call(L, 2, 1);
-    item->o.a.i = luaL_checkinteger(L, -1);
+    if (lua_isnil(L, -1))
+        return VQ_nil;
+    *item = toitem(L, -1, Vq_getInt(vMeta(v), col, 1, VQ_nil) & VQ_TYPEMASK);
+    lua_pop(L, 1);
     return VQ_int;
 }
 static Dispatch Virtualtab = {

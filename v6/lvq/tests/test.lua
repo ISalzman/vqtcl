@@ -85,4 +85,4 @@ lvq.view(4):iota('N'):p()
 --lvq.view(4):iota('N',3):p()
 --lvq.view(4):iota('N',0):p()
 
-lvq.meta("abc:I"):virtual(4, function (r,c) return r*r*r end ):p()
+lvq.meta("abc:I"):virtual(4, function (r,c) return r*r*r end):p()
