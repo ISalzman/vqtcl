@@ -14,7 +14,7 @@ test 1 {} {
 } userdata
 
 test 2 {} skip {
-    tvq "gs" print "Looney tickles!"
+    tvq "gs" print "Hello from Tcl!"
 } {}
 
 test 3 {} {
@@ -40,14 +40,12 @@ test 7 {} {
 } "a b c"
 
 test 8 {errors in tcl callback} {
-    luas { function setglobal(x,y) _G[x]= y end }
-    tvq "gsc" setglobal tcl "" ;# empty cmd prefix, but still a callback
     list [catch { tvq "gs" tcl set } e] $e
 } {1 {tvq: wrong # args: should be "set varName ?newValue?"}}
 
 test 9 {output in tcl callback} -body {
-    tvq "gss" tcl puts "Hello Tcl!"
-} -output "Hello Tcl!\n"
+    tvq "gss" tcl puts "Hello from Lua!"
+} -output "Hello from Lua!\n"
 
 test 10 {error in lua} {
     list [catch { tvq "g" io } e] $e

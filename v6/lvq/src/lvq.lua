@@ -8,35 +8,6 @@ module ('lvq', package.seeall)
 
 assert(_VERSION == 'LuaVlerq 1.6')
 
-vops.step    = lvq.step    -- function (count, start, step, rate)
-vops.vconcat = lvq.vconcat -- function (v1, v2)
-vops._pair   = lvq._pair   -- function (meta, v1, v2)
-
-function vops.__concat (a, b)
-  return vops._pair(vops.vconcat(a:meta(), b:meta()), a, b)
-end
-
-function vops.hrepeat (v, n)
-  if n==0 then 
-    return lvq.view(#v)
-  end
-  local w=v
-  for i=2,n do w = w .. v end
-  return w
-end
-
-function vops.vrepeat (v, n)
-  return v:step(n * #v, 0, 1, 1)
-end
-
-function vops.spread (v, n)
-  return v:step(n * #v, 0, 1, n)
-end
-
-function vops.product (a, b)
-  return a:spread(#b) .. b:vrepeat(#a)
-end
-
 -- table with render functions for each data type, N=0 S=5 B=6 V=7
 local renderers = { [0] = function (x) return '' end,
                     [6] = function (x) return #x..'b' end,
@@ -97,3 +68,37 @@ function vops.save (v, fn)
   f:close()
   return #s
 end
+
+-- tentative definitions, not fully worked out yet
+
+vops.step    = lvq.step    -- function (count, start, step, rate)
+vops.vconcat = lvq.vconcat -- function (v1, v2)
+vops._ccat   = lvq._ccat   -- function (meta, v1, v2)
+
+function vops.ccat (a, b)
+  return vops._pair(vops.vconcat(a:meta(), b:meta()), a, b)
+end
+
+vops.__concat = vops.ccat       -- .. operator
+
+function vops.crep (v, n)
+  if n==0 then 
+    return lvq.view(#v)
+  end
+  local w=v
+  for i=2,n do w = w .. v end
+  return w
+end
+
+function vops.rrep (v, n)
+  return v:step(n * #v, 0, 1, 1)
+end
+
+function vops.spread (v, n)
+  return v:step(n * #v, 0, 1, n)
+end
+
+function vops.product (a, b)
+  return a:spread(#b) .. b:rrep(#a)
+end
+

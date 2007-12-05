@@ -52,7 +52,7 @@ static int pushitem (lua_State *L, vq_Type type, vq_Item *itemp) {
         case VQ_string: lua_pushstring(L, itemp->o.a.s); break;
         case VQ_bytes:  lua_pushlstring(L, itemp->o.a.p, itemp->o.b.i); break;
         case VQ_view:   pushview(L, itemp->o.a.v); break;
-        case VQ_object: lua_pushnumber(L, -1); assert(0); break;
+        case VQ_object: lua_rawgeti(L, LUA_ENVIRONINDEX, itemp->o.a.i); break;
     }
     return 1;
 }
@@ -73,11 +73,14 @@ static vq_Item toitem (lua_State *L, int t, vq_Type type) {
         case VQ_long:   item.w = (int64_t) luaL_checknumber(L, t); break;
         case VQ_float:  item.o.a.f = (float) luaL_checknumber(L, t); break;
         case VQ_double: item.d = luaL_checknumber(L, t); break;
-        case VQ_string: item.o.a.s = luaL_checkstring(L, t); break;
+        case VQ_string: /* fall through */
         case VQ_bytes:  item.o.a.s = luaL_checklstring(L, t, &n);
                         item.o.b.i = n; break;
         case VQ_view:   item.o.a.v = checkview(L, t); break;
-        case VQ_object: assert(0); break;
+        case VQ_object: lua_pushvalue(L, t);
+                        item.o.a.i = luaL_ref(L, LUA_ENVIRONINDEX);
+                         /* FIXME: cleanup */
+                        break;
     }
 
     return item;
@@ -307,6 +310,33 @@ static int view_pass (lua_State *L) {
     return pushview(L, PassView(A[0].o.a.v));
 }
 
+static void VirtualCleaner (Vector v) {
+    lua_unref(vData(v), vOffs(v));
+    FreeVector(v);
+}
+
+static vq_Type VirtualGetter (int row, vq_Item *item) {
+    lua_State *L = vData(item->o.a.v);
+    lua_rawgeti(L, LUA_ENVIRONINDEX, vOffs(item->o.a.v));
+    lua_pushinteger(L, row);
+    lua_pushinteger(L, item->o.b.i);
+    lua_call(L, 2, 1);
+    item->o.a.i = luaL_checkinteger(L, -1);
+    return VQ_int;
+}
+static Dispatch Virtualtab = {
+    "virtual", 3, 0, 0, VirtualCleaner, VirtualGetter
+};
+
+static int view_virtual (lua_State *L) {
+    vq_View v;
+    LVQ_ARGS(L,A,"VIO");
+    v = IndirectView(A[0].o.a.v, &Virtualtab, A[1].o.a.i, 0);
+    vOffs(v) = A[2].o.a.i;
+    vData(v) = L;
+    return pushview(L, v);
+}
+
 #endif
 
 #if VQ_MOD_SAVE
@@ -330,6 +360,12 @@ static int view_emit (lua_State *L) {
 
 #endif
 
+static int lvq_view (lua_State *L) {
+    int size = luaL_checkint(L, 1);
+    vq_View meta = lua_isnoneornil(L, 2) ? NULL : checkview(L, 2);
+    return pushview(L, vq_new(meta, size));
+}
+
 static const struct luaL_reg vqlib_view_m[] = {
     {"__gc", view_gc},
     {"__index", view_index},
@@ -337,12 +373,6 @@ static const struct luaL_reg vqlib_view_m[] = {
     {"__tostring", view2string},
     {NULL, NULL},
 };
-
-static int lvq_view (lua_State *L) {
-    int size = luaL_checkint(L, 1);
-    vq_View meta = lua_isnoneornil(L, 2) ? NULL : checkview(L, 2);
-    return pushview(L, vq_new(meta, size));
-}
 
 static const struct luaL_reg vqlib_v[] = {
     {"empty", view_empty},
@@ -355,6 +385,7 @@ static const struct luaL_reg vqlib_v[] = {
 #if VQ_MOD_OPDEF
     {"iota", view_iota},
     {"pass", view_pass},
+    {"virtual", view_virtual},
 #endif
 #if VQ_MOD_SAVE
     {"emit", view_emit},
@@ -390,6 +421,9 @@ int luaopen_lvq_core (lua_State *L) {
                         " sa"
 #endif
                         ;
+
+    lua_newtable(L);
+    lua_replace(L, LUA_ENVIRONINDEX); /* PiL2, p.254 */
 
     luaL_newmetatable(L, "Vlerq.row");
     luaL_register(L, NULL, vqlib_row_m);
