@@ -23,10 +23,9 @@ print(33)
 --m[1].abc=3
 --print(m.blah)
 
-mt=getmetatable(m)
---for k,v in pairs(mt) do print(k,v) end
+--for k,v in pairs(vops) do print(k,v) end
 
-function mt.blah (v)
+function vops.blah (v)
   --print("v:", v, type(v))
   return #v:meta():meta()
 end

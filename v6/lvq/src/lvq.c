@@ -198,7 +198,9 @@ static int view_index (lua_State *L) {
         rp->o.b.i = A[1].o.a.i;
     } else {
         const char* s = luaL_checkstring(L, 2);
-        if (!luaL_getmetafield(L, 1, s))
+        lua_getglobal(L, "vops");
+        lua_getfield(L, -1, s);
+        if (lua_isnil(L, -1))
             return luaL_error(L, "unknown '%s' view operator", s);
     }
     return 1;
@@ -329,14 +331,24 @@ static int view_emit (lua_State *L) {
 #endif
 
 static const struct luaL_reg vqlib_view_m[] = {
-    {"empty", view_empty},
-    {"meta", view_meta},
-    {"replace", view_replace},
-    {"type", view_type},
     {"__gc", view_gc},
     {"__index", view_index},
     {"__len", view_len},
     {"__tostring", view2string},
+    {NULL, NULL},
+};
+
+static int lvq_view (lua_State *L) {
+    int size = luaL_checkint(L, 1);
+    vq_View meta = lua_isnoneornil(L, 2) ? NULL : checkview(L, 2);
+    return pushview(L, vq_new(meta, size));
+}
+
+static const struct luaL_reg vqlib_v[] = {
+    {"empty", view_empty},
+    {"meta", view_meta},
+    {"replace", view_replace},
+    {"type", view_type},
 #if VQ_MOD_SAVE
     {"mutable", view_mutable},
 #endif
@@ -349,12 +361,6 @@ static const struct luaL_reg vqlib_view_m[] = {
 #endif
     {NULL, NULL},
 };
-
-static int lvq_view (lua_State *L) {
-    int size = luaL_checkint(L, 1);
-    vq_View meta = lua_isnoneornil(L, 2) ? NULL : checkview(L, 2);
-    return pushview(L, vq_new(meta, size));
-}
 
 static const struct luaL_reg vqlib_f[] = {
     {"view", lvq_view},
@@ -391,6 +397,10 @@ int luaopen_lvq_core (lua_State *L) {
     luaL_newmetatable(L, "Vlerq.view");
     luaL_register(L, NULL, vqlib_view_m);
     
+    if (luaL_findtable(L, LUA_GLOBALSINDEX, "vops", 0) != NULL)
+      luaL_error(L, "name conflict for vops");
+    luaL_register(L, NULL, vqlib_v);
+
     luaL_register(L, "lvq", vqlib_f);
     
     lua_pushliteral(L, "_CONFIG");

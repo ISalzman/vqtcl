@@ -8,17 +8,15 @@ module ('lvq', package.seeall)
 
 assert(_VERSION == 'LuaVlerq 1.6')
 
-local mt=getmetatable(lvq.view(0))
+vops.step    = lvq.step    -- function (count, start, step, rate)
+vops.vconcat = lvq.vconcat -- function (v1, v2)
+vops._pair   = lvq._pair   -- function (meta, v1, v2)
 
-mt.step    = lvq.step    -- function (count, start, step, rate)
-mt.vconcat = lvq.vconcat -- function (v1, v2)
-mt._pair   = lvq._pair   -- function (meta, v1, v2)
-
-function mt.__concat (a, b)
-  return mt._pair(mt.vconcat(a:meta(), b:meta()), a, b)
+function vops.__concat (a, b)
+  return vops._pair(vops.vconcat(a:meta(), b:meta()), a, b)
 end
 
-function mt.hrepeat (v, n)
+function vops.hrepeat (v, n)
   if n==0 then 
     return lvq.view(#v)
   end
@@ -27,15 +25,15 @@ function mt.hrepeat (v, n)
   return w
 end
 
-function mt.vrepeat (v, n)
+function vops.vrepeat (v, n)
   return v:step(n * #v, 0, 1, 1)
 end
 
-function mt.spread (v, n)
+function vops.spread (v, n)
   return v:step(n * #v, 0, 1, n)
 end
 
-function mt.product (a, b)
+function vops.product (a, b)
   return a:spread(#b) .. b:vrepeat(#a)
 end
 
@@ -46,7 +44,7 @@ local renderers = { [0] = function (x) return '' end,
 setmetatable(renderers, { __index = function (x) return tostring end })
 
 -- produce a pretty-printed string table from a view
-function mt.dump (vw, maxrows)
+function vops.dump (vw, maxrows)
   maxrows = math.min(maxrows or 20, #vw)
   -- set up column information
   local desc, funs, names, widths, meta = '', {}, {}, {}, vw:meta()
@@ -88,11 +86,11 @@ function mt.dump (vw, maxrows)
   return table.concat(out, '\n')
 end
 
-function mt.p (v, ...)
+function vops.p (v, ...)
   print(v:dump(...))
 end
 
-function mt.save (v, fn) 
+function vops.save (v, fn) 
   local s = v:emit()
   local f=io.open(fn,'wb') -- only created if emit completes successfully
   f:write(s)
