@@ -67,7 +67,9 @@ static void DupLuaIntRep (Tcl_Obj *src, Tcl_Obj *obj) {
 
 static void UpdateLuaStrRep (Tcl_Obj *obj) {
     char buf[50];
-    int n = sprintf(buf, "luaobj#%d", (int) obj->internalRep.twoPtrValue.ptr2);
+    int n = sprintf(buf, "luaobj:%p.%d",
+                                    obj->internalRep.twoPtrValue.ptr1,
+                                    (int) obj->internalRep.twoPtrValue.ptr2);
     obj->bytes = strcpy(malloc(n+1), buf);
     obj->length = n;
 }
@@ -82,27 +84,32 @@ Tcl_ObjType f_luaObjType = {
 };
 
 static Tcl_Obj* LuaAsTclObj (lua_State *L, int t) {
-    Tcl_Obj* obj;
-    if (lua_isnil(L, t)) {
-        return Tcl_NewObj();
+    switch (lua_type(L, t)) {
+        case LUA_TNIL:
+            return Tcl_NewObj();
+        case LUA_TNUMBER: {
+            double d = lua_tonumber(L, t);
+            long l = (long) d;
+            return l == d ? Tcl_NewLongObj(l) : Tcl_NewDoubleObj(d);
+        }
+        case LUA_TSTRING: {
+            int len = lua_strlen(L, t);
+            const char* ptr = lua_tostring(L, t);
+            return Tcl_NewByteArrayObj((unsigned char*) ptr, len);
+        }
+        case LUA_TBOOLEAN:
+            return Tcl_NewBooleanObj(lua_toboolean(L, t));
+        default: {
+            Tcl_Obj *obj = Tcl_NewObj();
+            Tcl_InvalidateStringRep(obj);
+            obj->internalRep.twoPtrValue.ptr1 = L;
+            lua_pushvalue(L, t);
+            obj->internalRep.twoPtrValue.ptr2 = 
+                                        (void*) luaL_ref(L, LUA_ENVIRONINDEX);
+            obj->typePtr = &f_luaObjType;
+            return obj;
+        }
     }
-    if (lua_isnumber(L, t)) {
-        double d = lua_tonumber(L, t);
-        long l = (long) d;
-        return l == d ? Tcl_NewLongObj(l) : Tcl_NewDoubleObj(d);
-    }
-    if (lua_isstring(L, t)) {
-        int len = lua_strlen(L, t);
-        const char* ptr = lua_tostring(L, t);
-        return Tcl_NewByteArrayObj((unsigned char*) ptr, len);
-    }
-    obj = Tcl_NewObj();
-    Tcl_InvalidateStringRep(obj);
-    obj->internalRep.twoPtrValue.ptr1 = L;
-    lua_pushvalue(L, t);
-    obj->internalRep.twoPtrValue.ptr2 = (void*) luaL_ref(L, LUA_ENVIRONINDEX);
-    obj->typePtr = &f_luaObjType;
-    return obj;
 }
 
 vq_View ObjAsMetaView (void *ip, Tcl_Obj *obj) {
@@ -425,7 +432,7 @@ static void LuaDelProc (ClientData data) {
     lua_close(data);    
 }
 
-static int tclobj_jc (lua_State *L) {
+static int tclobj_gc (lua_State *L) {
     Tcl_Obj *p = lua_touserdata(L, -1); assert(p != NULL);
     Tcl_DecrRefCount(p);
     return 0;
@@ -444,7 +451,7 @@ DLLEXPORT int Tvq_Init (Tcl_Interp *interp) {
 
     luaL_newmetatable(L, "Vlerq.tcl");
     lua_pushstring(L, "__gc");
-    lua_pushcfunction(L, tclobj_jc);
+    lua_pushcfunction(L, tclobj_gc);
     lua_settable(L, -3);
 
     lua_pushcfunction(L, luaopen_lvq_core);

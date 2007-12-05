@@ -68,7 +68,7 @@ TEA_ADD_LIBS([-llua])
 #TEA_ADD_CFLAGS([-DLUA_USE_POSIX -DNDEBUG])
 TEA_ADD_CFLAGS([-DLUA_USE_POSIX])
 TEA_ADD_STUB_SOURCES([])
-TEA_ADD_TCL_SOURCES([library/tvq.tcl])
+TEA_ADD_TCL_SOURCES([library/ratcl.tcl])
 
 #--------------------------------------------------------------------
 # A few miscellaneous platform-specific items:

@@ -1,2 +1,4 @@
 package ifneeded tvq @PACKAGE_VERSION@ \
-  [list load [file join $dir lib@PACKAGE_NAME@@PACKAGE_VERSION@[info sharedlibext]] tvq]
+    [list load [file join $dir lib@PACKAGE_NAME@@PACKAGE_VERSION@[info sharedlibext]] tvq]
+package ifneeded ratcl @PACKAGE_VERSION@ \
+    [list source [file join $dir ratcl.tcl]]
