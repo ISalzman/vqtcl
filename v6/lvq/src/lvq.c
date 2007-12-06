@@ -445,9 +445,15 @@ LUA_API int luaopen_lvq_core (lua_State *L) {
 
     luaL_newmetatable(L, "Vlerq.row");
     luaL_register(L, NULL, lvqlib_row_m);
+    lua_pushliteral(L, "__TYPE");
+    lua_pushliteral(L, "Vlerq.row");
+    lua_settable(L, -3);
     
     luaL_newmetatable(L, "Vlerq.view");
     luaL_register(L, NULL, lvqlib_view_m);
+    lua_pushliteral(L, "__TYPE");
+    lua_pushliteral(L, "Vlerq.view");
+    lua_settable(L, -3);
     
     lua_newtable(L);
     luaL_register(L, NULL, lvqlib_v);

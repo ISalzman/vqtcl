@@ -67,8 +67,8 @@ extern Tcl_ObjType f_luaObjType; /* forward */
 
 static void FreeLuaIntRep (Tcl_Obj *obj) {
     lua_State *L = obj->internalRep.twoPtrValue.ptr1;
-    int t = (int) obj->internalRep.twoPtrValue.ptr2;
-    luaL_unref(L, LUA_REGISTRYINDEX, t);
+    int ref = (int) obj->internalRep.twoPtrValue.ptr2;
+    luaL_unref(L, LUA_REGISTRYINDEX, ref);
 }
 
 static void DupLuaIntRep (Tcl_Obj *src, Tcl_Obj *obj) {
@@ -184,6 +184,15 @@ static vq_View ObjAsView (Tcl_Interp *interp, Tcl_Obj *obj) {
     Tcl_Obj **objv;
     vq_View view;
     
+    if (obj->typePtr == &f_luaObjType) {
+        lua_State *L = obj->internalRep.twoPtrValue.ptr1;
+        int ref = (int) obj->internalRep.twoPtrValue.ptr2;
+        lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
+        view = checkview(L, lua_gettop(L));
+        lua_pop(L, 1);
+        return view;
+    }
+    
     if (Tcl_ListObjGetElements(interp, obj, &objc, &objv) != TCL_OK)
         return NULL;
 
@@ -198,7 +207,6 @@ static vq_View ObjAsView (Tcl_Interp *interp, Tcl_Obj *obj) {
                 return vq_new(NULL, rows);
             } else {
                 const char *desc = Tcl_GetString(objv[0]);
-                puts(desc);
                 return DescToMeta(desc, -1);
             }
             
@@ -215,7 +223,6 @@ static vq_View ObjAsView (Tcl_Interp *interp, Tcl_Obj *obj) {
             Tcl_IncrRefCount(cmd);
             view = NULL;
 
-            puts("BBB");
             /* def -> cmd namespace name conv can prob be avoided in Tcl 8.5 */
             if (AdjustCmdDef(cmd) == TCL_OK) {
                 int ac;
@@ -224,10 +231,8 @@ static vq_View ObjAsView (Tcl_Interp *interp, Tcl_Obj *obj) {
                 /* don't use Tcl_EvalObjEx, it forces a string conversion */
                 if (Tcl_EvalObjv(interp, ac, av, TCL_EVAL_GLOBAL) == TCL_OK) {
                     /* result to view, may call EvalIndirectView recursively */
-puts("RECURSE?");
                     view = ObjAsView(interp, Tcl_GetObjResult(interp));
                 }
-                puts(Tcl_GetStringResult(interp));
             }
 
             Tcl_DecrRefCount(cmd);
@@ -582,6 +587,9 @@ DLLEXPORT int Tvq_Init (Tcl_Interp *interp) {
     luaL_newmetatable(L, "Vlerq.tcl");
     lua_pushstring(L, "__gc");
     lua_pushcfunction(L, tclobj_gc);
+    lua_settable(L, -3);
+    lua_pushliteral(L, "__TYPE");
+    lua_pushliteral(L, "Vlerq.tcl");
     lua_settable(L, -3);
 
     lua_pushcfunction(L, luaopen_lvq_core);
