@@ -375,14 +375,16 @@ static int LuaCallback (lua_State *L) {
         d   arg is a double-precision float (pushed as Lua number)
         g   arg is name of a Lua global (looked up and pushed as Lua object)
         i   arg is an integer (pushed as Lua number)
+        n   arg is ignored (pushed as Lua's nil)
         o   arg can be any Tcl object (pushed as Lua userdata of type Vlerq.tcl)
         s   arg is a UTF8 string (pushed as Lua string)
         t   arg is a Lua truth value, arg must be 1/0/yes/no/true/false
         u   arg can be any object (pushed as Lua light userdata)
+        v   arg is name of entry in "vops" table (pushed as looked-up object)
     
-    Args of type 'o' are checked - if they are of type "luaboj" then the value
-    is "unboxed" and passed as that Lua object, otherwise the value is "boxed".
-    This avoids multiple Tcl/Lua wrappers and supports passing back-and-forth.
+    Args of type 'o' and 'u' are checked - if they are of type "luaboj" then the
+    value is "unboxed" and passed as Lua object, otherwise the value is "boxed".
+    This avoids multiple Tcl/Lua wrappers and supports "toll-free bridging".
     
     Args of type 'u' are pushed without incrementing the Tcl reference count
     and must be used right away in the Lua call - they cannot be kept around
@@ -398,25 +400,25 @@ static int LvqCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const
     char *ptr, *fmt;
     double d;
     Tcl_Obj **op;
-    if (objc < 2) {
-      Tcl_WrongNumArgs(interp, objc, objv, "fmt ?args ...?");
+    if (objc < 3) {
+      Tcl_WrongNumArgs(interp, objc, objv, "fmt arg ?...?");
       return TCL_ERROR;
     }
     fmt = Tcl_GetStringFromObj(objv[1], &len);
     if (objc < 2 + len) {
-        Tcl_SetResult(interp, "arg count mismatch", TCL_STATIC);
+        Tcl_SetResult(interp, "not enough args", TCL_STATIC);
         return TCL_ERROR;
     }
     for (i = 2; i < objc; ++i) {
         Tcl_Obj *obj = objv[i];
+        int r = (int) obj->internalRep.twoPtrValue.ptr2;
         switch (*fmt++) {
-            case 't':   if (Tcl_GetIntFromObj(interp, obj, &v) != TCL_OK)
-                      	    return TCL_ERROR;
-                        if (v >= 0)
-                            lua_pushboolean(L, v);
-                        else
-                      	    lua_pushnil(L);
+            case 'n':   lua_pushnil(L);
                       	break;
+            case 't':   if (Tcl_GetBooleanFromObj(interp, obj, &v) != TCL_OK)
+                      	    return TCL_ERROR;
+                        lua_pushboolean(L, v);
+                        break;
             case 'i':   if (Tcl_GetIntFromObj(interp, obj, &v) != TCL_OK)
                       	    return TCL_ERROR;
                       	lua_pushinteger(L, v);
@@ -434,8 +436,12 @@ static int LvqCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const
             case 'g':   ptr = Tcl_GetStringFromObj(obj, NULL);
                       	lua_getglobal(L, ptr);
                       	break;
+            case 'v':   ptr = Tcl_GetStringFromObj(obj, NULL);
+                        lua_getfield(L, LUA_GLOBALSINDEX, "vops");
+                        lua_getfield(L, -1, ptr);
+                        lua_remove(L, -2);
+                      	break;
             case 'o':   if (obj->typePtr == &f_luaObjType) { // unbox
-                            int r = (int) obj->internalRep.twoPtrValue.ptr2;
                             lua_rawgeti(L, LUA_REGISTRYINDEX, r);
                             break;
                         } // else fall through
@@ -448,7 +454,10 @@ static int LvqCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const
                       	}
                       	break;
             case 0:     --fmt;
-            case 'u':   lua_pushlightuserdata(L, obj);
+            case 'u':   if (obj->typePtr == &f_luaObjType) // unbox
+                            lua_rawgeti(L, LUA_REGISTRYINDEX, r);
+                        else
+                            lua_pushlightuserdata(L, obj);
                         break;
             default:    Tcl_SetResult(interp, "unknown format", TCL_STATIC);
                       	return TCL_ERROR;

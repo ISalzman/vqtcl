@@ -3,10 +3,10 @@
 require 'lvq'
 print(lvq._VERSION..' - '..lvq._CONFIG..'\n')
 
-m=lvq.view(0)
+m=vops.view(0)
 print(m)
---print(lvq.view(123, m))
---print(lvq.view(234))
+--print(vops.view(123, m))
+--print(vops.view(234))
 print(11)
 print(m.meta)
 --print(m:meta())
@@ -39,24 +39,16 @@ print(44)
 m:meta():meta():p()
 
 print(55)
-t=lvq.meta('first,age:I')
---print(t)
-t:p()
-
-v=lvq.view(3,t)
-v[0].first='joe'
-v[0].age=8
-v[1].first='philip'
-v[1].age=35
-v[2].first='inez'
-v[2].age=21
-print(v)
+v=vops.view(3,'first,age:I')
+v[0].first, v[0].age = 'joe', 8
+v[1].first, v[1].age = 'philip', 35
+v[2].first, v[2].age = 'inez', 21
 v:p()
 
-vv=lvq.open('../data/simple.db')
+vv=vops.open('../data/simple.db')
 print(vv)
 vv[0].v:p()
-print(lvq.open('../data/alltypes.db'))
+print(vops.open('../data/alltypes.db'))
 
 --s=v:emit()
 --print(#s)
@@ -64,15 +56,15 @@ print(lvq.open('../data/alltypes.db'))
 --f:write(s)
 --f:close()
 --
---lvq.open('tmp1.db'):p()
+--vops.open('tmp1.db'):p()
 --os.remove('tmp1.db')
 
 print(v:save('tmp2.db'))
-vvv=lvq.open('tmp2.db')
+vvv=vops.open('tmp2.db')
 os.remove('tmp2.db')
 
 mv=vvv:mutable()
-mv:replace(1,1,lvq.view(0))
+mv:replace(1,1,0)
 mv[1].first = 'shirley'
 mv[0].age = nil
 print(mv:empty(0,1))
@@ -81,8 +73,8 @@ mv:p()
 print(vvv:type())
 print(mv:type())
 
-lvq.view(4):iota('N'):p()
---lvq.view(4):iota('N',3):p()
---lvq.view(4):iota('N',0):p()
+vops.iota(4,'N'):p()
+--vops.iota(4,'N',3):p()
+--vops.iota(4,'N',0):p()
 
-lvq.meta("abc:I"):virtual(4, function (r,c) return r*r*r end):p()
+vops.virtual(4, "abc:I", function (r,c) return r*r*r end):p()

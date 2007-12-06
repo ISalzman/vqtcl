@@ -1,4 +1,4 @@
-#!/usr/bin/env tclsh
+#!/usr/bin/env tclkit
 # %renumber<^\s*test >%
 
 source [file join [file dir [info script]] initests.tcl]
@@ -57,7 +57,7 @@ test 11 {error in lua} {
 } {1 {attempt to call a table value}}
 
 test 12 {fetch entry from vops table} -body {
-    lvq "go" tostring [lvq "ggs" rawget vops meta]
+    lvq "gv" tostring meta
 } -match glob -result {function: 0x*}
 
 ::tcltest::cleanupTests

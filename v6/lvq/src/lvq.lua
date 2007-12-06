@@ -2,10 +2,8 @@
       $Id$
       This file is part of Vlerq, see core/vlerq.h for full copyright notice. ]]
 
-local lvq = require 'lvq.core'
-
+require 'lvq.core'
 module (..., package.seeall)
-
 assert(_VERSION == 'LuaVlerq 1.6')
 
 -- table with render functions for each data type, N=0 S=5 B=6 V=7
@@ -71,19 +69,23 @@ end
 
 -- tentative definitions, not fully worked out yet
 
-vops.step    = lvq.step    -- function (count, start, step, rate)
-vops.vconcat = lvq.vconcat -- function (v1, v2)
-vops._ccat   = lvq._ccat   -- function (meta, v1, v2)
+-- vops.step    = function (count, start, step, rate)
+-- vops.vconcat = function (...)
+-- vops._ccat   = function (meta, a, b)
 
-function vops.ccat (a, b)
-  return vops._ccat(vops.vconcat(a:meta(), b:meta()), a, b)
+function vops.ccat (...)
+  local m = {}
+  for i = 1, select('#', ...) do
+    m[i] = select(i, ...):meta()
+  end
+  return vops._ccat(vops.vconcat(unpack(m)), ...)
 end
 
 vops.__concat = vops.ccat       -- .. operator
 
 function vops.crep (v, n)
   if n==0 then 
-    return lvq.view(#v)
+    return #v
   end
   local w=v
   for i=2,n do w = w .. v end

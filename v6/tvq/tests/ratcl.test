@@ -1,4 +1,4 @@
-#!/usr/bin/env tclsh
+#!/usr/bin/env tclkit
 # %renumber<^\s*test >%
 
 source [file join [file dir [info script]] initests.tcl]
@@ -7,18 +7,14 @@ test 0 {} {
     package require ratcl
 } $version
 
-set aa [lvq "ggs" rawget lvq meta]
-#puts aa-$aa
-#puts [lvq "go" tostring $aa]
-set bb [lvq "os" $aa {A:I,B[C:F,D],E:B}]
-#puts bb-$bb
-set cc [lvq "ggs" rawget vops dump]
-puts [lvq "oo" $cc $bb]
+puts [lvq "vo" dump [lvq "vis" view 0 {A:I,B[C:F,D],E:B}]]
 
-luas { lvq.open('../data/alltypes.db')[0].v:p() }
+luas {
+    db = vops.open('../data/simple.db')[0]
+    db.v:p()
+}
 
-set o [lvq "ggs" rawget lvq open]
-set v [lvq "os" $o ../data/alltypes.db]
+set v [lvq "vs" open ../data/alltypes.db]
 
 luas {
     a = {}
