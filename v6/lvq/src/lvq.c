@@ -28,9 +28,9 @@ static vq_View checkview (lua_State *L, int t) {
     return *(vq_View*) luaL_checkudata(L, t, "Vlerq.view");
 }
 
-static vq_View checkmeta(lua_State *L, int t) {
-    vq_View m = checkview(L, t);
-    luaL_argcheck(L, vMeta(m) == vMeta(vMeta(m)), t, "not a meta-view");
+static vq_View mustbemeta (lua_State *L, vq_View m) {
+    if (vMeta(m) != vMeta(vMeta(m)))
+        luaL_error(L, "arg must be a meta-view");
     return m;
 }
 
@@ -97,11 +97,19 @@ static void parseargs(lua_State *L, vq_Item *buf, const char *desc) {
     int i;
     for (i = 0; desc[i]; ++i) {
         vq_Type type;
-        switch (desc[i]) {
+        char c = desc[i];
+        if ('a' <= c && c <= 'z') {
+            if (lua_isnoneornil(L, i+1)) {
+                buf[i].o.a.p = buf[i].o.b.p = 0;
+                continue;
+            }
+            c += 'A'-'a';
+        }
+        switch (c) {
             case 0:     return;
             case 'R':   buf[i] = *checkrow(L, i+1); continue;
             case '-':   continue;
-            default:    type = CharAsType(desc[i]); break;
+            default:    type = CharAsType(c); break;
         }
         buf[i] = toitem(L, i+1, type);
     }
@@ -110,6 +118,8 @@ static void parseargs(lua_State *L, vq_Item *buf, const char *desc) {
 #define LVQ_ARGS(state,args,desc) \
             vq_Item args[sizeof(desc)-1]; \
             parseargs(state, args, desc)
+
+/* - - - - - - - - - < Vlerq.row userdata methods > - - - - - - - - - */
 
 static int row_gc (lua_State *L) {
     vq_Item *pi = lua_touserdata(L, 1); assert(pi != NULL);
@@ -168,22 +178,7 @@ static int row2string (lua_State *L) {
     return 1;
 }
 
-static int view_empty (lua_State *L) {
-    LVQ_ARGS(L,A,"VII");
-    lua_pushboolean(L, vq_empty(A[0].o.a.v, A[1].o.a.i, A[2].o.a.i));
-    return 1;
-}
-
-static int view_meta (lua_State *L) {
-    LVQ_ARGS(L,A,"V");
-    return pushview(L, vq_meta(A[0].o.a.v));
-}
-
-static int view_type (lua_State *L) {
-    LVQ_ARGS(L,A,"V");
-    lua_pushstring(L, vType(A[0].o.a.v)->name);
-    return 1;
-}
+/* - - - - - - - - - < Vlerq.view userdata methods > - - - - - - - - - */
 
 static int view_gc (lua_State *L) {
     vq_View *vp = lua_touserdata(L, 1); assert(vp != NULL);
@@ -214,13 +209,6 @@ static int view_len (lua_State *L) {
     return 1;
 }
 
-static int view_replace (lua_State *L) {
-    LVQ_ARGS(L,A,"VIIV");
-    vq_replace(A[0].o.a.v, A[1].o.a.i, A[2].o.a.i, A[3].o.a.v);
-    lua_pushvalue(L, 1);
-    return 1;
-}
-
 static void view2struct (luaL_Buffer *B, vq_View meta) {
     int c;
     char buf[30];
@@ -243,17 +231,6 @@ static void view2struct (luaL_Buffer *B, vq_View meta) {
     }
 }
 
-static int view_struct (lua_State *L) {
-    vq_View v;
-    luaL_Buffer b;
-    LVQ_ARGS(L,A,"V");
-    v = A[0].o.a.v;
-    luaL_buffinit(L, &b);
-    view2struct(&b, vMeta(v));
-    luaL_pushresult(&b);
-    return 1;
-}
-
 static int view2string (lua_State *L) {
     vq_View v;
     luaL_Buffer b;
@@ -264,6 +241,60 @@ static int view2string (lua_State *L) {
     view2struct(&b, vMeta(v));
     luaL_pushresult(&b);
     lua_concat(L, 2);
+    return 1;
+}
+
+/* - - - - - - - - - < Remaining view operators > - - - - - - - - - */
+
+static int vops_empty (lua_State *L) {
+    LVQ_ARGS(L,A,"VII");
+    lua_pushboolean(L, vq_empty(A[0].o.a.v, A[1].o.a.i, A[2].o.a.i));
+    return 1;
+}
+
+static int vops_meta (lua_State *L) {
+    LVQ_ARGS(L,A,"V");
+    return pushview(L, vq_meta(A[0].o.a.v));
+}
+
+static int vops_type (lua_State *L) {
+    LVQ_ARGS(L,A,"V");
+    lua_pushstring(L, vType(A[0].o.a.v)->name);
+    return 1;
+}
+
+static int vops_at (lua_State *L) {
+    vq_View v;
+    int r, c, cols;
+    vq_Item item;
+    LVQ_ARGS(L,A,"VII");
+    v = A[0].o.a.v;
+    r = A[1].o.a.i;
+    c = A[2].o.a.i;
+    cols = vCount(vMeta(v));
+    if (r < 0 || r >= vCount(v))
+        return luaL_error(L, "row index %d out of range", r);
+    if (c < 0 || c >= cols)
+        return luaL_error(L, "column index %d out of range", c);
+    item = v[c];
+    return pushitem(L, GetItem(r, &item), &item);
+}
+
+static int vops_replace (lua_State *L) {
+    LVQ_ARGS(L,A,"VIIV");
+    vq_replace(A[0].o.a.v, A[1].o.a.i, A[2].o.a.i, A[3].o.a.v);
+    lua_pushvalue(L, 1);
+    return 1;
+}
+
+static int vops_struct (lua_State *L) {
+    vq_View v;
+    luaL_Buffer b;
+    LVQ_ARGS(L,A,"V");
+    v = A[0].o.a.v;
+    luaL_buffinit(L, &b);
+    view2struct(&b, vMeta(v));
+    luaL_pushresult(&b);
     return 1;
 }
 
@@ -282,7 +313,7 @@ vq_Type lvq_load (lua_State *L) {
 }
 */
 
-static int view_open (lua_State *L) {
+static int vops_open (lua_State *L) {
     Vector map;
     LVQ_ARGS(L,A,"S");
     map = OpenMappedFile(A[0].o.a.s);
@@ -295,7 +326,7 @@ static int view_open (lua_State *L) {
 
 #if VQ_MOD_MUTABLE
 
-static int view_mutable (lua_State *L) {
+static int vops_mutable (lua_State *L) {
     LVQ_ARGS(L,A,"V");
     return pushview(L, WrapMutable(A[0].o.a.v, NULL));
 }
@@ -304,13 +335,13 @@ static int view_mutable (lua_State *L) {
 
 #if VQ_MOD_OPDEF
 
-static int view_iota (lua_State *L) {
+static int vops_iota (lua_State *L) {
     int base = luaL_optinteger(L, 3, 0);
     LVQ_ARGS(L,A,"VS");
     return pushview(L, IotaView(vq_size(A[0].o.a.v), A[1].o.a.s, base));
 }
 
-static int view_pass (lua_State *L) {
+static int vops_pass (lua_State *L) {
     LVQ_ARGS(L,A,"V");
     return pushview(L, PassView(A[0].o.a.v));
 }
@@ -338,10 +369,10 @@ static Dispatch virtab = {
     "virtual", 3, 0, 0, VirtualCleaner, VirtualGetter
 };
 
-static int view_virtual (lua_State *L) {
+static int vops_virtual (lua_State *L) {
     vq_View v;
-    LVQ_ARGS(L,A,"V-O");
-    v = IndirectView(checkmeta(L, 2), &virtab, vCount(A[0].o.a.v), 0);
+    LVQ_ARGS(L,A,"VVO");
+    v = IndirectView(mustbemeta(L, A[1].o.a.v), &virtab, vCount(A[0].o.a.v), 0);
     vOffs(v) = A[2].o.a.i;
     vData(v) = (void*) L;
     return pushview(L, v);
@@ -356,7 +387,7 @@ static void* EmitDataFun (void *buf, const void *ptr, intptr_t len) {
     return buf;
 }
 
-static int view_emit (lua_State *L) {
+static int vops_emit (lua_State *L) {
     int e;
     luaL_Buffer b;
     LVQ_ARGS(L,A,"V");
@@ -370,14 +401,16 @@ static int view_emit (lua_State *L) {
 
 #endif
 
-static int view_view (lua_State *L) {
+static int vops_view (lua_State *L) {
     vq_View v;
-    LVQ_ARGS(L,A,"V");
+    LVQ_ARGS(L,A,"Vv");
     v = A[0].o.a.v;
-    if (!lua_isnoneornil(L, 2))
-        v = vq_new(checkmeta(L, 2), vCount(v));
+    if (A[1].o.a.v != NULL)
+        v = vq_new(mustbemeta(L, A[1].o.a.v), vCount(v));
     return pushview(L, v);
 }
+
+/* - - - - - - - - - < Method registration tables > - - - - - - - - - */
 
 static const struct luaL_reg lvqlib_row_m[] = {
     {"__gc", row_gc},
@@ -396,26 +429,27 @@ static const struct luaL_reg lvqlib_view_m[] = {
 };
 
 static const struct luaL_reg lvqlib_v[] = {
-    {"empty", view_empty},
-    {"meta", view_meta},
-    {"replace", view_replace},
-    {"struct", view_struct},
-    {"type", view_type},
-    {"view", view_view},
+    {"at", vops_at},
+    {"empty", vops_empty},
+    {"meta", vops_meta},
+    {"replace", vops_replace},
+    {"struct", vops_struct},
+    {"type", vops_type},
+    {"view", vops_view},
 #if VQ_MOD_LOAD
     /* {"load", lvq_load}, */
-    {"open", view_open},
+    {"open", vops_open},
 #endif
 #if VQ_MOD_MUTABLE
-    {"mutable", view_mutable},
+    {"mutable", vops_mutable},
 #endif
 #if VQ_MOD_OPDEF
-    {"iota", view_iota},
-    {"pass", view_pass},
-    {"virtual", view_virtual},
+    {"iota", vops_iota},
+    {"pass", vops_pass},
+    {"virtual", vops_virtual},
 #endif
 #if VQ_MOD_SAVE
-    {"emit", view_emit},
+    {"emit", vops_emit},
 #endif
     {NULL, NULL},
 };
@@ -445,15 +479,9 @@ LUA_API int luaopen_lvq_core (lua_State *L) {
 
     luaL_newmetatable(L, "Vlerq.row");
     luaL_register(L, NULL, lvqlib_row_m);
-    lua_pushliteral(L, "__TYPE");
-    lua_pushliteral(L, "Vlerq.row");
-    lua_settable(L, -3);
     
     luaL_newmetatable(L, "Vlerq.view");
     luaL_register(L, NULL, lvqlib_view_m);
-    lua_pushliteral(L, "__TYPE");
-    lua_pushliteral(L, "Vlerq.view");
-    lua_settable(L, -3);
     
     lua_newtable(L);
     luaL_register(L, NULL, lvqlib_v);

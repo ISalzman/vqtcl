@@ -406,6 +406,7 @@ Tcl_Obj* ItemAsObj (vq_Type type, vq_Item item) {
 
 int ObjToItem (vq_Type type, vq_Item *item) {
     switch (type) {
+        case VQ_nil:    return 1;
         case VQ_int:    return Tcl_GetIntFromObj(NULL, item->o.a.p,
                                                         &item->o.a.i) == TCL_OK;
         case VQ_long:   return Tcl_GetWideIntFromObj(NULL, item->o.a.p,
@@ -423,9 +424,8 @@ int ObjToItem (vq_Type type, vq_Item *item) {
                                                                 &item->o.b.i);
                         break;
         case VQ_view:   item->o.a.v = ObjAsView(context, item->o.a.p);
-                        if (item->o.a.v != NULL)
-                            break;
-        default:        return 0;
+                        return item->o.a.v != NULL;
+        case VQ_object: assert(0); return 0;
     }
     return 1;
 }
@@ -587,9 +587,6 @@ DLLEXPORT int Tvq_Init (Tcl_Interp *interp) {
     luaL_newmetatable(L, "Vlerq.tcl");
     lua_pushstring(L, "__gc");
     lua_pushcfunction(L, tclobj_gc);
-    lua_settable(L, -3);
-    lua_pushliteral(L, "__TYPE");
-    lua_pushliteral(L, "Vlerq.tcl");
     lua_settable(L, -3);
 
     lua_pushcfunction(L, luaopen_lvq_core);

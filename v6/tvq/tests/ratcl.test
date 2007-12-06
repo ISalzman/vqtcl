@@ -7,28 +7,12 @@ test 0 {} {
     package require ratcl
 } $version
 
-puts [lvq "v" dump [lvq "vus" view 0 {A:I,B[C:F,D],E:B}]]
 puts [lvq "v" dump {A,B[C:I],D:s}]
-puts [lvq "v" dump [lvq v meta {A,B[C:I],D:s}]]
+puts [lvq "v" dump {view 0 {A,B[C:I],D:s}}]
+puts [lvq "v" dump [lvq "v" meta {A,B[C:I],D:s}]]
 puts [lvq "v" view {meta {A,B[C:I],D:s}}]
 puts [lvq "v" dump {meta {A,B[C:I],D:s}}]
-
-luas {
-    db = vops.open('../data/simple.db')[0]
-    db.v:p()
-}
-
-set v [lvq "v" open ../data/alltypes.db]
-
-luas {
-    a = {}
-    function a:f (...)
-        print('self', self)
-        print('args', ...)
-    end
-    print(a)
-    a:f(1,2,3)
-    a:f{x=1,y=2}
-}
+puts [lvq "v" struct {open ../data/alltypes.db}]
+puts [lvq "v" dump {at {open ../data/simple.db} 0 0}]
 
 ::tcltest::cleanupTests
