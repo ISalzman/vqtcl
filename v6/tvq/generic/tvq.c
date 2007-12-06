@@ -346,7 +346,7 @@ int ObjToItem (vq_Type type, vq_Item *item) {
 
 /*  Callbacks from Lua into Tcl are implemented via the 'c' type in LvqCmd.
     The argument is treated as a list, to which any further arguments from
-    Lua are appended.  The result is then eval'ed as a command in Tcl.  */
+    Lua are appended.  That list is then eval'ed as a command in Tcl.  */
 
 static int LuaCallback (lua_State *L) {
     Tcl_Obj *list, **o = lua_touserdata(L, lua_upvalueindex(1));
@@ -367,23 +367,30 @@ static int LuaCallback (lua_State *L) {
 /*  Low-level interface from Tcl to Lua is via the "lvq" command.  Usage:
         set result [lvq fmt args...]
     The "fmt" argument is a string describing the type of the following args.
-    Each letter describes one argument, if more arguments remain after parsing
-    fmt, these are treated as being of type 'l'.  Supported types are:
+    Each letter describes one argument - if more arguments remain after parsing
+    fmt, then these are treated as being of type 'u'.  Supported types are:
     
-        t   arg is a Lua truth value, arg must be 0/1/yes/no/true/false
-        i   arg is an integer (pushed as Lua number)
-        d   arg is a double-precision float (pushed as Lua number)
-        r   arg is a reference (not sure this conversion makes sense...)
         b   arg is a Tcl byte array (pushed as Lua string)
-        s   arg is a UTF8 string (pushed as Lua string)
-        g   arg is name of a Lua global (looked up and pushed as Lua object)
-        o   arg can be any Tcl object (pushed as Lua userdata of type Vlerq.tcl)
         c   arg is a list for Lua to call back (pushed as a Lua C closure)
-        l   arg can be any object (pushed as Lua light userdata)
+        d   arg is a double-precision float (pushed as Lua number)
+        g   arg is name of a Lua global (looked up and pushed as Lua object)
+        i   arg is an integer (pushed as Lua number)
+        o   arg can be any Tcl object (pushed as Lua userdata of type Vlerq.tcl)
+        s   arg is a UTF8 string (pushed as Lua string)
+        t   arg is a Lua truth value, arg must be 1/0/yes/no/true/false
+        u   arg can be any object (pushed as Lua light userdata)
     
-    Args of type 'l' are pushed without incrementing the Tcl reference count,
-    and must be used in the Lua call before it returns - they cannot be kept
-    around in Lua since the Tcl object may go away once LvqCmd returns.  */
+    Args of type 'o' are checked - if they are of type "luaboj" then the value
+    is "unboxed" and passed as that Lua object, otherwise the value is "boxed".
+    This avoids multiple Tcl/Lua wrappers and supports passing back-and-forth.
+    
+    Args of type 'u' are pushed without incrementing the Tcl reference count
+    and must be used right away in the Lua call - they cannot be kept around
+    in Lua since the Tcl object may be released once LvqCmd returns.
+    
+    Examples:       lvq "gs" print {Tcl says hello to Lua!}
+                    puts [lvq "ggs" rawget _G _VERSION]
+*/
     
 static int LvqCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
     lua_State *L = data;
@@ -418,10 +425,6 @@ static int LvqCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const
                       	    return TCL_ERROR;
                       	lua_pushnumber(L, d);
                       	break;
-            case 'r':   if (Tcl_GetIntFromObj(interp, obj, &v) != TCL_OK)
-                      	    return TCL_ERROR;
-                      	lua_rawgeti(L, LUA_REGISTRYINDEX, v);
-                      	break;
             case 'b':   ptr = (void*) Tcl_GetByteArrayFromObj(obj, &len);
                       	lua_pushlstring(L, ptr, len);
                       	break;
@@ -445,7 +448,7 @@ static int LvqCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const
                       	}
                       	break;
             case 0:     --fmt;
-            case 'l':   lua_pushlightuserdata(L, obj);
+            case 'u':   lua_pushlightuserdata(L, obj);
                         break;
             default:    Tcl_SetResult(interp, "unknown format", TCL_STATIC);
                       	return TCL_ERROR;

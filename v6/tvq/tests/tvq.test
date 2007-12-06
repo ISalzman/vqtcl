@@ -11,7 +11,11 @@ test 1 {perform a basic call} {
     lvq "gi" type 123
 } number
 
-test 2 {} skip {
+test 2 {check Lua version} {
+    lvq "ggs" rawget _G _VERSION
+} {Lua 5.1}
+
+test 3 {} skip {
     lvq "gs" print "Hello from Tcl!"
 } {}
 
@@ -19,40 +23,40 @@ proc luas {s} { lvq "o" [lvq "gs" loadstring $s] }  ;# evaluate string in lua
 luas { package.loaded['lvq.core'] = lvq }           ;# emulate module setup
 lvq "ggsc" rawset _G tcl ""                         ;# define a 'tcl' callback
 
-test 3 {run the lvq.lua wrapper} {
+test 4 {run the lvq.lua wrapper} {
     # emulate a require, but from a specific file
     lvq os [lvq "gs" loadfile "../lvq/src/lvq.lua"] lvq
 } {}
 
-test 4 {lua error handling} {
+test 5 {lua error handling} {
     list [catch { lvq "gt" assert 0 } e] $e
 } {1 {assertion failed!}}
 
-test 5 {string evaluation in lua} {
+test 6 {string evaluation in lua} {
     luas { return 1+2*3 }
 } 7
 
-test 6 {} skip {
+test 7 {} skip {
     lvq "gs" dofile "../lvq/tests/test.lua"
 } {}
 
-test 7 {tcl callback} {
+test 8 {tcl callback} {
     lvq "gss" tcl return "a b c"
 } "a b c"
 
-test 8 {errors in tcl callback} {
+test 9 {errors in tcl callback} {
     list [catch { lvq "gs" tcl set } e] $e
 } {1 {tvq: wrong # args: should be "set varName ?newValue?"}}
 
-test 9 {output in tcl callback} -body {
+test 10 {output in tcl callback} -body {
     lvq "gss" tcl puts "Hello from Lua!"
 } -output "Hello from Lua!\n"
 
-test 10 {error in lua} {
+test 11 {error in lua} {
     list [catch { lvq "g" io } e] $e
 } {1 {attempt to call a table value}}
 
-test 11 {fetch entry from vops table} -body {
+test 12 {fetch entry from vops table} -body {
     lvq "go" tostring [lvq "ggs" rawget vops meta]
 } -match glob -result {function: 0x*}
 
