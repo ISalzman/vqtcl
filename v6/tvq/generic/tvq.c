@@ -67,7 +67,7 @@ static void DupLuaIntRep (Tcl_Obj *src, Tcl_Obj *obj) {
 
 static void UpdateLuaStrRep (Tcl_Obj *obj) {
     char buf[50];
-    int n = sprintf(buf, "luaobj:%p.%d",
+    int n = sprintf(buf, "luaobj %p %d",
                                     obj->internalRep.twoPtrValue.ptr1,
                                     (int) obj->internalRep.twoPtrValue.ptr2);
     obj->bytes = strcpy(malloc(n+1), buf);
@@ -344,7 +344,9 @@ static int LuaCallback (lua_State *L) {
         Tcl_ListObjAppendElement(ip, list, LuaAsTclObj(L, i));
     i = Tcl_EvalObjEx(ip, list, TCL_EVAL_DIRECT);
     Tcl_DecrRefCount(list);
-    return i == TCL_OK ? 0 : luaL_error(L, "tvq: %s", Tcl_GetStringResult(ip));
+    if (i == TCL_ERROR)
+        luaL_error(L, "tvq: %s", Tcl_GetStringResult(ip));
+    return 0;
 }
 
 static int LuaObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
@@ -443,9 +445,6 @@ DLLEXPORT int Tvq_Init (Tcl_Interp *interp) {
     lua_pushstring(L, "lvq.core");
     lua_call(L, 1, 0);
 
-    luaL_dostring(L, "package.loaded['lvq.core'] = lvq; "
-                     "function dostring (x) return loadstring(x)() end");
-    
     Tcl_CreateObjCommand(interp, "tvq", LuaObjCmd, L, NULL);
     
     assert(strcmp(PACKAGE_VERSION, VQ_RELEASE) == 0);

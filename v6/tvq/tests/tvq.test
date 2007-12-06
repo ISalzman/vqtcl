@@ -3,30 +3,32 @@
 
 source [file join [file dir [info script]] initests.tcl]
 
-interp alias {} luas {} tvq "gs" dostring
-
 test 0 {} {
     package require tvq
 } $version
 
-test 1 {} {
-    tvq "go" type blah
-} userdata
+test 1 {perform a basic call} {
+    tvq "gi" type 123
+} number
 
 test 2 {} skip {
     tvq "gs" print "Hello from Tcl!"
 } {}
 
-test 3 {} {
-    # emulate require
+proc luas {s} { tvq "o" [tvq "gs" loadstring $s] }  ;# evaluate string in lua
+luas { package.loaded['lvq.core'] = lvq }           ;# emulate module setup
+tvq "ggsc" rawset _G tcl ""                         ;# define a 'tcl' callback
+
+test 3 {run the lvq.lua wrapper} {
+    # emulate a require, but from a specific file
     tvq os [tvq "gs" loadfile "../lvq/src/lvq.lua"] lvq
 } {}
 
-test 4 {} {
+test 4 {lua error handling} {
     list [catch { tvq "gt" assert 0 } e] $e
 } {1 {assertion failed!}}
 
-test 5 {} {
+test 5 {string evaluation in lua} {
     luas { return 1+2*3 }
 } 7
 
@@ -34,10 +36,8 @@ test 6 {} skip {
     tvq "gs" dofile "../lvq/tests/test.lua"
 } {}
 
-test 7 {} {
-    luas { function setglobal(x,y) _G[x]= y end }
-    tvq "gsc" setglobal tcl "" ;# empty cmd prefix, but still a callback
-    tvq "gsss" tcl set _ "a b c"
+test 7 {tcl callback} {
+    tvq "gss" tcl return "a b c"
 } "a b c"
 
 test 8 {errors in tcl callback} {
@@ -51,5 +51,9 @@ test 9 {output in tcl callback} -body {
 test 10 {error in lua} {
     list [catch { tvq "g" io } e] $e
 } {1 {attempt to call a table value}}
+
+test 11 {fetch entry from vops table} -body {
+    tvq "go" tostring [tvq "ggs" rawget vops meta]
+} -match glob -result {function: 0x*}
 
 ::tcltest::cleanupTests

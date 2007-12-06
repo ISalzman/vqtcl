@@ -4,7 +4,31 @@
 source [file join [file dir [info script]] initests.tcl]
 
 test 0 {} {
-    package require tvq
+    package require ratcl
 } $version
+
+set aa [tvq "ggs" rawget lvq meta]
+#puts aa-$aa
+#puts [tvq "go" tostring $aa]
+set bb [tvq "os" $aa {A:I,B[C:F,D],E:B}]
+#puts bb-$bb
+set cc [tvq "ggs" rawget vops dump]
+puts [tvq "oo" $cc $bb]
+
+luas { lvq.open('../data/alltypes.db')[0].v:p() }
+
+set o [tvq "ggs" rawget lvq open]
+set v [tvq "os" $o ../data/alltypes.db]
+
+luas {
+    a = {}
+    function a:f (...)
+        print('self', self)
+        print('args', ...)
+    end
+    print(a)
+    a:f(1,2,3)
+    a:f{x=1,y=2}
+}
 
 ::tcltest::cleanupTests
