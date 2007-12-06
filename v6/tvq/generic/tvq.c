@@ -52,8 +52,16 @@
 #include "stubs.h"
 #endif
 
-/* forward */
-extern Tcl_ObjType f_luaObjType;
+/*  Define a custom "luaobj" type for Tcl objects, containing a reference to a
+    Lua object.  The "L" state pointer is stored as twoPtrValue.ptr1, the int
+    reference is stored as twoPtrValue.ptr2 (via a cast).  Calls Lua's unref
+    when the Tcl_Obj is deleted.  The lifetime of the referenced Lua object is
+    therefore tied to the Tcl_Obj's one.
+    
+    There is a string representation which is only for debugging - once the
+    internal rep shimmers away, there is no way to get back the Lua object.  */
+    
+extern Tcl_ObjType f_luaObjType; /* forward */
 
 static void FreeLuaIntRep (Tcl_Obj *obj) {
     lua_State *L = obj->internalRep.twoPtrValue.ptr1;
@@ -62,7 +70,7 @@ static void FreeLuaIntRep (Tcl_Obj *obj) {
 }
 
 static void DupLuaIntRep (Tcl_Obj *src, Tcl_Obj *obj) {
-    puts("DupLuaIntRep called");
+    puts("DupLuaIntRep called"); /* could be implemented, no need so far */
 }
 
 static void UpdateLuaStrRep (Tcl_Obj *obj) {
@@ -75,7 +83,7 @@ static void UpdateLuaStrRep (Tcl_Obj *obj) {
 }
 
 static int SetLuaFromAnyRep (Tcl_Interp *interp, Tcl_Obj *obj) {
-    puts("SetLuaFromAnyRep called");
+    puts("SetLuaFromAnyRep called"); /* conversion to a luaobj is impossible */
     return TCL_ERROR;
 }
 
@@ -111,6 +119,9 @@ static Tcl_Obj* LuaAsTclObj (lua_State *L, int t) {
         }
     }
 }
+
+/*  Define various Tcl conversions from/to Vlerq objects.  All calls below
+    named ...As... return the result, while calls ...To... store it in arg.  */
 
 vq_View ObjAsMetaView (void *ip, Tcl_Obj *obj) {
     int r, rows, objc;
@@ -333,6 +344,10 @@ int ObjToItem (vq_Type type, vq_Item *item) {
     return 1;
 }
 
+/*  Callbacks from Lua into Tcl are implemented via the 'c' type in LvqCmd.
+    The argument is treated as a list, to which any further arguments from
+    Lua are appended.  The result is then eval'ed as a command in Tcl.  */
+
 static int LuaCallback (lua_State *L) {
     Tcl_Obj *list, **o = lua_touserdata(L, lua_upvalueindex(1));
     Tcl_Interp* ip = lua_touserdata(L, lua_upvalueindex(2));
@@ -349,7 +364,28 @@ static int LuaCallback (lua_State *L) {
     return 0;
 }
 
-static int LuaObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
+/*  Low-level interface from Tcl to Lua is via the "lvq" command.  Usage:
+        set result [lvq fmt args...]
+    The "fmt" argument is a string describing the type of the following args.
+    Each letter describes one argument, if more arguments remain after parsing
+    fmt, these are treated as being of type 'l'.  Supported types are:
+    
+        t   arg is a Lua truth value, arg must be 0/1/yes/no/true/false
+        i   arg is an integer (pushed as Lua number)
+        d   arg is a double-precision float (pushed as Lua number)
+        r   arg is a reference (not sure this conversion makes sense...)
+        b   arg is a Tcl byte array (pushed as Lua string)
+        s   arg is a UTF8 string (pushed as Lua string)
+        g   arg is name of a Lua global (looked up and pushed as Lua object)
+        o   arg can be any Tcl object (pushed as Lua userdata of type Vlerq.tcl)
+        c   arg is a list for Lua to call back (pushed as a Lua C closure)
+        l   arg can be any object (pushed as Lua light userdata)
+    
+    Args of type 'l' are pushed without incrementing the Tcl reference count,
+    and must be used in the Lua call before it returns - they cannot be kept
+    around in Lua since the Tcl object may go away once LvqCmd returns.  */
+    
+static int LvqCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
     lua_State *L = data;
     int v, i, len;
     char *ptr, *fmt;
@@ -360,11 +396,11 @@ static int LuaObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *co
       return TCL_ERROR;
     }
     fmt = Tcl_GetStringFromObj(objv[1], &len);
-    if (objc != 2 + len) {
+    if (objc < 2 + len) {
         Tcl_SetResult(interp, "arg count mismatch", TCL_STATIC);
         return TCL_ERROR;
     }
-    for (i = 2; *fmt; ++i) {
+    for (i = 2; i < objc; ++i) {
         Tcl_Obj *obj = objv[i];
         switch (*fmt++) {
             case 't':   if (Tcl_GetIntFromObj(interp, obj, &v) != TCL_OK)
@@ -408,6 +444,9 @@ static int LuaObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *co
                           	lua_pushcclosure(L, LuaCallback, 2);
                       	}
                       	break;
+            case 0:     --fmt;
+            case 'l':   lua_pushlightuserdata(L, obj);
+                        break;
             default:    Tcl_SetResult(interp, "unknown format", TCL_STATIC);
                       	return TCL_ERROR;
         }
@@ -417,6 +456,10 @@ static int LuaObjCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *co
         Tcl_SetObjResult(interp, LuaAsTclObj(L, -1));
     lua_pop(L, 1);
     return v == 0 ? TCL_OK : TCL_ERROR;
+}
+
+static int TvqCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
+    return TCL_OK;
 }
 
 static int tclobj_gc (lua_State *L) {
@@ -445,7 +488,8 @@ DLLEXPORT int Tvq_Init (Tcl_Interp *interp) {
     lua_pushstring(L, "lvq.core");
     lua_call(L, 1, 0);
 
-    Tcl_CreateObjCommand(interp, "tvq", LuaObjCmd, L, NULL);
+    Tcl_CreateObjCommand(interp, "lvq", LvqCmd, L, NULL);
+    Tcl_CreateObjCommand(interp, "tvq", TvqCmd, L, NULL);
     
     assert(strcmp(PACKAGE_VERSION, VQ_RELEASE) == 0);
     return Tcl_PkgProvide(interp, "tvq", PACKAGE_VERSION);

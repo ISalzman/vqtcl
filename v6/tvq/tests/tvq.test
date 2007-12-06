@@ -8,24 +8,24 @@ test 0 {} {
 } $version
 
 test 1 {perform a basic call} {
-    tvq "gi" type 123
+    lvq "gi" type 123
 } number
 
 test 2 {} skip {
-    tvq "gs" print "Hello from Tcl!"
+    lvq "gs" print "Hello from Tcl!"
 } {}
 
-proc luas {s} { tvq "o" [tvq "gs" loadstring $s] }  ;# evaluate string in lua
+proc luas {s} { lvq "o" [lvq "gs" loadstring $s] }  ;# evaluate string in lua
 luas { package.loaded['lvq.core'] = lvq }           ;# emulate module setup
-tvq "ggsc" rawset _G tcl ""                         ;# define a 'tcl' callback
+lvq "ggsc" rawset _G tcl ""                         ;# define a 'tcl' callback
 
 test 3 {run the lvq.lua wrapper} {
     # emulate a require, but from a specific file
-    tvq os [tvq "gs" loadfile "../lvq/src/lvq.lua"] lvq
+    lvq os [lvq "gs" loadfile "../lvq/src/lvq.lua"] lvq
 } {}
 
 test 4 {lua error handling} {
-    list [catch { tvq "gt" assert 0 } e] $e
+    list [catch { lvq "gt" assert 0 } e] $e
 } {1 {assertion failed!}}
 
 test 5 {string evaluation in lua} {
@@ -33,27 +33,27 @@ test 5 {string evaluation in lua} {
 } 7
 
 test 6 {} skip {
-    tvq "gs" dofile "../lvq/tests/test.lua"
+    lvq "gs" dofile "../lvq/tests/test.lua"
 } {}
 
 test 7 {tcl callback} {
-    tvq "gss" tcl return "a b c"
+    lvq "gss" tcl return "a b c"
 } "a b c"
 
 test 8 {errors in tcl callback} {
-    list [catch { tvq "gs" tcl set } e] $e
+    list [catch { lvq "gs" tcl set } e] $e
 } {1 {tvq: wrong # args: should be "set varName ?newValue?"}}
 
 test 9 {output in tcl callback} -body {
-    tvq "gss" tcl puts "Hello from Lua!"
+    lvq "gss" tcl puts "Hello from Lua!"
 } -output "Hello from Lua!\n"
 
 test 10 {error in lua} {
-    list [catch { tvq "g" io } e] $e
+    list [catch { lvq "g" io } e] $e
 } {1 {attempt to call a table value}}
 
 test 11 {fetch entry from vops table} -body {
-    tvq "go" tostring [tvq "ggs" rawget vops meta]
+    lvq "go" tostring [lvq "ggs" rawget vops meta]
 } -match glob -result {function: 0x*}
 
 ::tcltest::cleanupTests

@@ -7,18 +7,18 @@ test 0 {} {
     package require ratcl
 } $version
 
-set aa [tvq "ggs" rawget lvq meta]
+set aa [lvq "ggs" rawget lvq meta]
 #puts aa-$aa
-#puts [tvq "go" tostring $aa]
-set bb [tvq "os" $aa {A:I,B[C:F,D],E:B}]
+#puts [lvq "go" tostring $aa]
+set bb [lvq "os" $aa {A:I,B[C:F,D],E:B}]
 #puts bb-$bb
-set cc [tvq "ggs" rawget vops dump]
-puts [tvq "oo" $cc $bb]
+set cc [lvq "ggs" rawget vops dump]
+puts [lvq "oo" $cc $bb]
 
 luas { lvq.open('../data/alltypes.db')[0].v:p() }
 
-set o [tvq "ggs" rawget lvq open]
-set v [tvq "os" $o ../data/alltypes.db]
+set o [lvq "ggs" rawget lvq open]
+set v [lvq "os" $o ../data/alltypes.db]
 
 luas {
     a = {}
