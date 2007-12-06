@@ -8,6 +8,8 @@ test 0 {} {
 } $version
 
 puts [lvq "vo" dump [lvq "vis" view 0 {A:I,B[C:F,D],E:B}]]
+puts [lvq "v" dump {A,B[C:I],D:s}]
+#puts [lvq "v" dump {meta {A,B[C:I],D:s}}]
 
 luas {
     db = vops.open('../data/simple.db')[0]

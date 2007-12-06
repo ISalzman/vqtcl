@@ -45,6 +45,8 @@
 #include "lualib.h"
 #include "lvq.c"
 
+static Tcl_Interp *context; /* FIXME: get rid of this global! */
+    
 /* stub interface code, removes the need to link with libtclstub*.a */
 #if defined(STATIC_BUILD)
 #define MyInitStubs(x) 1
@@ -125,7 +127,7 @@ static Tcl_Obj* LuaAsTclObj (lua_State *L, int t) {
 
 vq_View ObjAsMetaView (void *ip, Tcl_Obj *obj) {
     int r, rows, objc;
-    Object_p *objv, entry;
+    Tcl_Obj **objv, *entry;
     const char *name, *sep;
     vq_Type type;
     vq_View table;
@@ -168,6 +170,82 @@ vq_View ObjAsMetaView (void *ip, Tcl_Obj *obj) {
     }
 
     return table;
+}
+
+static int AdjustCmdDef (Tcl_Obj *cmd) {
+    Tcl_Obj *buf[2];
+    buf[0] = Tcl_NewStringObj("lvq", 3);
+    buf[1] = Tcl_NewStringObj("v", 1);
+    return Tcl_ListObjReplace(NULL, cmd, 0, 0, 2, buf);
+}
+
+static vq_View ObjAsView (Tcl_Interp *interp, Tcl_Obj *obj) {
+    int e = TCL_ERROR, objc, rows;
+    Tcl_Obj **objv;
+    vq_View view;
+    
+    if (Tcl_ListObjGetElements(interp, obj, &objc, &objv) != TCL_OK)
+        return NULL;
+
+    switch (objc) {
+
+        case 0:
+            return vq_new(NULL, 0);
+
+        case 1:
+            if (Tcl_GetIntFromObj(interp, objv[0], &rows) == TCL_OK &&
+                                                                rows >= 0) {
+                return vq_new(NULL, rows);
+            } else {
+                const char *desc = Tcl_GetString(objv[0]);
+                puts(desc);
+                return DescToMeta(desc, -1);
+            }
+            
+            break;
+
+        default: {
+            Tcl_Obj *cmd;
+            Tcl_SavedResult state;
+
+            assert(interp != NULL);
+            Tcl_SaveResult(interp, &state);
+
+            cmd = Tcl_DuplicateObj(obj);
+            Tcl_IncrRefCount(cmd);
+            view = NULL;
+
+            puts("BBB");
+            /* def -> cmd namespace name conv can prob be avoided in Tcl 8.5 */
+            if (AdjustCmdDef(cmd) == TCL_OK) {
+                int ac;
+                Tcl_Obj **av;
+                Tcl_ListObjGetElements(NULL, cmd, &ac, &av);
+                /* don't use Tcl_EvalObjEx, it forces a string conversion */
+                if (Tcl_EvalObjv(interp, ac, av, TCL_EVAL_GLOBAL) == TCL_OK) {
+                    /* result to view, may call EvalIndirectView recursively */
+puts("RECURSE?");
+                    view = ObjAsView(interp, Tcl_GetObjResult(interp));
+                }
+                puts(Tcl_GetStringResult(interp));
+            }
+
+            Tcl_DecrRefCount(cmd);
+
+            if (view == NULL) {
+                Tcl_DiscardResult(&state);
+                goto FAIL;
+            }
+
+            Tcl_RestoreResult(interp, &state);
+            return view;
+        }
+    }
+
+    e = TCL_OK;
+
+FAIL:
+    return NULL;
 }
 
 static Tcl_Obj* MetaViewAsList (vq_View meta) {
@@ -339,6 +417,9 @@ int ObjToItem (vq_Type type, vq_Item *item) {
         case VQ_bytes:  item->o.a.p = Tcl_GetByteArrayFromObj(item->o.a.p,
                                                                 &item->o.b.i);
                         break;
+        case VQ_view:   item->o.a.v = ObjAsView(context, item->o.a.p);
+                        if (item->o.a.v != NULL)
+                            break;
         default:        return 0;
     }
     return 1;
@@ -440,6 +521,11 @@ static int LvqCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const
                         lua_getfield(L, LUA_GLOBALSINDEX, "vops");
                         lua_getfield(L, -1, ptr);
                         lua_remove(L, -2);
+                        if (lua_isnil(L, -1)) {
+                            Tcl_AppendResult(interp, "not found in vops: ",
+                                                        ptr, NULL);
+                            return TCL_ERROR;
+                        }
                       	break;
             case 'o':   if (obj->typePtr == &f_luaObjType) { // unbox
                             lua_rawgeti(L, LUA_REGISTRYINDEX, r);
@@ -486,6 +572,8 @@ DLLEXPORT int Tvq_Init (Tcl_Interp *interp) {
     if (!MyInitStubs(interp) || Tcl_PkgRequire(interp, "Tcl", "8.4", 0) == NULL)
         return TCL_ERROR;
 
+    context = interp;
+    
     L = lua_open();
     Tcl_CreateExitHandler((Tcl_ExitProc*) lua_close, L);
     

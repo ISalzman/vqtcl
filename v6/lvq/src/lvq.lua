@@ -14,6 +14,7 @@ setmetatable(renderers, { __index = function (x) return tostring end })
 
 -- produce a pretty-printed string table from a view
 function vops.dump (vw, maxrows)
+  vw = vops.view(vw) -- accept any type that casts to a view
   maxrows = math.min(maxrows or 20, #vw)
   -- set up column information
   local desc, funs, names, widths, meta = '', {}, {}, {}, vw:meta()
