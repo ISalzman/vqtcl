@@ -135,7 +135,7 @@ vq_View ObjAsMetaView (void *ip, Tcl_Obj *obj) {
     if (Tcl_ListObjLength(ip, obj, &rows) != TCL_OK)
         return 0;
 
-    table = vq_new(vMeta(EmptyMetaView()), rows);
+    table = vq_new(rows, vMeta(EmptyMetaView()));
 
     for (r = 0; r < rows; ++r) {
         Tcl_ListObjIndex(0, obj, r, &entry);
@@ -199,12 +199,12 @@ static vq_View ObjAsView (Tcl_Interp *interp, Tcl_Obj *obj) {
     switch (objc) {
 
         case 0:
-            return vq_new(NULL, 0);
+            return vq_new(0, NULL);
 
         case 1:
             if (Tcl_GetIntFromObj(interp, objv[0], &rows) == TCL_OK &&
                                                                 rows >= 0) {
-                return vq_new(NULL, rows);
+                return vq_new(rows, NULL);
             } else {
                 const char *desc = Tcl_GetString(objv[0]);
                 return DescToMeta(desc, -1);
@@ -291,7 +291,7 @@ static Tcl_Obj* MetaViewAsList (vq_View meta) {
 static Tcl_Obj* ColumnAsList (vq_Item colref, int rows, int mode) {
     int i;
     Tcl_Obj *list = Tcl_NewListObj(0, 0);
-#if VQ_MOD_NULLABLE
+#if VQ_MOD_RANGES_H
     if (mode == 0) {
         Vector ranges = 0;
         for (i = 0; i < rows; ++i) {
@@ -312,7 +312,7 @@ static Tcl_Obj* ColumnAsList (vq_Item colref, int rows, int mode) {
         else if (mode == 0 && type == VQ_nil)
             Tcl_ListObjAppendElement(0, list, Tcl_NewIntObj(i));
     }
-#if VQ_MOD_NULLABLE
+#if VQ_MOD_RANGES_H
     if (mode == -2)
         vq_release(colref.o.a.v);
 #endif
@@ -399,7 +399,7 @@ Tcl_Obj* ItemAsObj (vq_Type type, vq_Item item) {
         case VQ_view:   if (item.o.a.v == 0)
                             break;
                         return ViewAsList(item.o.a.v);/* FIXME: LuaAsTclObj ! */
-        case VQ_object: return item.o.a.p;
+        case VQ_objref: return item.o.a.p;
     }
     return Tcl_NewObj();
 }
@@ -425,7 +425,7 @@ int ObjToItem (vq_Type type, vq_Item *item) {
                         break;
         case VQ_view:   item->o.a.v = ObjAsView(context, item->o.a.p);
                         return item->o.a.v != NULL;
-        case VQ_object: assert(0); return 0;
+        case VQ_objref: assert(0); return 0;
     }
     return 1;
 }

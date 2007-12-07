@@ -4,7 +4,7 @@
 
 #include "def.h"
 
-#if VQ_MOD_SAVE
+#if VQ_MOD_SAVE_H
 
 typedef struct EmitItem {
     intptr_t size;
@@ -466,7 +466,7 @@ vq_Type Meta2DescCmd_T (vq_Item a[]) {
     a[0].o.a.s = BufferAsPtr(&buffer, 1);
     a->o.a.p = ItemAsObj(VQ_string, a[0]);
     ReleaseBuffer(&buffer, 0);
-    return VQ_object;
+    return VQ_objref;
 }
 */
 

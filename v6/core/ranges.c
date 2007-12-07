@@ -4,7 +4,7 @@
 
 #include "def.h"
 
-#if VQ_MOD_NULLABLE || VQ_MOD_MUTABLE
+#if VQ_MOD_RANGES_H || VQ_MOD_MUTABLE_H
 
 void *VecInsert (Vector *vecp, int off, int cnt) {
     Vector v = *vecp, v2;

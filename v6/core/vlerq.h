@@ -11,6 +11,10 @@
 
 #define VQ_TYPES "NILFDSBVO"
 
+#ifndef VQ_OBJREFTYPE
+#define VQ_OBJREFTYPE int
+#endif
+
 typedef enum { 
     VQ_nil, 
     VQ_int,
@@ -20,7 +24,7 @@ typedef enum {
     VQ_string,
     VQ_bytes, 
     VQ_view,
-    VQ_object
+    VQ_objref
 } vq_Type;
 
 typedef union vq_Item_u *vq_View;
@@ -37,6 +41,7 @@ typedef union vq_Item_u {
             void                 (*c)(void*);
             struct vq_Dispatch_s  *h;
             int                   *n;
+            VQ_OBJREFTYPE          r;
         } a;
         union {
             int               i;
@@ -46,18 +51,18 @@ typedef union vq_Item_u {
     }        o;
     int64_t  w;
     double   d;
-    char     r[sizeof(void*)*2];    /* for byte order flips */
+    char     c[sizeof(void*)*2];    /* for byte order flips */
     int      q[sizeof(void*)/2];    /* for hash calculations */
 } vq_Item;
 
-/* reference counts */
+/* reference counting */
 
 vq_View  (vq_retain) (vq_View t);
-void    (vq_release) (vq_View t);
+int     (vq_release) (vq_View t);
 
 /* core view functions */
 
-vq_View   (vq_new) (vq_View m, int rows);
+vq_View   (vq_new) (int rows, vq_View m);
 vq_View  (vq_meta) (vq_View v);
 int      (vq_size) (vq_View v);
 int     (vq_empty) (vq_View v, int row, int col);
@@ -65,7 +70,7 @@ vq_Item   (vq_get) (vq_View v, int row, int col, vq_Type type, vq_Item def);
 void      (vq_set) (vq_View v, int row, int col, vq_Type type, vq_Item val);
 void  (vq_replace) (vq_View v, int start, int count, vq_View data);
 
-/* wrappers */
+/* convenience wrappers */
 
 int             (Vq_getInt) (vq_View v, int row, int col, int def);
 const char  *(Vq_getString) (vq_View v, int row, int col, const char *def);

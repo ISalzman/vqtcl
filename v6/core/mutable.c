@@ -4,7 +4,7 @@
 
 #include "def.h"
 
-#if VQ_MOD_MUTABLE
+#if VQ_MOD_MUTABLE_H
 
 #pragma mark - RANGE OPERATIONS -
 
@@ -158,7 +158,7 @@ static void MutVecCleaner (Vector v) {
     vq_release(vOrig(v));
     vq_release(vMeta(v));
     vq_release(vPerm(v));
-    /* ObjDecRef(vOref(v)); FIXME: cleanup! */
+    /* ObjRelease(vOref(v)); FIXME: cleanup! */
     FreeVector(v);
 }
 
@@ -177,7 +177,7 @@ vq_View WrapMutable (vq_View t, Object_p o) {
     vq_View w = IndirectView(meta, &muvtab, vCount(t),
                                 3 * vCount(meta) * sizeof(Vector));
     vOrig(w) = vq_retain(t);
-    vOref(w) = o; /* ObjIncRef(o); FIXME: refcounts */
+    vOref(w) = o; /* ObjRetain(o); FIXME: refcounts */
     /* override to use original columns until a set or replace is done */
     for (i = 0; i < cols; ++i) {
         w[i] = t[i];

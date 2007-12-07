@@ -4,7 +4,7 @@
 
 #include "def.h"
 
-#if VQ_MOD_LOAD
+#if VQ_MOD_LOAD_H
 
 /* forward */
 static vq_View MapSubview (Vector map, intptr_t offset, vq_View meta);
@@ -48,7 +48,7 @@ static vq_View ParseDesc (char **desc, const char **nbuf, int *tbuf, vq_View *sb
     
     *desc = ptr;
 
-    result = vq_new(vMeta(empty), cols);
+    result = vq_new(cols, vMeta(empty));
 
     for (c = 0; c < cols; ++c)
         Vq_setMetaRow(result, c, names[c], types[c], subts[c]);
@@ -320,7 +320,7 @@ static vq_View MapCols (Vector map, const char **nextp, vq_View meta) {
     rows = GetVarInt(nextp);
     cols = vCount(meta);
     
-    result = vq_new(meta, 0);
+    result = vq_new(0, meta);
     vCount(result) = rows;
     
     if (rows > 0)

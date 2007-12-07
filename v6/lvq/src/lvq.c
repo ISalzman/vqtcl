@@ -11,7 +11,7 @@
 #include "load.c"
 #include "buffer.c"
 #include "save.c"
-#include "nullable.c"
+#include "ranges.c"
 #include "mutable.c"
 
 #define checkrow(L,t)   ((vq_Item*) luaL_checkudata(L, t, "Vlerq.row"))
@@ -21,7 +21,7 @@ LUA_API int luaopen_lvq_core (lua_State *L); /* forward */
 static vq_View checkview (lua_State *L, int t) {
     switch (lua_type(L, t)) {
         case LUA_TNUMBER:
-            return vq_new(NULL, luaL_checkinteger(L, t));
+            return vq_new(luaL_checkinteger(L, t), NULL);
         case LUA_TSTRING:
             return DescToMeta(lua_tostring(L, t), -1);
     }
@@ -59,7 +59,7 @@ static int pushitem (lua_State *L, vq_Type type, vq_Item *itemp) {
         case VQ_string: lua_pushstring(L, itemp->o.a.s); break;
         case VQ_bytes:  lua_pushlstring(L, itemp->o.a.p, itemp->o.b.i); break;
         case VQ_view:   pushview(L, itemp->o.a.v); break;
-        case VQ_object: lua_rawgeti(L, LUA_REGISTRYINDEX, itemp->o.a.i); break;
+        case VQ_objref: lua_rawgeti(L, LUA_REGISTRYINDEX, itemp->o.a.i); break;
     }
     return 1;
 }
@@ -84,7 +84,7 @@ static vq_Item toitem (lua_State *L, int t, vq_Type type) {
         case VQ_bytes:  item.o.a.s = luaL_checklstring(L, t, &n);
                         item.o.b.i = n; break;
         case VQ_view:   item.o.a.v = checkview(L, t); break;
-        case VQ_object: lua_pushvalue(L, t);
+        case VQ_objref: lua_pushvalue(L, t);
                         item.o.a.i = luaL_ref(L, LUA_REGISTRYINDEX);
                          /* FIXME: cleanup */
                         break;
@@ -298,7 +298,7 @@ static int vops_struct (lua_State *L) {
     return 1;
 }
 
-#if VQ_MOD_LOAD
+#if VQ_MOD_LOAD_H
 
 /*
 vq_Type lvq_load (lua_State *L) {
@@ -324,7 +324,7 @@ static int vops_open (lua_State *L) {
 
 #endif
 
-#if VQ_MOD_MUTABLE
+#if VQ_MOD_MUTABLE_H
 
 static int vops_mutable (lua_State *L) {
     LVQ_ARGS(L,A,"V");
@@ -333,7 +333,7 @@ static int vops_mutable (lua_State *L) {
 
 #endif
 
-#if VQ_MOD_OPDEF
+#if VQ_MOD_OPDEF_H
 
 static vq_Type IotaGetter (int row, vq_Item *item) {
     item->o.a.i = row + vOffs(item->o.a.v);
@@ -344,7 +344,7 @@ static Dispatch iotatab = {
 };
 
 vq_View IotaView (int rows, const char *name, int base) {
-    vq_View v, meta = vq_new(vq_meta(0), 1);
+    vq_View v, meta = vq_new(1, vq_meta(0));
     Vq_setMetaRow(meta, 0, name, VQ_int, NULL);
     v = IndirectView(meta, &iotatab, rows, 0);
     vOffs(v) = base;
@@ -354,7 +354,7 @@ vq_View IotaView (int rows, const char *name, int base) {
 static int vops_iota (lua_State *L) {
     vq_View v, meta;
     LVQ_ARGS(L,A,"VSi");
-    meta = vq_new(vq_meta(0), 1);
+    meta = vq_new(1, vq_meta(0));
     Vq_setMetaRow(meta, 0, A[1].o.a.s, VQ_int, NULL);
     v = IndirectView(meta, &iotatab, vCount(A[0].o.a.v), 0);
     vOffs(v) = A[2].o.a.i;
@@ -366,7 +366,7 @@ static int vops_pass (lua_State *L) {
     int c, cols;
     LVQ_ARGS(L,A,"V");
     v = A[0].o.a.v;
-    t = vq_new(vMeta(v), 0);
+    t = vq_new(0, vMeta(v));
     cols = vCount(vMeta(v));
     vCount(t) = vCount(v);
     for (c = 0; c < cols; ++c) {
@@ -410,7 +410,7 @@ static int vops_virtual (lua_State *L) {
 
 #endif
 
-#if VQ_MOD_SAVE
+#if VQ_MOD_SAVE_H
 
 static void* EmitDataFun (void *buf, const void *ptr, intptr_t len) {
     luaL_addlstring(buf, ptr, len);
@@ -436,7 +436,7 @@ static int vops_view (lua_State *L) {
     LVQ_ARGS(L,A,"Vv");
     v = A[0].o.a.v;
     if (A[1].o.a.v != NULL)
-        v = vq_new(mustbemeta(L, A[1].o.a.v), vCount(v));
+        v = vq_new(vCount(v), mustbemeta(L, A[1].o.a.v));
     return pushview(L, v);
 }
 
@@ -466,19 +466,19 @@ static const struct luaL_reg lvqlib_v[] = {
     {"struct", vops_struct},
     {"type", vops_type},
     {"view", vops_view},
-#if VQ_MOD_LOAD
+#if VQ_MOD_LOAD_H
     /* {"load", lvq_load}, */
     {"open", vops_open},
 #endif
-#if VQ_MOD_MUTABLE
+#if VQ_MOD_MUTABLE_H
     {"mutable", vops_mutable},
 #endif
-#if VQ_MOD_OPDEF
+#if VQ_MOD_OPDEF_H
     {"iota", vops_iota},
     {"pass", vops_pass},
     {"virtual", vops_virtual},
 #endif
-#if VQ_MOD_SAVE
+#if VQ_MOD_SAVE_H
     {"emit", vops_emit},
 #endif
     {NULL, NULL},
@@ -490,19 +490,19 @@ static const struct luaL_reg lvqlib_f[] = {
 
 LUA_API int luaopen_lvq_core (lua_State *L) {
     const char *sconf = "lvq " VQ_RELEASE
-#if VQ_MOD_LOAD
+#if VQ_MOD_LOAD_H
                         " lo"
 #endif
-#if VQ_MOD_MUTABLE
+#if VQ_MOD_MUTABLE_H
                         " mu"
 #endif
-#if VQ_MOD_OPDEF
+#if VQ_MOD_OPDEF_H
                         " op"
 #endif
-#if VQ_MOD_NULLABLE
+#if VQ_MOD_RANGES_H
                         " nu"
 #endif
-#if VQ_MOD_SAVE
+#if VQ_MOD_SAVE_H
                         " sa"
 #endif
                         ;

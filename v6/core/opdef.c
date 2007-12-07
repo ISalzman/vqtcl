@@ -4,6 +4,6 @@
 
 #include "def.h"
 
-#if VQ_MOD_OPDEF
+#if VQ_MOD_OPDEF_H
 
 #endif

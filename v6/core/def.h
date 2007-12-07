@@ -16,25 +16,20 @@
 #ifndef VQ_MOD_ALL
 #define VQ_MOD_ALL 1
 #endif
-
-#ifndef VQ_MOD_LOAD
-#define VQ_MOD_LOAD VQ_MOD_ALL
+#ifndef VQ_MOD_LOAD_H
+#define VQ_MOD_LOAD_H VQ_MOD_ALL
 #endif
-
-#ifndef VQ_MOD_MUTABLE
-#define VQ_MOD_MUTABLE VQ_MOD_ALL
+#ifndef VQ_MOD_MUTABLE_H
+#define VQ_MOD_MUTABLE_H VQ_MOD_ALL
 #endif
-
-#ifndef VQ_MOD_OPDEF
-#define VQ_MOD_OPDEF VQ_MOD_ALL
+#ifndef VQ_MOD_OPDEF_H
+#define VQ_MOD_OPDEF_H VQ_MOD_ALL
 #endif
-
-#ifndef VQ_MOD_NULLABLE
-#define VQ_MOD_NULLABLE VQ_MOD_ALL
+#ifndef VQ_MOD_RANGES_H
+#define VQ_MOD_RANGES_H VQ_MOD_ALL
 #endif
-
-#ifndef VQ_MOD_SAVE
-#define VQ_MOD_SAVE VQ_MOD_ALL
+#ifndef VQ_MOD_SAVE_H
+#define VQ_MOD_SAVE_H VQ_MOD_ALL
 #endif
 
 /* portability */
@@ -96,14 +91,12 @@ typedef struct vq_Dispatch_s {
 
 #if defined (_TCL)
 typedef struct Tcl_Obj *Object_p;
-#elif defined (Py_PYTHON_H)
-typedef struct _object *Object_p;
 #else
 typedef void           *Object_p;
 #endif
 
-Object_p (ObjIncRef) (Object_p obj);
-void (ObjDecRef) (Object_p obj);
+Object_p (ObjRetain) (Object_p obj);
+void (ObjRelease) (Object_p obj);
 
 void (UpdateVar) (Object_p ref, Object_p val);
 vq_View (ObjAsMetaView) (void *ip, Object_p obj);
@@ -148,12 +141,6 @@ typedef struct {
 
 extern CmdDispatch f_commands[];
 
-vq_Type (LoadCmd_O) (vq_Item a[]);
-vq_Type (RflipCmd_OII) (vq_Item a[]);
-vq_Type (RlocateCmd_OI) (vq_Item a[]);
-vq_Type (RinsertCmd_OIII) (vq_Item a[]);
-vq_Type (RdeleteCmd_OII) (vq_Item a[]);
-
 /* reader.c */
 
 Vector (OpenMappedFile) (const char *filename);
@@ -170,6 +157,8 @@ vq_View (MapToView) (Vector map);
 vq_Type (Desc2MetaCmd_S) (vq_Item a[]);
 vq_Type (OpenCmd_S) (vq_Item a[]);
 
+vq_Type (LoadCmd_O) (vq_Item a[]);
+
 /* nullable.c */
 
 void* (VecInsert) (Vector *vecp, int off, int cnt);
@@ -179,6 +168,11 @@ void* (RangeFlip) (Vector *vecp, int off, int count);
 int (RangeLocate) (Vector v, int off, int *offp);
 void (RangeInsert) (Vector *vecp, int off, int count, int mode);
 void (RangeDelete) (Vector *vecp, int off, int count);
+
+vq_Type (RflipCmd_OII) (vq_Item a[]);
+vq_Type (RlocateCmd_OI) (vq_Item a[]);
+vq_Type (RinsertCmd_OIII) (vq_Item a[]);
+vq_Type (RdeleteCmd_OII) (vq_Item a[]);
 
 /* mutable.c */
 

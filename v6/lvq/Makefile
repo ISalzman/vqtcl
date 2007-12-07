@@ -6,7 +6,7 @@ include $(CONFIG)
 
 C = ../core
 SRCS = src/$T.c $C/vlerq.c $C/vlerq.h $C/def.h $C/opdef.c $C/reader.c \
-	$C/load.c $C/buffer.c $C/save.c $C/nullable.c $C/mutable.c
+	$C/load.c $C/buffer.c $C/save.c $C/ranges.c $C/mutable.c
 OBJS = src/$T.o
 LUAS = src/$T.lua
 

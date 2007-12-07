@@ -27,14 +27,19 @@ Vector vq_retain (Vector v) {
     return v;
 }
 
-void vq_release (Vector v) {
-    if (v != 0 && --vRefs(v) <= 0) {
+int vq_release (Vector v) {
+    int n;
+    if (v == 0)
+        return -1;
+    n = --vRefs(v);
+    if (n <= 0) {
         /*assert(vRefs(v) == 0);*/
         if (vType(v)->cleaner != 0)
             vType(v)->cleaner(v);
         else
             FreeVector(v); /* TODO: when is this case needed? */
     }
+    return n;
 }
 
 #pragma mark - DATA VECTORS -
@@ -79,10 +84,10 @@ static vq_Type ViewVecGetter (int row, vq_Item *item) {
     item->o.a.v = p[row];
     return VQ_view;
 }
-static vq_Type ObjectVecGetter (int row, vq_Item *item) {
-    Object_p *p = item->o.a.p;
-    item->o.a.p = p[row];
-    return VQ_object;
+static vq_Type ObjRefVecGetter (int row, vq_Item *item) {
+    VQ_OBJREFTYPE *p = item->o.a.p;
+    item->o.a.r = p[row];
+    return VQ_objref;
 }
 
 static void NilVecSetter (Vector v, int row, int col, const vq_Item *item) {
@@ -138,7 +143,7 @@ static void ViewVecSetter (Vector v, int row, int col, const vq_Item *item) {
     p[row] = item != 0 ? vq_retain(item->o.a.v) : 0;
     vq_release(x);
 }
-static void ObjectVecSetter (Vector v, int row, int col, const vq_Item *item) {
+static void ObjRefVecSetter (Vector v, int row, int col, const vq_Item *item) {
     VQ_UNUSED(v);
     VQ_UNUSED(row);
     VQ_UNUSED(col);
@@ -146,8 +151,8 @@ static void ObjectVecSetter (Vector v, int row, int col, const vq_Item *item) {
 /*
     Object_p *p = (Object_p*) v, x = p[row];
     VQ_UNUSED(col);
-    p[row] = item != 0 ? ObjIncRef(item->o.a.p) : 0;
-    ObjDecRef(x);
+    p[row] = item != 0 ? ObjRetain(item->o.a.p) : 0;
+    ObjRelease(x);
 */
 }
 
@@ -172,13 +177,13 @@ static void ViewVecCleaner (Vector v) {
         vq_release(p[i]);
     FreeVector(v);
 }
-static void ObjectVecCleaner (Vector v) {
+static void ObjRefVecCleaner (Vector v) {
     VQ_UNUSED(v);
 /*
     int i;
     Object_p *p = (Object_p*) v;
     for (i = 0; i < vCount(v); ++i)
-        ObjDecRef(p[i]);
+        ObjRelease(p[i]);
     FreeVector(v);
 */
 }
@@ -211,8 +216,8 @@ static Dispatch tvtab = {
     ViewVecCleaner, ViewVecGetter, ViewVecSetter
 };
 static Dispatch ovtab = {
-    "objvec", 2, sizeof(void*), 0, 
-    ObjectVecCleaner, ObjectVecGetter, ObjectVecSetter
+    "objrefvec", 2, sizeof(void*), 0, 
+    ObjRefVecCleaner, ObjRefVecGetter, ObjRefVecSetter
 };
 
 Vector AllocDataVec (vq_Type type, int rows) {
@@ -236,8 +241,8 @@ Vector AllocDataVec (vq_Type type, int rows) {
             vtab = &bvtab; bytes = rows * sizeof(vq_Item); break;
         case VQ_view:
             vtab = &tvtab; bytes = rows * sizeof(vq_View); break;
-        case VQ_object:
-            vtab = &ovtab; bytes = rows * sizeof(Object_p); break;
+        case VQ_objref:
+            vtab = &ovtab; bytes = rows * sizeof(VQ_OBJREFTYPE); break;
         default: assert(0); return NULL;
     }
     v = AllocVector(vtab, bytes);
@@ -260,7 +265,7 @@ static Dispatch vtab = {
     "view", 2, sizeof(vq_Item), 0, ViewCleaner
 };
 
-vq_View vq_new (vq_View meta, int rows) {
+vq_View vq_new (int rows, vq_View meta) {
     vq_View t;
     if (meta == 0)
         meta = EmptyMetaView();
@@ -286,7 +291,7 @@ vq_View EmptyMetaView (void) {
         mm[0].o.a.v = vq_retain(AllocDataVec(VQ_string, 3));
         mm[1].o.a.v = vq_retain(AllocDataVec(VQ_int, 3));
         mm[2].o.a.v = vq_retain(AllocDataVec(VQ_view, 3));
-        meta = vq_new(mm, 0); /* retained forever */
+        meta = vq_new(0, mm); /* retained forever */
         Vq_setMetaRow(mm, 0, "name", VQ_string, meta);
         Vq_setMetaRow(mm, 1, "type", VQ_int, meta);
         Vq_setMetaRow(mm, 2, "subv", VQ_view, meta);
@@ -448,15 +453,6 @@ const char* TypeAsString (int type, char *buf) {
     return buf;
 }
 
-#pragma mark - OPERATOR WRAPPERS -
-
-#if 0
-static vq_Type MdefCmd_O (vq_Item a[]) {
-    a->o.a.v = ObjAsMetaView(a[0].o.a.p);
-    return VQ_view;
-}
-#endif
-
 #pragma mark - OPERATOR DISPATCH -
 
 #if 0
@@ -471,23 +467,23 @@ CmdDispatch f_commands[] = {
     { "new",        "V:V",      NewCmd_V        },
     { "pass",       "V:V",      PassCmd_V       },
     { "size",       "V:V",      SizeCmd_V       },
-#if VQ_MOD_LOAD
+#if VQ_MOD_LOAD_H
     { "desc2meta",  "V:S",      Desc2MetaCmd_S  },
     { "load",       "V:O",      LoadCmd_O       },
     { "open",       "V:S",      OpenCmd_S       },
 #endif
-#if VQ_MOD_MUTABLE
+#if VQ_MOD_MUTABLE_H
     { "replace",    "N:OIIV",   ReplaceCmd_OIIV },
     { "set",        "N:OIIO",   SetCmd_OIIO     },
     { "unset",      "N:OII",    UnsetCmd_OII    },
 #endif
-#if VQ_MOD_NULLABLE
+#if VQ_MOD_RANGES_H
     { "rflip",      "O:OII",    RflipCmd_OII    },
     { "rlocate",    "O:OI",     RlocateCmd_OI   },
     { "rinsert",    "O:OIII",   RinsertCmd_OIII },
     { "rdelete",    "O:OII",    RdeleteCmd_OII  },
 #endif
-#if VQ_MOD_SAVE
+#if VQ_MOD_SAVE_H
     { "emit",       "B:V",      EmitCmd_V       },
     { "meta2desc",  "O:V",      Meta2DescCmd_V  },
 #endif

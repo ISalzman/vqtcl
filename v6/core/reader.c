@@ -4,7 +4,7 @@
 
 #include "def.h"
 
-#if VQ_MOD_LOAD
+#if VQ_MOD_LOAD_H
 
 #ifdef VQ_WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -73,7 +73,7 @@ Vector OpenMappedFile (const char *filename) {
 }
 
 static void BytesCleaner (Vector map) {
-    /* ObjDecRef(map[2].o.a.p); FIXME: cleanup! */
+    /* ObjRelease(map[2].o.a.p); FIXME: cleanup! */
     FreeVector(map);
 }
 
@@ -83,7 +83,7 @@ Vector OpenMappedBytes (const void *data, int length, Object_p ref) {
     Vector map = AllocVector(&vbytes, 3 * sizeof(vq_Item));
     map[0].o.a.s = map[1].o.a.s = (void*) data;
     map[0].o.b.i = map[1].o.b.i = length;
-    map[2].o.a.p = ref; /* ObjIncRef(ref); */
+    map[2].o.a.p = ref; /* ObjRetain(ref); */
     return map;
 }
 
@@ -192,14 +192,14 @@ static vq_Type Rgetter_i32r (int row, vq_Item *item) {
     const char *ptr = (const char*) vData(item->o.a.v) + row * 4;
     int i;
     for (i = 0; i < 4; ++i)
-        item->r[i] = ptr[3-i];
+        item->c[i] = ptr[3-i];
     return VQ_int;
 }
 static vq_Type Rgetter_i64r (int row, vq_Item *item) {
     const char *ptr = (const char*) vData(item->o.a.v) + row * 8;
     int i;
     for (i = 0; i < 8; ++i)
-        item->r[i] = ptr[7-i];
+        item->c[i] = ptr[7-i];
     return VQ_long;
 }
 static vq_Type Rgetter_f32r (int row, vq_Item *item) {
