@@ -23,7 +23,9 @@ static void MapCleaner (Vector map) {
 #endif
     FreeVector(map);
 }
+
 static Dispatch vmmap = { "mmap", 1, 0, 0, MapCleaner };
+
 Vector OpenMappedFile (const char *filename) {
     Vector map;
     const char *data = NULL;
@@ -69,11 +71,14 @@ Vector OpenMappedFile (const char *filename) {
     map[0].o.b.i = map[1].o.b.i = length;
     return map;
 }
+
 static void BytesCleaner (Vector map) {
     /* ObjDecRef(map[2].o.a.p); FIXME: cleanup! */
     FreeVector(map);
 }
+
 static Dispatch vbytes = { "bytes", 1, 0, 0, BytesCleaner };
+
 Vector OpenMappedBytes (const void *data, int length, Object_p ref) {
     Vector map = AllocVector(&vbytes, 3 * sizeof(vq_Item));
     map[0].o.a.s = map[1].o.a.s = (void*) data;
@@ -81,6 +86,7 @@ Vector OpenMappedBytes (const void *data, int length, Object_p ref) {
     map[2].o.a.p = ref; /* ObjIncRef(ref); */
     return map;
 }
+
 const char *AdjustMappedFile (Vector map, int offset) {
     map[0].o.a.s += offset;
     map[0].o.b.i -= offset;
@@ -240,6 +246,7 @@ Dispatch* PickIntGetter (int bits) {
     assert(0);
     return 0;
 }
+
 Dispatch* FixedGetter (int bytes, int rows, int real, int flip) {
     static char widths[8][7] = {
         {0,-1,-1,-1,-1,-1,-1},

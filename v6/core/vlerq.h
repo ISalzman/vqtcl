@@ -24,7 +24,6 @@ typedef enum {
 } vq_Type;
 
 typedef union vq_Item_u *vq_View;
-typedef vq_View *vq_Pool;
 
 typedef union vq_Item_u {
     struct {

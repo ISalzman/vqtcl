@@ -283,7 +283,7 @@ static int vops_at (lua_State *L) {
 static int vops_replace (lua_State *L) {
     LVQ_ARGS(L,A,"VIIV");
     vq_replace(A[0].o.a.v, A[1].o.a.i, A[2].o.a.i, A[3].o.a.v);
-    lua_pushvalue(L, 1);
+    lua_pop(L, 3);
     return 1;
 }
 
@@ -335,15 +335,45 @@ static int vops_mutable (lua_State *L) {
 
 #if VQ_MOD_OPDEF
 
+static vq_Type IotaGetter (int row, vq_Item *item) {
+    item->o.a.i = row + vOffs(item->o.a.v);
+    return VQ_int;
+}
+static Dispatch iotatab = {
+    "iota", 3, 0, 0, IndirectCleaner, IotaGetter
+};
+
+vq_View IotaView (int rows, const char *name, int base) {
+    vq_View v, meta = vq_new(vq_meta(0), 1);
+    Vq_setMetaRow(meta, 0, name, VQ_int, NULL);
+    v = IndirectView(meta, &iotatab, rows, 0);
+    vOffs(v) = base;
+    return v;
+}
+
 static int vops_iota (lua_State *L) {
-    int base = luaL_optinteger(L, 3, 0);
-    LVQ_ARGS(L,A,"VS");
-    return pushview(L, IotaView(vq_size(A[0].o.a.v), A[1].o.a.s, base));
+    vq_View v, meta;
+    LVQ_ARGS(L,A,"VSi");
+    meta = vq_new(vq_meta(0), 1);
+    Vq_setMetaRow(meta, 0, A[1].o.a.s, VQ_int, NULL);
+    v = IndirectView(meta, &iotatab, vCount(A[0].o.a.v), 0);
+    vOffs(v) = A[2].o.a.i;
+    return pushview(L, v);
 }
 
 static int vops_pass (lua_State *L) {
+    vq_View v, t;
+    int c, cols;
     LVQ_ARGS(L,A,"V");
-    return pushview(L, PassView(A[0].o.a.v));
+    v = A[0].o.a.v;
+    t = vq_new(vMeta(v), 0);
+    cols = vCount(vMeta(v));
+    vCount(t) = vCount(v);
+    for (c = 0; c < cols; ++c) {
+        t[c] = v[c];
+        vq_retain(t[c].o.a.v);
+    }
+    return pushview(L, t);
 }
 
 static void VirtualCleaner (Vector v) {

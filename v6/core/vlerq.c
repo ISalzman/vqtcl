@@ -13,6 +13,7 @@ Vector AllocVector (Dispatch *vtab, int bytes) {
     vType(result) = vtab;
     return result;
 }
+
 void FreeVector (Vector v) {
     assert(vRefs(v) == 0);
     free(v - vType(v)->prefix);
@@ -25,6 +26,7 @@ Vector vq_retain (Vector v) {
         ++vRefs(v); /* TODO: check for overflow */
     return v;
 }
+
 void vq_release (Vector v) {
     if (v != 0 && --vRefs(v) <= 0) {
         /*assert(vRefs(v) == 0);*/
@@ -252,6 +254,7 @@ static void ViewCleaner (Vector v) {
     vq_release(vMeta(v));
     FreeVector(v);
 }
+
 /* TODO: support row replaces (and insert/delete) on standard views */
 static Dispatch vtab = {
     "view", 2, sizeof(vq_Item), 0, ViewCleaner
@@ -291,6 +294,25 @@ vq_View EmptyMetaView (void) {
     return meta;
 }
 
+void IndirectCleaner (Vector v) {
+    vq_release(vMeta(v));
+    FreeVector(v);
+}
+
+vq_View IndirectView (vq_View meta, Dispatch *vtabp, int rows, int extra) {
+    int i, cols = vCount(meta);
+    vq_View t = AllocVector(vtabp, cols * sizeof *t + extra);
+    assert(vtabp->prefix >= 3);
+    vMeta(t) = vq_retain(meta);
+    vData(t) = t + cols;
+    vCount(t) = rows;
+    for (i = 0; i < cols; ++i) {
+        t[i].o.a.v = t;
+        t[i].o.b.i = i;
+    }
+    return t;
+}
+
 #pragma mark - CORE TABLE FUNCTIONS -
 
 vq_Type GetItem (int row, vq_Item *item) {
@@ -306,9 +328,11 @@ vq_View vq_meta (vq_View t) {
         t = EmptyMetaView();
     return vMeta(t);
 }
+
 int vq_size (vq_View t) {
     return t != 0 ? vCount(t) : 0;
 }
+
 int vq_empty (vq_View t, int row, int column) {
     vq_Item item;
     if (column < 0 || column >= vCount(vMeta(t)))
@@ -316,6 +340,7 @@ int vq_empty (vq_View t, int row, int column) {
     item = t[column];
     return GetItem(row, &item) == VQ_nil;
 }
+
 vq_Item vq_get (vq_View t, int row, int column, vq_Type type, vq_Item def) {
     vq_Item item;
     VQ_UNUSED(type); /* TODO: is this really not used? */
@@ -324,6 +349,7 @@ vq_Item vq_get (vq_View t, int row, int column, vq_Type type, vq_Item def) {
     item = t[column];
     return GetItem(row, &item) != VQ_nil ? item : def;
 }
+
 void vq_set (vq_View t, int row, int col, vq_Type type, vq_Item val) {
     /* use view setter if defined, else column setter */
     if (vType(t)->setter == 0) {
@@ -333,6 +359,7 @@ void vq_set (vq_View t, int row, int col, vq_Type type, vq_Item val) {
     /* TODO: copy-on-write of columns if refcount > 1 */
     vType(t)->setter(t, row, col, type != VQ_nil ? &val : 0);
 }
+
 void vq_replace (vq_View t, int start, int count, vq_View data) {
     assert(start >= 0 && count >= 0 && start + count <= vCount(t));
     assert(t != 0 && vType(t)->replacer != 0);
@@ -347,12 +374,14 @@ int Vq_getInt (vq_View t, int row, int col, int def) {
     item = vq_get(t, row, col, VQ_int, item);
     return item.o.a.i;
 }
+
 const char *Vq_getString (vq_View t, int row, int col, const char *def) {
     vq_Item item;
     item.o.a.s = def;
     item = vq_get(t, row, col, VQ_string, item);
     return item.o.a.s;
 }
+
 vq_View Vq_getView (vq_View t, int row, int col, vq_View def) {
     vq_Item item;
     item.o.a.v = def;
@@ -364,21 +393,25 @@ void Vq_setEmpty (vq_View t, int row, int col) {
     vq_Item item;
     vq_set(t, row, col, VQ_nil, item);
 }
+
 void Vq_setInt (vq_View t, int row, int col, int val) {
     vq_Item item;
     item.o.a.i = val;
     vq_set(t, row, col, VQ_int, item);
 }
+
 void Vq_setString (vq_View t, int row, int col, const char *val) {
     vq_Item item;
     item.o.a.s = val;
     vq_set(t, row, col, val != 0 ? VQ_string : VQ_nil, item);
 }
+
 void Vq_setView (vq_View t, int row, int col, vq_View val) {
     vq_Item item;
     item.o.a.v = val;
     vq_set(t, row, col, val != 0 ? VQ_view : VQ_nil, item);
 }
+
 void Vq_setMetaRow (vq_View m, int row, const char *nam, int typ, vq_View sub) {
     Vq_setString(m, row, 0, nam);
     Vq_setInt(m, row, 1, typ);
@@ -394,6 +427,7 @@ int CharAsType (char c) {
         type |= VQ_NULLABLE;
     return type;
 }
+
 int StringAsType (const char *str) {
     int type = CharAsType(*str);
     while (*++str != 0)
@@ -401,6 +435,7 @@ int StringAsType (const char *str) {
         type |= 1 << (*str - 'a' + 5);
     return type;
 }
+
 const char* TypeAsString (int type, char *buf) {
     char c, *p = buf; /* buffer should have room for at least 28 bytes */
     *p++ = VQ_TYPES[type&VQ_TYPEMASK];

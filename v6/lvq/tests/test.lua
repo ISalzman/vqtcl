@@ -74,7 +74,7 @@ print(vvv:type())
 print(mv:type())
 
 vops.iota(4,'N'):p()
---vops.iota(4,'N',3):p()
+--vops.iota(4,'N',1):p()
 --vops.iota(4,'N',0):p()
 
 vops.virtual(4, "abc:I", function (r,c) return r*r*r end):p()

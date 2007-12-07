@@ -18,6 +18,7 @@ static int RangeSpan (Vector v, int offset, int count, int *startp, int miss) {
     *startp = rs;
     return re - rs;
 }
+
 static int RangeExpand (Vector v, int off) {
     int i;
     const int *ivec = (const int*) v;
@@ -51,6 +52,7 @@ static vq_Type MutVecGetter (int row, vq_Item *item) {
     }
     return VQ_nil;
 }
+
 static void InitMutVec (Vector v, int col) {
     Vector *vecp = (Vector*) vData(v) + 3 * col;
     if (vecp[0] == 0) {
@@ -70,6 +72,7 @@ static void InitMutVec (Vector v, int col) {
         v[col].o.b.i = col;
     }
 }
+
 static void MutVecSetter (Vector v, int row, int col, const vq_Item *item) {
     int fill, miss;
     Vector *vecp = (Vector*) vData(v) + 3 * col;
@@ -99,6 +102,7 @@ static void MutVecSetter (Vector v, int row, int col, const vq_Item *item) {
         }
     }
 }
+
 static void MutVecReplacer (vq_View t, int offset, int delrows, vq_View data) {
     int c, r, cols = vCount(vMeta(t)), insrows = vCount(data);
     assert(offset >= 0 && delrows >= 0 && offset + delrows <= vCount(t));
@@ -143,6 +147,7 @@ static void MutVecReplacer (vq_View t, int offset, int delrows, vq_View data) {
     if (insrows > 0)
         RangeInsert(&vInsv(t), offset, insrows, 1);
 }
+
 static void MutVecCleaner (Vector v) {
     Vector *data = (Vector*) vData(v);
     int i = 3 * vCount(vMeta(v));
@@ -156,13 +161,16 @@ static void MutVecCleaner (Vector v) {
     /* ObjDecRef(vOref(v)); FIXME: cleanup! */
     FreeVector(v);
 }
+
 static Dispatch muvtab = {
     "mutable", 5, sizeof(void*), 0,
         MutVecCleaner, MutVecGetter, MutVecSetter, MutVecReplacer
 };
+
 int IsMutable (vq_View t) {
     return vType(t) == &muvtab;
 }
+
 vq_View WrapMutable (vq_View t, Object_p o) {
     vq_View meta = vMeta(t);
     int i, cols = vCount(meta);

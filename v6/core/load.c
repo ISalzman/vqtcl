@@ -99,6 +99,7 @@ static int IsReversedEndian (Vector map) {
     return *MF_Data(map) == 'L';
 #endif
 }
+
 static intptr_t GetVarInt (const char **nextp) {
     int8_t b;
     intptr_t v = 0;
@@ -108,6 +109,7 @@ static intptr_t GetVarInt (const char **nextp) {
     } while (b >= 0);
     return v + 128;
 }
+
 static intptr_t GetVarPair (const char **nextp) {
     intptr_t n = GetVarInt(nextp);
     if (n > 0 && GetVarInt(nextp) == 0)
