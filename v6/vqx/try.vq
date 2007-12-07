@@ -1,0 +1,5 @@
+#!./vqx
+
+loadfile '../lvq/src/lvq.lua' ('lvq')
+for k,v in pairs(lvq) do print(k,v) end
+dofile '../lvq/tests/test.lua'
