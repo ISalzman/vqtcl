@@ -62,7 +62,7 @@ TEA_SETUP_COMPILER
 
 TEA_ADD_SOURCES([tvq.c])
 TEA_ADD_HEADERS([])
-TEA_ADD_INCLUDES([-I../lua/src -I../lvq/src -I../core])
+TEA_ADD_INCLUDES([-I../lua/src -I../core -I../lvq/src])
 #TEA_ADD_LIBS([])
 TEA_ADD_LIBS([-llua])
 #TEA_ADD_CFLAGS([-DLUA_USE_POSIX -DNDEBUG])

@@ -5,15 +5,17 @@
 #include <stdint.h>
 #include <unistd.h>
 
-#define VQ_VERSION "1.6"
-#define VQ_RELEASE "1.6.0"
-#define VQ_COPYRIGHT "Copyright (C) 1996-2007 Jean-Claude Wippler"
+#define VQ_VERSION      "1.6"
+#define VQ_RELEASE      "1.6.0"
+#define VQ_COPYRIGHT    "Copyright (C) 1996-2007 Jean-Claude Wippler"
 
-#define VQ_TYPES "NILFDSBVO"
+/* VQ_ObjRef_t is the type used for references to non-core objects */
 
-#ifndef VQ_OBJREFTYPE
-#define VQ_OBJREFTYPE int
+#ifndef VQ_ObjRef_t
+#define VQ_ObjRef_t int
 #endif
+
+/* vq_Type lists all types of data, usually passed around via vq_Item's */
 
 typedef enum { 
     VQ_nil, 
@@ -27,7 +29,13 @@ typedef enum {
     VQ_objref
 } vq_Type;
 
+#define VQ_TYPES "NILFDSBVO" /* canonical char code, when indexed by vq_Type */
+
+/* a vq_View object is an array of vq_Item's */
+
 typedef union vq_Item_u *vq_View;
+
+/* a vq_Item can hold a wide range of data types, often as pairs */
 
 typedef union vq_Item_u {
     struct {
@@ -41,7 +49,7 @@ typedef union vq_Item_u {
             void                 (*c)(void*);
             struct vq_Dispatch_s  *h;
             int                   *n;
-            VQ_OBJREFTYPE          r;
+            VQ_ObjRef_t            r;
         } a;
         union {
             int               i;
@@ -55,7 +63,7 @@ typedef union vq_Item_u {
     int      q[sizeof(void*)/2];    /* for hash calculations */
 } vq_Item;
 
-/* reference counting */
+/* reference counting is used for views and vectors */
 
 vq_View  (vq_retain) (vq_View t);
 int     (vq_release) (vq_View t);

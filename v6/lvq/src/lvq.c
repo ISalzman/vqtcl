@@ -5,14 +5,16 @@
 #include "lua.h"
 #include "lauxlib.h"
 
+#include "vq_conf.h"
+
 #include "vlerq.c"
-#include "opdef.c"
-#include "reader.c"
-#include "load.c"
-#include "buffer.c"
-#include "save.c"
-#include "ranges.c"
-#include "mutable.c"
+#include "vopdef.c"
+#include "vreader.c"
+#include "vload.c"
+#include "vbuffer.c"
+#include "vsave.c"
+#include "vranges.c"
+#include "vmutable.c"
 
 #define checkrow(L,t)   ((vq_Item*) luaL_checkudata(L, t, "Vlerq.row"))
 
@@ -298,7 +300,7 @@ static int vops_struct (lua_State *L) {
     return 1;
 }
 
-#if VQ_MOD_LOAD_H
+#if VQ_LOAD_H
 
 /*
 vq_Type lvq_load (lua_State *L) {
@@ -324,7 +326,7 @@ static int vops_open (lua_State *L) {
 
 #endif
 
-#if VQ_MOD_MUTABLE_H
+#if VQ_MUTABLE_H
 
 static int vops_mutable (lua_State *L) {
     LVQ_ARGS(L,A,"V");
@@ -333,7 +335,7 @@ static int vops_mutable (lua_State *L) {
 
 #endif
 
-#if VQ_MOD_OPDEF_H
+#if VQ_OPDEF_H
 
 static vq_Type IotaGetter (int row, vq_Item *item) {
     item->o.a.i = row + vOffs(item->o.a.v);
@@ -410,7 +412,7 @@ static int vops_virtual (lua_State *L) {
 
 #endif
 
-#if VQ_MOD_SAVE_H
+#if VQ_SAVE_H
 
 static void* EmitDataFun (void *buf, const void *ptr, intptr_t len) {
     luaL_addlstring(buf, ptr, len);
@@ -466,19 +468,19 @@ static const struct luaL_reg lvqlib_v[] = {
     {"struct", vops_struct},
     {"type", vops_type},
     {"view", vops_view},
-#if VQ_MOD_LOAD_H
+#if VQ_LOAD_H
     /* {"load", lvq_load}, */
     {"open", vops_open},
 #endif
-#if VQ_MOD_MUTABLE_H
+#if VQ_MUTABLE_H
     {"mutable", vops_mutable},
 #endif
-#if VQ_MOD_OPDEF_H
+#if VQ_OPDEF_H
     {"iota", vops_iota},
     {"pass", vops_pass},
     {"virtual", vops_virtual},
 #endif
-#if VQ_MOD_SAVE_H
+#if VQ_SAVE_H
     {"emit", vops_emit},
 #endif
     {NULL, NULL},
@@ -490,19 +492,19 @@ static const struct luaL_reg lvqlib_f[] = {
 
 LUA_API int luaopen_lvq_core (lua_State *L) {
     const char *sconf = "lvq " VQ_RELEASE
-#if VQ_MOD_LOAD_H
+#if VQ_LOAD_H
                         " lo"
 #endif
-#if VQ_MOD_MUTABLE_H
+#if VQ_MUTABLE_H
                         " mu"
 #endif
-#if VQ_MOD_OPDEF_H
+#if VQ_OPDEF_H
                         " op"
 #endif
-#if VQ_MOD_RANGES_H
-                        " nu"
+#if VQ_RANGES_H
+                        " ra"
 #endif
-#if VQ_MOD_SAVE_H
+#if VQ_SAVE_H
                         " sa"
 #endif
                         ;

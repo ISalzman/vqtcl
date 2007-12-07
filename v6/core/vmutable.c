@@ -2,9 +2,9 @@
     $Id$
     This file is part of Vlerq, see core/vlerq.h for full copyright notice.  */
 
-#include "def.h"
+#include "vq_conf.h"
 
-#if VQ_MOD_MUTABLE_H
+#if VQ_MUTABLE_H
 
 #pragma mark - RANGE OPERATIONS -
 

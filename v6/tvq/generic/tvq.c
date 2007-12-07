@@ -291,7 +291,7 @@ static Tcl_Obj* MetaViewAsList (vq_View meta) {
 static Tcl_Obj* ColumnAsList (vq_Item colref, int rows, int mode) {
     int i;
     Tcl_Obj *list = Tcl_NewListObj(0, 0);
-#if VQ_MOD_RANGES_H
+#if VQ_RANGES_H
     if (mode == 0) {
         Vector ranges = 0;
         for (i = 0; i < rows; ++i) {
@@ -312,7 +312,7 @@ static Tcl_Obj* ColumnAsList (vq_Item colref, int rows, int mode) {
         else if (mode == 0 && type == VQ_nil)
             Tcl_ListObjAppendElement(0, list, Tcl_NewIntObj(i));
     }
-#if VQ_MOD_RANGES_H
+#if VQ_RANGES_H
     if (mode == -2)
         vq_release(colref.o.a.v);
 #endif

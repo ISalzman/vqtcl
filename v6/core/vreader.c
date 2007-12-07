@@ -2,9 +2,9 @@
     $Id$
     This file is part of Vlerq, see core/vlerq.h for full copyright notice.  */
 
-#include "def.h"
+#include "vq_conf.h"
 
-#if VQ_MOD_LOAD_H
+#if VQ_LOAD_H
 
 #ifdef VQ_WIN32
 #define WIN32_LEAN_AND_MEAN

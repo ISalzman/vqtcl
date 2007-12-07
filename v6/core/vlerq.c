@@ -2,7 +2,7 @@
     $Id$
     This file is part of Vlerq, see core/vlerq.h for full copyright notice.  */
 
-#include "def.h"
+#include "v_defs.h"
 
 #pragma mark - MEMORY MANAGEMENT -
 
@@ -85,7 +85,7 @@ static vq_Type ViewVecGetter (int row, vq_Item *item) {
     return VQ_view;
 }
 static vq_Type ObjRefVecGetter (int row, vq_Item *item) {
-    VQ_OBJREFTYPE *p = item->o.a.p;
+    VQ_ObjRef_t *p = item->o.a.p;
     item->o.a.r = p[row];
     return VQ_objref;
 }
@@ -242,7 +242,7 @@ Vector AllocDataVec (vq_Type type, int rows) {
         case VQ_view:
             vtab = &tvtab; bytes = rows * sizeof(vq_View); break;
         case VQ_objref:
-            vtab = &ovtab; bytes = rows * sizeof(VQ_OBJREFTYPE); break;
+            vtab = &ovtab; bytes = rows * sizeof(VQ_ObjRef_t); break;
         default: assert(0); return NULL;
     }
     v = AllocVector(vtab, bytes);
@@ -467,23 +467,23 @@ CmdDispatch f_commands[] = {
     { "new",        "V:V",      NewCmd_V        },
     { "pass",       "V:V",      PassCmd_V       },
     { "size",       "V:V",      SizeCmd_V       },
-#if VQ_MOD_LOAD_H
+#if VQ_LOAD_H
     { "desc2meta",  "V:S",      Desc2MetaCmd_S  },
     { "load",       "V:O",      LoadCmd_O       },
     { "open",       "V:S",      OpenCmd_S       },
 #endif
-#if VQ_MOD_MUTABLE_H
+#if VQ_MUTABLE_H
     { "replace",    "N:OIIV",   ReplaceCmd_OIIV },
     { "set",        "N:OIIO",   SetCmd_OIIO     },
     { "unset",      "N:OII",    UnsetCmd_OII    },
 #endif
-#if VQ_MOD_RANGES_H
+#if VQ_RANGES_H
     { "rflip",      "O:OII",    RflipCmd_OII    },
     { "rlocate",    "O:OI",     RlocateCmd_OI   },
     { "rinsert",    "O:OIII",   RinsertCmd_OIII },
     { "rdelete",    "O:OII",    RdeleteCmd_OII  },
 #endif
-#if VQ_MOD_SAVE_H
+#if VQ_SAVE_H
     { "emit",       "B:V",      EmitCmd_V       },
     { "meta2desc",  "O:V",      Meta2DescCmd_V  },
 #endif

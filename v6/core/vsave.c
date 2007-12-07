@@ -2,9 +2,9 @@
     $Id$
     This file is part of Vlerq, see core/vlerq.h for full copyright notice.  */
 
-#include "def.h"
+#include "vq_conf.h"
 
-#if VQ_MOD_SAVE_H
+#if VQ_SAVE_H
 
 typedef struct EmitItem {
     intptr_t size;
