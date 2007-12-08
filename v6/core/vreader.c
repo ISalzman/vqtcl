@@ -4,7 +4,7 @@
 
 #include "vq_conf.h"
 
-#if VQ_LOAD_H
+#if VQ_RANGES_H
 
 #ifdef VQ_WIN32
 #define WIN32_LEAN_AND_MEAN

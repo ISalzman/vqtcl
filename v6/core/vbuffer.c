@@ -4,7 +4,7 @@
 
 #include "v_defs.h"
 
-#if VQ_SAVE_H
+#if VQ_BUFFER_H
 
 typedef struct Overflow {
     char                b[4096];    /* must be first member */

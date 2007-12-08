@@ -2,9 +2,6 @@
     $Id$
     This file is part of Vlerq, see core/vlerq.h for full copyright notice.  */
 
-#include "lua.h"
-#include "lauxlib.h"
-
 #include "vq_conf.h"
 
 #include "vlerq.c"
@@ -15,6 +12,48 @@
 #include "vsave.c"
 #include "vranges.c"
 #include "vmutable.c"
+
+#if defined(VQ_EMBED_LUA)
+#define luaall_c
+
+#include "lapi.c"
+#include "lcode.c"
+#include "ldebug.c"
+#include "ldo.c"
+#include "ldump.c"
+#include "lfunc.c"
+#include "lgc.c"
+#include "llex.c"
+#include "lmem.c"
+#include "lobject.c"
+#include "lopcodes.c"
+#include "lparser.c"
+#include "lstate.c"
+#include "lstring.c"
+#include "ltable.c"
+#include "ltm.c"
+#include "lundump.c"
+#include "lvm.c"
+#include "lzio.c"
+
+#include "lauxlib.c"
+#include "lbaselib.c"
+#include "ldblib.c"
+#include "liolib.c"
+#include "linit.c"
+#include "lmathlib.c"
+#include "loadlib.c"
+#include "loslib.c"
+#include "lstrlib.c"
+#include "ltablib.c"
+
+#else
+
+#include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
+
+#endif
 
 #define checkrow(L,t)   ((vq_Item*) luaL_checkudata(L, t, "Vlerq.row"))
 

@@ -4,7 +4,7 @@
 
 #include "vq_conf.h"
 
-#if VQ_RANGES_H || VQ_MUTABLE_H
+#if VQ_RANGES_H
 
 void *VecInsert (Vector *vecp, int off, int cnt) {
     Vector v = *vecp, v2;
