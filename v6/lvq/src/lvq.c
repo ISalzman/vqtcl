@@ -18,7 +18,7 @@
 
 /* this takes care of Windows, Mac OS X, and Linux builds */
 #ifndef __WIN32
-#define LUA_USE_POSIX
+#define LUA_USE_POSIX 1
 #endif
 
 #include "lapi.c"
@@ -80,7 +80,7 @@ static vq_View mustbemeta (lua_State *L, vq_View m) {
     return m;
 }
 
-static void *newtypeddata (lua_State *L, size_t bytes, const char *tag) {
+static void *newuserdata (lua_State *L, size_t bytes, const char *tag) {
     void *p = lua_newuserdata(L, bytes);
     luaL_getmetatable(L, tag);
     lua_setmetatable(L, -2);
@@ -88,7 +88,7 @@ static void *newtypeddata (lua_State *L, size_t bytes, const char *tag) {
 }
 
 static int pushview (lua_State *L, vq_View v) {
-    vq_View *vp = newtypeddata(L, sizeof *vp, "Vlerq.view");
+    vq_View *vp = newuserdata(L, sizeof *vp, "Vlerq.view");
     *vp = vq_retain(v);
     return 1;
 }
@@ -165,7 +165,7 @@ static void parseargs(lua_State *L, vq_Item *buf, const char *desc) {
             vq_Item args[sizeof(desc)-1]; \
             parseargs(state, args, desc)
 
-/* - - - - - - - - - < Vlerq.row userdata methods > - - - - - - - - - */
+#pragma mark - VLERQ.ROW -
 
 static int row_gc (lua_State *L) {
     vq_Item *pi = lua_touserdata(L, 1); assert(pi != NULL);
@@ -224,7 +224,7 @@ static int row2string (lua_State *L) {
     return 1;
 }
 
-/* - - - - - - - - - < Vlerq.view userdata methods > - - - - - - - - - */
+#pragma mark - VLERQ.VIEW -
 
 static int view_gc (lua_State *L) {
     vq_View *vp = lua_touserdata(L, 1); assert(vp != NULL);
@@ -236,7 +236,7 @@ static int view_index (lua_State *L) {
     if (lua_isnumber(L, 2)) {
         vq_Item *rp;
         LVQ_ARGS(L,A,"VI");
-        rp = newtypeddata(L, sizeof *rp, "Vlerq.row");
+        rp = newuserdata(L, sizeof *rp, "Vlerq.row");
         rp->o.a.v = vq_retain(A[0].o.a.v);
         rp->o.b.i = A[1].o.a.i;
     } else {
@@ -290,7 +290,46 @@ static int view2string (lua_State *L) {
     return 1;
 }
 
-/* - - - - - - - - - < Remaining view operators > - - - - - - - - - */
+#pragma mark - VIRTUAL VIEWS -
+
+static void VirtualCleaner (Vector v) {
+    lua_unref((lua_State*) vData(v), vOffs(v));
+    FreeVector(v);
+}
+
+static vq_Type VirtualGetter (int row, vq_Item *item) {
+    vq_View v = item->o.a.v;
+    int col = item->o.b.i;
+    lua_State *L = (lua_State*) vData(v);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, vOffs(v));
+    lua_pushinteger(L, row);
+    lua_pushinteger(L, col);
+    lua_call(L, 2, 1);
+    if (lua_isnil(L, -1))
+        return VQ_nil;
+    *item = toitem(L, -1, Vq_getInt(vMeta(v), col, 1, VQ_nil) & VQ_TYPEMASK);
+    lua_pop(L, 1);
+    return VQ_int;
+}
+static Dispatch virtab = {
+    "virtual", 3, 0, 0, VirtualCleaner, VirtualGetter
+};
+
+static vq_View VirtualView (int rows, vq_View meta, lua_State *L, int ref) {
+    vq_View v = IndirectView(mustbemeta(L, meta), &virtab, rows, 0);
+    vOffs(v) = ref;
+    vData(v) = (void*) L;
+    return v;
+}
+
+static int vops_virtual (lua_State *L) {
+    int rows;
+    LVQ_ARGS(L,A,"VVO");
+    rows = vCount(A[0].o.a.v);
+    return pushview(L, VirtualView(rows, A[1].o.a.v, L, A[2].o.a.i));
+}
+
+#pragma mark - VIEW OPERATORS -
 
 static int vops_empty (lua_State *L) {
     LVQ_ARGS(L,A,"VII");
@@ -381,77 +420,14 @@ static int vops_mutable (lua_State *L) {
 
 #if VQ_OPDEF_H
 
-static vq_Type IotaGetter (int row, vq_Item *item) {
-    item->o.a.i = row + vOffs(item->o.a.v);
-    return VQ_int;
-}
-static Dispatch iotatab = {
-    "iota", 3, 0, 0, IndirectCleaner, IotaGetter
-};
-
-vq_View IotaView (int rows, const char *name, int base) {
-    vq_View v, meta = vq_new(1, vq_meta(0));
-    Vq_setMetaRow(meta, 0, name, VQ_int, NULL);
-    v = IndirectView(meta, &iotatab, rows, 0);
-    vOffs(v) = base;
-    return v;
-}
-
 static int vops_iota (lua_State *L) {
-    vq_View v, meta;
     LVQ_ARGS(L,A,"VSi");
-    meta = vq_new(1, vq_meta(0));
-    Vq_setMetaRow(meta, 0, A[1].o.a.s, VQ_int, NULL);
-    v = IndirectView(meta, &iotatab, vCount(A[0].o.a.v), 0);
-    vOffs(v) = A[2].o.a.i;
-    return pushview(L, v);
+    return pushview(L, IotaView(vCount(A[0].o.a.v), A[1].o.a.s, A[2].o.a.i));
 }
 
 static int vops_pass (lua_State *L) {
-    vq_View v, t;
-    int c, cols;
     LVQ_ARGS(L,A,"V");
-    v = A[0].o.a.v;
-    t = vq_new(0, vMeta(v));
-    cols = vCount(vMeta(v));
-    vCount(t) = vCount(v);
-    for (c = 0; c < cols; ++c) {
-        t[c] = v[c];
-        vq_retain(t[c].o.a.v);
-    }
-    return pushview(L, t);
-}
-
-static void VirtualCleaner (Vector v) {
-    lua_unref((lua_State*) vData(v), vOffs(v));
-    FreeVector(v);
-}
-
-static vq_Type VirtualGetter (int row, vq_Item *item) {
-    vq_View v = item->o.a.v;
-    int col = item->o.b.i;
-    lua_State *L = (lua_State*) vData(v);
-    lua_rawgeti(L, LUA_REGISTRYINDEX, vOffs(v));
-    lua_pushinteger(L, row);
-    lua_pushinteger(L, col);
-    lua_call(L, 2, 1);
-    if (lua_isnil(L, -1))
-        return VQ_nil;
-    *item = toitem(L, -1, Vq_getInt(vMeta(v), col, 1, VQ_nil) & VQ_TYPEMASK);
-    lua_pop(L, 1);
-    return VQ_int;
-}
-static Dispatch virtab = {
-    "virtual", 3, 0, 0, VirtualCleaner, VirtualGetter
-};
-
-static int vops_virtual (lua_State *L) {
-    vq_View v;
-    LVQ_ARGS(L,A,"VVO");
-    v = IndirectView(mustbemeta(L, A[1].o.a.v), &virtab, vCount(A[0].o.a.v), 0);
-    vOffs(v) = A[2].o.a.i;
-    vData(v) = (void*) L;
-    return pushview(L, v);
+    return pushview(L, PassView(A[0].o.a.v));
 }
 
 #endif
@@ -486,7 +462,7 @@ static int vops_view (lua_State *L) {
     return pushview(L, v);
 }
 
-/* - - - - - - - - - < Method registration tables > - - - - - - - - - */
+#pragma mark - METHOD TABLES -
 
 static const struct luaL_reg lvqlib_row_m[] = {
     {"__gc", row_gc},

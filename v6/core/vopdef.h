@@ -7,4 +7,7 @@
 
 #include "v_defs.h"
 
+vq_View (IotaView) (int rows, const char *name, int base);
+vq_View (PassView) (vq_View v);
+
 #endif

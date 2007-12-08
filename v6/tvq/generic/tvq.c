@@ -498,7 +498,7 @@ static int LvqCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const
                             lua_rawgeti(L, LUA_REGISTRYINDEX, r);
                             break;
                         } // else fall through
-            case 'c':   op = newtypeddata(L, sizeof *op, "Vlerq.tcl");
+            case 'c':   op = newuserdata(L, sizeof *op, "Vlerq.tcl");
                         *op = obj;
                       	Tcl_IncrRefCount(*op);
                         if (fmt[-1] == 'c') {
