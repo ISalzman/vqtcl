@@ -13,6 +13,10 @@
 
 /* portability */
 
+#if defined(__WIN32)
+#define VQ_WIN32 1
+#endif
+
 #if defined(__sparc__) || defined(__sgi__)
 #define VQ_MUSTALIGN 1
 #endif

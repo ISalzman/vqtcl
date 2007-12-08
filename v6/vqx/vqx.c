@@ -2,6 +2,12 @@
     $Id$
     This file is part of Vlerq, see core/vlerq.h for full copyright notice.  */
 
+/* this takes care of Windows, Mac OS X, and Linux builds */
+
+#ifndef __WIN32
+#define LUA_USE_POSIX 1
+#endif
+
 #define luaall_c
 
 #include "lapi.c"
