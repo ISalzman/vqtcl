@@ -22,4 +22,4 @@ LIBNAME = $T.so
 WARN = -O2 -fPIC -Wall -Wextra -Wcast-align -Wmissing-prototypes -Wnested-externs -Wshadow -Wwrite-strings -Wno-missing-field-initializers -pedantic
 
 CFLAGS = $(WARN) -I$(LUA_INC) -I../core -I../lvq/src
-CC = gcc
+#CC = gcc

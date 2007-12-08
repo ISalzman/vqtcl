@@ -16,7 +16,7 @@ LUAS = src/$T.lua
 lib: src/$(LIBNAME)
 
 src/$(LIBNAME): $(OBJS)
-	export MACOSX_DEPLOYMENT_TARGET="10.3"; $(CC) $(CFLAGS) $(LIB_OPTION) -o src/$(LIBNAME) $(OBJS)
+	$(CC) $(CFLAGS) $(LIB_OPTION) -o src/$(LIBNAME) $(OBJS)
 
 src/$T.o: $(DEPS) Makefile config
 

@@ -96,7 +96,7 @@ int NextBuffer (Buffer *bp, char **firstp, int *countp) {
 void *BufferAsPtr (Buffer *bp, int fast) {
     intptr_t len;
     char *data, *ptr = NULL;
-    int cnt;
+    int cnt = 0;
 
     if (fast && bp->saved == 0)
         return bp->buf;
@@ -112,7 +112,7 @@ void *BufferAsPtr (Buffer *bp, int fast) {
 }
 
 Vector BufferAsIntVec (Buffer *bp) {
-    int cnt;
+    int cnt = 0;
     char *data, *ptr = NULL;
     Vector vec = AllocDataVec(VQ_int, BufferFill(bp) / sizeof(int));
     data = (void*) vec;

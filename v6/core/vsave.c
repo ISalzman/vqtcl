@@ -352,7 +352,7 @@ static void EmitView (EmitInfo *eip, vq_View view, int describe) {
     EmitVarInt(eip, 0);
 
     if (describe) {
-        int cnt;
+        int cnt = 0;
         char *ptr = NULL;
         struct Buffer desc;
         InitBuffer(&desc);

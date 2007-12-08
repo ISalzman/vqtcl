@@ -14,15 +14,15 @@
 /* portability */
 
 #if defined(__WIN32)
-#define VQ_WIN32 1
+#define VQ_WIN32
 #endif
 
 #if defined(__sparc__) || defined(__sgi__)
-#define VQ_MUSTALIGN 1
+#define VQ_MUSTALIGN
 #endif
 
 #if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
-#define VQ_BIGENDIAN 1
+#define VQ_BIGENDIAN
 #endif
 
 #if !defined(_TCL)
