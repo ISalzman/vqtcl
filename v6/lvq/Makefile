@@ -5,8 +5,8 @@ CONFIG = ./config
 include $(CONFIG)
 
 C = ../core
-DEPS = src/$T.c src/vq_conf.h $C/vlerq.c $C/vlerq.h $C/v_defs.h $C/vmutable.c \
-	$C/vload.c $C/vbuffer.c $C/vsave.c $C/vranges.c $C/vreader.c \
+DEPS = src/$T.c src/vq_conf.h $C/vlerq.c $C/vlerq.h $C/v_defs.h $C/vload.c \
+	$C/vmutable.c $C/vbuffer.c $C/vsave.c $C/vranges.c $C/vreader.c \
 	$C/vopdef.c $C/vload.h $C/vmutable.h $C/vopdef.h $C/vranges.h \
 	$C/vsave.h $C/vreader.h $C/vbuffer.h
 	

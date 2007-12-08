@@ -4,7 +4,6 @@
 
 #include "vq_conf.h"
 
-#include "vlerq.c"
 #include "vopdef.c"
 #include "vreader.c"
 #include "vload.c"
@@ -12,9 +11,15 @@
 #include "vsave.c"
 #include "vranges.c"
 #include "vmutable.c"
+#include "vlerq.c"
 
 #if defined(VQ_EMBED_LUA)
 #define luaall_c
+
+/* this takes care of Windows, Mac OS X, and Linux builds */
+#ifndef __WIN32
+#define LUA_USE_POSIX
+#endif
 
 #include "lapi.c"
 #include "lcode.c"

@@ -4,11 +4,6 @@
 
 #define VQ_EMBED_LUA
 
-/* this takes care of Windows, Mac OS X, and Linux builds */
-#ifndef __WIN32
-#define LUA_USE_POSIX
-#endif
-
 #include "lvq.c"
 
 int main (int argc, char **argv) {
@@ -19,7 +14,7 @@ int main (int argc, char **argv) {
     lua_pushstring(L, "lvq.core");
     lua_call(L, 1, 0);
     
-    if (argc > 1 && luaL_dofile(L,argv[1]) != 0) {
+    if (argc > 1 && luaL_dofile(L, argv[1]) != 0) {
         fprintf(stderr,"%s\n", lua_tostring(L, -1));
         return 1;
     }

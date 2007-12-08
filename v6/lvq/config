@@ -19,7 +19,6 @@ LIB_OPTION = -bundle -undefined dynamic_lookup #for MacOS X
 LIBNAME = $T.so
 
 # Compilation directives
-WARN = -O2 -fPIC -Wall -Wextra -Wcast-align -Wmissing-prototypes -Wnested-externs -Wshadow -Wwrite-strings -Wno-missing-field-initializers -pedantic
-
-CFLAGS = $(WARN) -I$(LUA_INC) -I../core -I../lvq/src
-#CC = gcc
+CWARNS = -Wall -Wextra -Wcast-align -Wmissing-prototypes -Wnested-externs \
+ 			-Wshadow -Wwrite-strings -Wno-missing-field-initializers -pedantic
+CFLAGS = -O2 -fPIC $(CWARNS) -I$(LUA_INC) -I../core -I../lvq/src
