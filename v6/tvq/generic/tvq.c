@@ -135,10 +135,8 @@ vq_View ObjAsMetaView (void *ip, Tcl_Obj *obj) {
 }
 
 static int AdjustCmdDef (Tcl_Obj *cmd) {
-    Tcl_Obj *buf[2];
-    buf[0] = Tcl_NewStringObj("lvq", 3);
-    buf[1] = Tcl_NewStringObj("v", 1);
-    return Tcl_ListObjReplace(NULL, cmd, 0, 0, 2, buf);
+    Tcl_Obj *obj = Tcl_NewStringObj("tvq", 3);
+    return Tcl_ListObjReplace(NULL, cmd, 0, 0, 1, &obj);
 }
 
 static vq_View ObjAsView (Tcl_Interp *interp, Tcl_Obj *obj) {
@@ -397,11 +395,9 @@ int ObjToItem (vq_Type type, vq_Item *item) {
     Lua are appended.  That list is then eval'ed as a command in Tcl.  */
 
 static int LuaCallback (lua_State *L) {
-    Tcl_Obj *list, **o = lua_touserdata(L, lua_upvalueindex(1));
-    Tcl_Interp* ip = lua_touserdata(L, lua_upvalueindex(2));
+    Tcl_Obj *list = Tcl_NewListObj(0, 0);
+    Tcl_Interp* ip = lua_touserdata(L, lua_upvalueindex(1));
     int i, n = lua_gettop(L);
-    assert(o != NULL);
-    list = Tcl_DuplicateObj(*o);
     Tcl_IncrRefCount(list);
     for (i = 1; i <= n; ++i)
         Tcl_ListObjAppendElement(ip, list, LuaAsTclObj(L, i));
@@ -410,117 +406,6 @@ static int LuaCallback (lua_State *L) {
     if (i == TCL_ERROR)
         luaL_error(L, "tvq: %s", Tcl_GetStringResult(ip));
     return 0;
-}
-
-/*  Low-level interface from Tcl to Lua is via the "lvq" command.  Usage:
-        set result [lvq fmt args...]
-    The "fmt" argument is a string describing the type of the following args.
-    Each letter describes one argument - if more arguments remain after parsing
-    fmt, then these are treated as being of type 'u'.  Supported types are:
-    
-        b   arg is a Tcl byte array (pushed as Lua string)
-        c   arg is a list for Lua to call back (pushed as a Lua C closure)
-        d   arg is a double-precision float (pushed as Lua number)
-        g   arg is name of a Lua global (looked up and pushed as Lua object)
-        i   arg is an integer (pushed as Lua number)
-        n   arg is ignored (pushed as Lua's nil)
-        o   arg can be any Tcl object (pushed as Lua userdata of type Vlerq.tcl)
-        s   arg is a UTF8 string (pushed as Lua string)
-        t   arg is a Lua truth value, arg must be 1/0/yes/no/true/false
-        u   arg can be any object (pushed as Lua light userdata)
-        v   arg is name of entry in "vops" table (pushed as looked-up object)
-    
-    Args of type 'o' and 'u' are checked - if they are of type "luaboj" then the
-    value is "unboxed" and passed as Lua object, otherwise the value is "boxed".
-    This avoids multiple Tcl/Lua wrappers and supports "toll-free bridging".
-    
-    Args of type 'u' are pushed without incrementing the Tcl reference count
-    and must be used right away in the Lua call - they cannot be kept around
-    in Lua since the Tcl object may be released once LvqCmd returns.
-    
-    Examples:       lvq "gs" print {Tcl says hello to Lua!}
-                    puts [lvq "ggs" rawget _G _VERSION]
-*/
-    
-static int LvqCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
-    lua_State *L = data;
-    int v, i, len;
-    char *ptr, *fmt;
-    double d;
-    Tcl_Obj **op;
-    if (objc < 3) {
-      Tcl_WrongNumArgs(interp, objc, objv, "fmt arg ?...?");
-      return TCL_ERROR;
-    }
-    fmt = Tcl_GetStringFromObj(objv[1], &len);
-    if (objc < 2 + len) {
-        Tcl_SetResult(interp, "not enough args", TCL_STATIC);
-        return TCL_ERROR;
-    }
-    for (i = 2; i < objc; ++i) {
-        Tcl_Obj *obj = objv[i];
-        int r = (int) obj->internalRep.twoPtrValue.ptr2;
-        switch (*fmt++) {
-            case 'n':   lua_pushnil(L);
-                      	break;
-            case 't':   if (Tcl_GetBooleanFromObj(interp, obj, &v) != TCL_OK)
-                      	    return TCL_ERROR;
-                        lua_pushboolean(L, v);
-                        break;
-            case 'i':   if (Tcl_GetIntFromObj(interp, obj, &v) != TCL_OK)
-                      	    return TCL_ERROR;
-                      	lua_pushinteger(L, v);
-                      	break;
-            case 'd':   if (Tcl_GetDoubleFromObj(interp, obj, &d) != TCL_OK)
-                      	    return TCL_ERROR;
-                      	lua_pushnumber(L, d);
-                      	break;
-            case 'b':   ptr = (void*) Tcl_GetByteArrayFromObj(obj, &len);
-                      	lua_pushlstring(L, ptr, len);
-                      	break;
-            case 's':   ptr = Tcl_GetStringFromObj(obj, &len);
-                      	lua_pushlstring(L, ptr, len);
-                      	break;
-            case 'g':   ptr = Tcl_GetStringFromObj(obj, NULL);
-                      	lua_getglobal(L, ptr);
-                      	break;
-            case 'v':   ptr = Tcl_GetStringFromObj(obj, NULL);
-                        lua_getfield(L, LUA_GLOBALSINDEX, "vops");
-                        lua_getfield(L, -1, ptr);
-                        lua_remove(L, -2);
-                        if (lua_isnil(L, -1)) {
-                            Tcl_AppendResult(interp, "not found in vops: ",
-                                                        ptr, NULL);
-                            return TCL_ERROR;
-                        }
-                      	break;
-            case 'o':   if (obj->typePtr == &f_luaObjType) { // unbox
-                            lua_rawgeti(L, LUA_REGISTRYINDEX, r);
-                            break;
-                        } // else fall through
-            case 'c':   op = newuserdata(L, sizeof *op, "Vlerq.tcl");
-                        *op = obj;
-                      	Tcl_IncrRefCount(*op);
-                        if (fmt[-1] == 'c') {
-                          	lua_pushlightuserdata(L, interp);
-                          	lua_pushcclosure(L, LuaCallback, 2);
-                      	}
-                      	break;
-            case 0:     --fmt;
-            case 'u':   if (obj->typePtr == &f_luaObjType) // unbox
-                            lua_rawgeti(L, LUA_REGISTRYINDEX, r);
-                        else
-                            lua_pushlightuserdata(L, obj);
-                        break;
-            default:    Tcl_SetResult(interp, "unknown format", TCL_STATIC);
-                      	return TCL_ERROR;
-        }
-    }
-    v = lua_pcall(L, objc-3, 1, 0);
-    if (!lua_isnil(L, -1))
-        Tcl_SetObjResult(interp, LuaAsTclObj(L, -1));
-    lua_pop(L, 1);
-    return v == 0 ? TCL_OK : TCL_ERROR;
 }
 
 static int TvqCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
@@ -558,6 +443,14 @@ static int tclobj_gc (lua_State *L) {
     return 0;
 }
 
+static int TvqDoLua (lua_State *L) {
+    LVQ_ARGS(L,A,"S");
+    if (luaL_loadstring(L, A[0].o.a.s))
+        lua_error(L);
+    lua_call(L, 0, 1);
+    return 1;
+}
+
 DLLEXPORT int Tvq_Init (Tcl_Interp *interp) {
     lua_State *L;
     
@@ -580,7 +473,15 @@ DLLEXPORT int Tvq_Init (Tcl_Interp *interp) {
     lua_pushstring(L, "lvq.core");
     lua_call(L, 1, 0);
 
-    Tcl_CreateObjCommand(interp, "lvq", LvqCmd, L, NULL);
+  	lua_pushlightuserdata(L, interp);
+  	lua_pushcclosure(L, LuaCallback, 1);
+    lua_setglobal(L, "tcl");
+
+    lua_getglobal(L, "vops");
+    lua_pushcfunction(L, TvqDoLua);
+    lua_setfield(L, -2, "dostring");
+    lua_pop(L, 1);
+
     Tcl_CreateObjCommand(interp, "tvq", TvqCmd, L, NULL);
     
     assert(strcmp(PACKAGE_VERSION, VQ_RELEASE) == 0);
