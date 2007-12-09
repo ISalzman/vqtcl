@@ -7,8 +7,8 @@ luas { package.loaded['lvq.core'] = lvq }           ;# emulate module setup
 lvq "ggsc" rawset _G tcl ""                         ;# define a 'tcl' callback
 
 # Examples:
-#   luas { print 'Hello!' }
-#   luas { tcl puts 'Hi!' }
+#   luas { print('Hello!') }
+#   luas { tcl('puts','Hi!') }
 
 # emulate a require, but from a specific file
-lvq os [lvq "gs" loadfile "../lvq/src/lvq.lua"] lvq
+luas { loadfile('../lvq/src/lvq.lua')('lvq') }

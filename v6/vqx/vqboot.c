@@ -5,11 +5,9 @@
 /* disable almost all optional code */
 
 #define VQ_VBUFFER_H    0
-#define VQ_VLOAD_H      1
 #define VQ_VMUTABLE_H   0
 #define VQ_VOPDEF_H     0
 #define VQ_VRANGES_H    0
-#define VQ_VREADER_H    1
 #define VQ_VSAVE_H      0
 
 #include "vreader.c"

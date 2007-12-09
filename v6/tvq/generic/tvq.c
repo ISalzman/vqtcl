@@ -524,7 +524,32 @@ static int LvqCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const
 }
 
 static int TvqCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
-    return TCL_OK;
+    lua_State *L = data;
+    int i, v;
+    const char *cmd;
+
+    if (objc < 2) {
+      Tcl_WrongNumArgs(interp, objc, objv, "vop ?...?");
+      return TCL_ERROR;
+    }
+    
+    cmd = Tcl_GetStringFromObj(objv[1], NULL);
+    lua_getglobal(L, "vops");
+    lua_getfield(L, -1, cmd);
+    lua_remove(L, -2);
+    if (lua_isnil(L, -1)) {
+        Tcl_AppendResult(interp, "not found in vops: ", cmd, NULL);
+        return TCL_ERROR;
+    }
+                
+    for (i = 2; i < objc; ++i)
+        lua_pushlightuserdata(L, objv[i]);
+
+    v = lua_pcall(L, objc-2, 1, 0);
+    if (!lua_isnil(L, -1))
+        Tcl_SetObjResult(interp, LuaAsTclObj(L, -1));
+    lua_pop(L, 1);
+    return v == 0 ? TCL_OK : TCL_ERROR;
 }
 
 static int tclobj_gc (lua_State *L) {

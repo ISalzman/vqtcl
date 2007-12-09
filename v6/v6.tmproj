@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>vqx/vqboot.c</string>
+	<string>lvq/src/lvq.c</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -324,30 +324,14 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>0</integer>
+				<integer>40</integer>
 				<key>line</key>
-				<integer>13</integer>
+				<integer>324</integer>
 			</dict>
-			<key>columnSelection</key>
-			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>0</integer>
-			<key>selectFrom</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>6</integer>
-			</dict>
-			<key>selectTo</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>13</integer>
-			</dict>
+			<integer>233</integer>
 		</dict>
 		<key>lvq/src/lvq.lua</key>
 		<dict>
@@ -382,14 +366,14 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>2</integer>
+				<integer>18</integer>
 				<key>line</key>
-				<integer>77</integer>
+				<integer>0</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>1</integer>
+			<integer>0</integer>
 		</dict>
 		<key>tests/all.tcl</key>
 		<dict>
@@ -405,6 +389,36 @@
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
 		</dict>
+		<key>tvq/Makefile.in</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>6</integer>
+				<key>line</key>
+				<integer>225</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>185</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>225</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>6</integer>
+				<key>line</key>
+				<integer>225</integer>
+			</dict>
+		</dict>
 		<key>tvq/configure.in</key>
 		<dict>
 			<key>caret</key>
@@ -419,7 +433,7 @@
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>19</integer>
+			<integer>0</integer>
 			<key>selectFrom</key>
 			<dict>
 				<key>column</key>
@@ -440,9 +454,23 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
+				<integer>46</integer>
+				<key>line</key>
+				<integer>27</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
+		<key>tvq/generic/tvqlua.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
 				<integer>0</integer>
 				<key>line</key>
-				<integer>0</integer>
+				<integer>41</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -457,6 +485,20 @@
 				<integer>0</integer>
 				<key>line</key>
 				<integer>14</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
+		<key>tvq/tclconfig/tcl.m4</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -556,26 +598,10 @@
 				<key>line</key>
 				<integer>24</integer>
 			</dict>
-			<key>columnSelection</key>
-			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
-			<key>selectFrom</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>0</integer>
-			</dict>
-			<key>selectTo</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>24</integer>
-			</dict>
 		</dict>
 		<key>vqx/vqx.exe</key>
 		<dict>
@@ -598,13 +624,16 @@
 		<string>lvq/src/lvq.lua</string>
 		<string>tvq/generic/tvq.c</string>
 		<string>tests/all.tcl</string>
+		<string>tvq/generic/tvqlua.c</string>
 		<string>vqx/vqx.c</string>
 		<string>vqx/vqmin.c</string>
 		<string>lvq/Makefile</string>
 		<string>lvq/config</string>
 		<string>tvq/configure.in</string>
+		<string>tvq/tclconfig/tcl.m4</string>
 		<string>vqx/Makefile</string>
 		<string>vqx/vqboot.c</string>
+		<string>tvq/Makefile.in</string>
 		<string>vqx/try.vq</string>
 		<string>vqx/vqx.exe</string>
 		<string>core/vlerq.h</string>
@@ -633,6 +662,6 @@
 	<key>showFileHierarchyDrawer</key>
 	<true/>
 	<key>windowFrame</key>
-	<string>{{1116, 1}, {560, 1028}}</string>
+	<string>{{919, 0}, {560, 1028}}</string>
 </dict>
 </plist>

@@ -25,36 +25,37 @@ lvq "ggsc" rawset _G tcl ""                         ;# define a 'tcl' callback
 
 test 4 {run the lvq.lua wrapper} {
     # emulate a require, but from a specific file
-    lvq os [lvq "gs" loadfile "../lvq/src/lvq.lua"] lvq
+    luas { loadfile('../lvq/src/lvq.lua')('lvq') }
 } {}
 
 test 5 {lua error handling} {
-    list [catch { lvq "gt" assert 0 } e] $e
-} {1 {assertion failed!}}
+    list [catch { luas {assert(nil,'boom!')} } e] $e
+} {1 {[string "assert(nil,'boom!')"]:1: boom!}}
 
 test 6 {string evaluation in lua} {
     luas { return 1+2*3 }
 } 7
 
 test 7 {} skip {
-    lvq "gs" dofile "../lvq/tests/test.lua"
+    luas { dofile '../lvq/tests/test.lua' }
 } {}
 
 test 8 {tcl callback} {
-    lvq "gss" tcl return "a b c"
+    luas { tcl('return','a b c') }
 } "a b c"
 
 test 9 {errors in tcl callback} {
-    list [catch { lvq "gs" tcl set } e] $e
-} {1 {tvq: wrong # args: should be "set varName ?newValue?"}}
+    list [catch { luas tcl('set') } e] $e
+} {1 {[string "tcl('set')"]:1:\
+        tvq: wrong # args: should be "set varName ?newValue?"}}
 
 test 10 {output in tcl callback} -body {
-    lvq "gss" tcl puts "Hello from Lua!"
+    luas { tcl('puts','Hello from Lua!') }
 } -output "Hello from Lua!\n"
 
 test 11 {error in lua} {
-    list [catch { lvq "g" io } e] $e
-} {1 {attempt to call a table value}}
+    list [catch { luas io() } e] $e
+} {1 {[string "io()"]:1: attempt to call global 'io' (a table value)}}
 
 test 12 {fetch entry from vops table} -body {
     lvq "gv" tostring meta

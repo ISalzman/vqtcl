@@ -1,4 +1,4 @@
-#!/usr/local/bin/lua5.1
+#!/usr/bin/env lua
 
 require 'lvq'
 print(lvq._VERSION..' - '..lvq._CONFIG..'\n')

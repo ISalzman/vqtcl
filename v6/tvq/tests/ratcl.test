@@ -7,12 +7,12 @@ test 0 {} {
     package require ratcl
 } $version
 
-puts [lvq "v" dump {A,B[C:I],D:s}]
-puts [lvq "v" dump {view 0 {A,B[C:I],D:s}}]
-puts [lvq "v" dump [lvq "v" meta {A,B[C:I],D:s}]]
-puts [lvq "v" view {meta {A,B[C:I],D:s}}]
-puts [lvq "v" dump {meta {A,B[C:I],D:s}}]
-puts [lvq "v" struct {open ../data/alltypes.db}]
-puts [lvq "v" dump {at {open ../data/simple.db} 0 0}]
+puts [tvq dump {A,B[C:I],D:s}]
+puts [tvq dump {view 0 {A,B[C:I],D:s}}]
+puts [tvq dump [tvq meta {A,B[C:I],D:s}]]
+puts [tvq view {meta {A,B[C:I],D:s}}]
+puts [tvq dump {meta {A,B[C:I],D:s}}]
+puts [tvq struct {open ../data/alltypes.db}]
+puts [tvq dump {at {open ../data/simple.db} 0 0}]
 
 ::tcltest::cleanupTests
