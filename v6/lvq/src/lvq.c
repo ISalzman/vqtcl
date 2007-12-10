@@ -118,6 +118,7 @@ static vq_Item toitem (lua_State *L, int t, vq_Type type) {
         item.o.a.p = lua_touserdata(L, t);
         
         /* use special "_G[1]" global with raw indexing for fast access */
+        /* IDEA: could fetch this once in parseargs to reduce # of calls */
         lua_rawgeti(L, LUA_GLOBALSINDEX, 1);
         item.o.b.p = lua_touserdata(L, -1);
         lua_pop(L, 1);

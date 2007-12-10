@@ -1,7 +1,5 @@
 # common test setup script
 
-#puts "vars: [info vars ?] [info vars ??]"
-
 if {[info exists testsInited]} return
 
 package require Tcl 8.4

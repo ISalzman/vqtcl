@@ -1,4 +1,21 @@
+#!/usr/bin/env tclkit
+
+source [file join [file dir [info script]] initests.tcl]
+
+preserveCore 2
+
+runAllTests
+
+
+if 0 {
+    
+    
+    
+    
+    
 # used by TextMate for F7 on bookie
+
+cd [file dirname [info script]]/../lvq
 
 set mode tvq
 
@@ -14,4 +31,9 @@ switch $mode {
         cd [file dirname [info script]]/../tvq
         exec make test >@stdout 2>@stderr
     }
+}
+
+
+
+
 }
