@@ -116,6 +116,12 @@ static vq_Item toitem (lua_State *L, int t, vq_Type type) {
 
     if (lua_islightuserdata(L, t)) {
         item.o.a.p = lua_touserdata(L, t);
+        
+        /* use special "_G[1]" global with raw indexing for fast access */
+        lua_rawgeti(L, LUA_GLOBALSINDEX, 1);
+        item.o.b.p = lua_touserdata(L, -1);
+        lua_pop(L, 1);
+        
         if (ObjToItem(type, &item))
             return item;
     }
@@ -132,7 +138,7 @@ static vq_Item toitem (lua_State *L, int t, vq_Type type) {
         case VQ_view:   item.o.a.v = checkview(L, t); break;
         case VQ_objref: lua_pushvalue(L, t);
                         item.o.a.i = luaL_ref(L, LUA_REGISTRYINDEX);
-                         /* FIXME: cleanup */
+                         /* FIXME: reference is never released */
                         break;
     }
 

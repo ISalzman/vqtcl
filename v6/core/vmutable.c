@@ -158,7 +158,7 @@ static void MutVecCleaner (Vector v) {
     vq_release(vOrig(v));
     vq_release(vMeta(v));
     vq_release(vPerm(v));
-    /* ObjRelease(vOref(v)); FIXME: cleanup! */
+    /* ObjRelease(vOref(v)); FIXME: need to release object somehow */
     FreeVector(v);
 }
 
@@ -177,7 +177,7 @@ vq_View WrapMutable (vq_View t, Object_p o) {
     vq_View w = IndirectView(meta, &muvtab, vCount(t),
                                 3 * vCount(meta) * sizeof(Vector));
     vOrig(w) = vq_retain(t);
-    vOref(w) = o; /* ObjRetain(o); FIXME: refcounts */
+    vOref(w) = o; /* ObjRetain(o); FIXME: need to hold on to object somehow */
     /* override to use original columns until a set or replace is done */
     for (i = 0; i < cols; ++i) {
         w[i] = t[i];

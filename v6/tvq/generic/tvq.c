@@ -7,8 +7,6 @@
 
 #include "lvq.c"
 
-static Tcl_Interp *context; /* FIXME: get rid of this global! */
-    
 /* stub interface code, removes the need to link with libtclstub*.a */
 #if defined(STATIC_BUILD)
 #define MyInitStubs(x) 1
@@ -358,7 +356,7 @@ Tcl_Obj* ItemAsObj (vq_Type type, vq_Item item) {
                         return Tcl_NewByteArrayObj(item.o.a.p, item.o.b.i);
         case VQ_view:   if (item.o.a.v == 0)
                             break;
-                        return ViewAsList(item.o.a.v);/* FIXME: LuaAsTclObj ! */
+                        return ViewAsList(item.o.a.v);/* FIXME: LuaAsTclObj? */
         case VQ_objref: return item.o.a.p;
     }
     return Tcl_NewObj();
@@ -383,7 +381,7 @@ int ObjToItem (vq_Type type, vq_Item *item) {
         case VQ_bytes:  item->o.a.p = Tcl_GetByteArrayFromObj(item->o.a.p,
                                                                 &item->o.b.i);
                         break;
-        case VQ_view:   item->o.a.v = ObjAsView(context, item->o.a.p);
+        case VQ_view:   item->o.a.v = ObjAsView(item->o.b.p, item->o.a.p);
                         return item->o.a.v != NULL;
         case VQ_objref: assert(0); return 0;
     }
@@ -462,8 +460,6 @@ DLLEXPORT int Tvq_Init (Tcl_Interp *interp) {
     if (!MyInitStubs(interp) || Tcl_PkgRequire(interp, "Tcl", "8.4", 0) == NULL)
         return TCL_ERROR;
 
-    context = interp;
-    
     L = lua_open();
     Tcl_CreateExitHandler((Tcl_ExitProc*) lua_close, L);
     
@@ -478,6 +474,9 @@ DLLEXPORT int Tvq_Init (Tcl_Interp *interp) {
     lua_pushstring(L, "lvq.core");
     lua_call(L, 1, 0);
 
+  	lua_pushlightuserdata(L, interp);
+    lua_rawseti(L, LUA_GLOBALSINDEX, 1);
+    
   	lua_pushlightuserdata(L, interp);
   	lua_pushcclosure(L, LuaCallback, 1);
     lua_setglobal(L, "tcl");

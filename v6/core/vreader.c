@@ -73,7 +73,7 @@ Vector OpenMappedFile (const char *filename) {
 }
 
 static void BytesCleaner (Vector map) {
-    /* ObjRelease(map[2].o.a.p); FIXME: cleanup! */
+    /* ObjRelease(map[2].o.a.p); FIXME: need to release object somehow */
     FreeVector(map);
 }
 
