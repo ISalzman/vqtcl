@@ -1,0 +1,15 @@
+#!/usr/bin/env tclkit
+# %renumber<^\s*test >%
+
+source [file join [file dir [info script]] initests.tcl]
+
+cd lvq
+
+test 0 {lua test} {
+    exec make install
+    exec tests/test.lua | diff -u - [testsDirectory]/lvq.out
+} {}
+
+cd [workingDirectory]
+
+::tcltest::cleanupTests

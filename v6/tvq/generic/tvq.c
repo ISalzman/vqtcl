@@ -1,6 +1,6 @@
 /*  Tcl extension binding.
     $Id$
-    This file is part of Vlerq, see core/vlerq.h for full copyright notice.  */
+    This file is part of Vlerq, see base/vlerq.h for full copyright notice.  */
 
 #define USE_TCL_STUBS 1
 #include <tcl.h>

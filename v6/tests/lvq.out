@@ -1,0 +1,51 @@
+LuaVlerq 1.6 - lvq 1.6.0 lo mu op ra sa
+
+view 0x107030 #0 
+11
+function: 0x107e20
+22
+row 0x107030 55
+33
+3
+44
+  name  type  subv
+  ----  ----  ----
+  name     5    #0
+  type     1    #0
+  subv     7    #0
+55
+  first   age
+  ------  ---
+  joe       8
+  philip   35
+  inez     21
+view 0x109a80 #1 (I)
+  abc  
+  -----
+      1
+     22
+    333
+   4444
+  55555
+view 0x10a500 #1 (IIIIIIILFDSB)
+68
+true
+nil
+  first    age
+  -------  ---
+  joe         
+  shirley   21
+view
+mutable
+  N
+  -
+  0
+  1
+  2
+  3
+  abc
+  ---
+    0
+    1
+    8
+   27

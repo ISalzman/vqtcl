@@ -1,0 +1,27 @@
+#!/usr/bin/env tclkit
+# %renumber<^\s*test >%
+
+source [file join [file dir [info script]] initests.tcl]
+
+cd vqx
+
+test 0 {vqx test} {
+    exec make
+    set out [exec ./try.vq]
+    regsub -all {\m(function:|table:|view) 0x\w+} $out {\1 0x[...]} out
+    exec diff -u - [testsDirectory]/vqx.out << $out
+} {}
+
+test 1 {vqmin test} {
+    exec make vqmin
+    exec ./vqmin | diff -u - [testsDirectory]/vqmin.out
+} {}
+
+test 2 {vqboot test} {
+    exec make vqboot
+    exec ./vqboot ../data/alltypes.db | diff -u - [testsDirectory]/vqboot.out
+} {}
+
+cd [workingDirectory]
+
+::tcltest::cleanupTests

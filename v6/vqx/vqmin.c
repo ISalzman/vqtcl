@@ -1,6 +1,6 @@
 /*  Minimal C-only Vlerq executable.
     $Id$
-    This file is part of Vlerq, see core/vlerq.h for full copyright notice.  */
+    This file is part of Vlerq, see base/vlerq.h for full copyright notice.  */
 
 /* disable all optional code */
 

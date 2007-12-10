@@ -4,11 +4,11 @@ CONFIG = ./config
 
 include $(CONFIG)
 
-C = ../core
-DEPS = src/$T.c src/vq_conf.h $C/vlerq.c $C/vlerq.h $C/v_defs.h $C/vload.c \
-	$C/vmutable.c $C/vbuffer.c $C/vsave.c $C/vranges.c $C/vreader.c \
-	$C/vopdef.c $C/vload.h $C/vmutable.h $C/vopdef.h $C/vranges.h \
-	$C/vsave.h $C/vreader.h $C/vbuffer.h
+B = ../base
+DEPS = src/$T.c src/vq_conf.h $B/vlerq.c $B/vlerq.h $B/v_defs.h $B/vload.c \
+	$B/vmutable.c $B/vbuffer.c $B/vsave.c $B/vranges.c $B/vreader.c \
+	$B/vopdef.c $B/vload.h $B/vmutable.h $B/vopdef.h $B/vranges.h \
+	$B/vsave.h $B/vreader.h $B/vbuffer.h
 	
 OBJS = src/$T.o
 LUAS = src/$T.lua

@@ -1,6 +1,6 @@
 /*  Compile-time configuration.
     $Id$
-    This file is part of Vlerq, see core/vlerq.h for full copyright notice.  */
+    This file is part of Vlerq, see base/vlerq.h for full copyright notice.  */
 
 /* The choice of headers below determines which parts get included: */
 

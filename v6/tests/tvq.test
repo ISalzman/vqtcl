@@ -1,0 +1,19 @@
+#!/usr/bin/env tclkit
+# %renumber<^\s*test >%
+
+source [file join [file dir [info script]] initests.tcl]
+
+cd tvq
+
+test 0 {tcl test} {
+    exec make
+    set out [exec make test]
+    regsub -line {^Tests began at .*$} $out {Tests began at [...]} out
+    regsub -line {^Tests ended at .*$} $out {Tests ended at [...]} out
+    regsub -all {\mluaobj 0x\w+ \d+} $out {luaobj 0x[...]} out
+    exec diff -u - [testsDirectory]/tvq.out << $out
+} {}
+
+cd [workingDirectory]
+
+::tcltest::cleanupTests

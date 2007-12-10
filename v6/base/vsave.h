@@ -1,6 +1,6 @@
 /*  Save Metakit-format views to memory or file.
     $Id$
-    This file is part of Vlerq, see core/vlerq.h for full copyright notice.  */
+    This file is part of Vlerq, see base/vlerq.h for full copyright notice.  */
 
 #ifndef VQ_SAVE_H
 #define VQ_SAVE_H 1
