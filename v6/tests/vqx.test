@@ -9,17 +9,17 @@ test 0 {vqx test} {
     exec make
     set out [exec ./try.vq]
     regsub -all {\m(function:|table:|view) 0x\w+} $out {\1 0x[...]} out
-    exec diff -u - [testsDirectory]/vqx.out << $out
+    exec diff -u - [testsDirectory]/vqx.ref << $out
 } {}
 
 test 1 {vqmin test} {
     exec make vqmin
-    exec ./vqmin | diff -u - [testsDirectory]/vqmin.out
+    exec ./vqmin | diff -u - [testsDirectory]/vqmin.ref
 } {}
 
 test 2 {vqboot test} {
     exec make vqboot
-    exec ./vqboot ../data/alltypes.db | diff -u - [testsDirectory]/vqboot.out
+    exec ./vqboot ../data/alltypes.db | diff -u - [testsDirectory]/vqboot.ref
 } {}
 
 cd [workingDirectory]

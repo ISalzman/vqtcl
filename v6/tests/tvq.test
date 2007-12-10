@@ -11,7 +11,7 @@ test 0 {tcl test} {
     regsub -line {^Tests began at .*$} $out {Tests began at [...]} out
     regsub -line {^Tests ended at .*$} $out {Tests ended at [...]} out
     regsub -all {\mluaobj 0x\w+ \d+} $out {luaobj 0x[...]} out
-    exec diff -u - [testsDirectory]/tvq.out << $out
+    exec diff -u - [testsDirectory]/tvq.ref << $out
 } {}
 
 cd [workingDirectory]

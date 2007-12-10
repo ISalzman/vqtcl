@@ -1,0 +1,15 @@
+Vlerq 1.6
+
+Directory contents:
+	README  - this file
+	base/   - core engine C code
+	data/   - sample datafiles
+	lua/    - Lua sources from lua.org
+	lvq/    - Vlerq as Lua extension, includes core
+	tests/	- top-level tests
+	tvq/    - Vlerq as Tcl extension, includes lvq and lua
+	vqx/ 	- Vlerq as standalone executable, includes lvq and lua
+
+All code in this project is MIT-licensed Open Source Software:
+	Lua:	Copyright (C) 1994-2007 Lua.org, PUC-Rio.
+	Vlerq:	Copyright (C) 1996-2007 Jean-Claude Wippler.

@@ -7,7 +7,7 @@ cd lvq
 
 test 0 {lua test} {
     exec make install
-    exec tests/test.lua | diff -u - [testsDirectory]/lvq.out
+    exec tests/test.lua | diff -u - [testsDirectory]/lvq.ref
 } {}
 
 cd [workingDirectory]
