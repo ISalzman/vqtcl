@@ -541,15 +541,12 @@ LUA_API int luaopen_lvq_core (lua_State *L) {
 
     luaL_register(L, "lvq", lvqlib_f);
     
-    lua_pushliteral(L, "_CONFIG");
     lua_pushstring(L, sconf);
-    lua_settable(L, -3);
-    lua_pushliteral(L, "_COPYRIGHT");
+    lua_setfield(L, -2, "_CONFIG");
     lua_pushliteral(L, VQ_COPYRIGHT);
-    lua_settable(L, -3);
-    lua_pushliteral(L, "_VERSION");
+    lua_setfield(L, -2, "_COPYRIGHT");
     lua_pushliteral(L, "LuaVlerq " VQ_VERSION);
-    lua_settable(L, -3);
+    lua_setfield(L, -2, "_VERSION");
     
     return 1;
 }

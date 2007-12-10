@@ -408,6 +408,11 @@ static int LuaCallback (lua_State *L) {
     return 0;
 }
 
+/*  The "tvq" command is the central interface from Tcl into Lua.  It looks up
+    its first argument in a global "vops" table and calls that with remaining
+    arguments passed on as light userdata pointers.  It is up to the callee
+    to then cast each of its arguments to proper Lua values or references.  */
+    
 static int TvqCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
     lua_State *L = data;
     int i, v;
@@ -465,9 +470,9 @@ DLLEXPORT int Tvq_Init (Tcl_Interp *interp) {
     luaL_openlibs(L);
 
     luaL_newmetatable(L, "Vlerq.tcl");
-    lua_pushstring(L, "__gc");
     lua_pushcfunction(L, tclobj_gc);
-    lua_settable(L, -3);
+    lua_setfield(L, -2, "__gc");
+    lua_pop(L, 1);
 
     lua_pushcfunction(L, luaopen_lvq_core);
     lua_pushstring(L, "lvq.core");
