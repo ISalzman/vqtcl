@@ -31,7 +31,6 @@
 /* forward */
 static Tcl_ObjType f_tvqObjType;
 static vq_View ObjAsView (Tcl_Interp *interp, Tcl_Obj *obj);
-static Tcl_Obj* ViewAsList (vq_View view);
 
 static void FreeLuaIntRep (Tcl_Obj *obj) {
     lua_State *L = obj->_ptr1;
@@ -307,12 +306,23 @@ static Tcl_Obj* ChangesAsList (vq_View table) {
     return result;
 }
 
+static Tcl_Obj* MetaAsObj (vq_View meta) {
+    Tcl_Obj* obj;
+    Buffer buffer;
+    InitBuffer(&buffer);
+    MetaAsDesc(meta, &buffer);
+    ADD_CHAR_TO_BUF(buffer, 0);
+    obj = Tcl_NewStringObj(BufferAsPtr(&buffer, 1), BufferFill(&buffer));
+    ReleaseBuffer(&buffer, 0);
+    return obj;
+}
+
 static Tcl_Obj* DataAsList (vq_View view) {
     vq_View meta = vq_meta(view);
     int c, rows = vCount(view), cols = vCount(meta);
     Tcl_Obj *result = Tcl_NewListObj(0, NULL);
     TclAppend(result, Tcl_NewStringObj("data", 4));
-    TclAppend(result, ViewAsList(meta));
+    TclAppend(result, MetaAsObj(meta));
     TclAppend(result, Tcl_NewIntObj(rows));
     if (rows > 0)
         for (c = 0; c < cols; ++c) {
@@ -332,13 +342,8 @@ static Tcl_Obj* ViewAsList (vq_View view) {
     if (IsMutable(view))
         return ChangesAsList(view);
     
-    if (meta == vq_meta(meta)) {
-        /* FIXME: return a description string i.s.o. mdef */
-        Tcl_Obj *result = Tcl_NewListObj(0, NULL);
-        TclAppend(result, Tcl_NewStringObj("mdef", 4));
-        TclAppend(result, MetaViewAsList(view));
-        return result;
-    }
+    if (meta == vq_meta(meta))
+        return MetaAsObj(meta);
     
     if (vCount(meta) == 0)
         return Tcl_NewIntObj(vCount(view));
@@ -369,7 +374,7 @@ Tcl_Obj* ItemAsObj (vq_Type type, vq_Item item) {
     return Tcl_NewObj();
 }
 
-static Tcl_Interp* TclInterpreter (lua_State *L) {  
+static Tcl_Interp* TclInterpreter (lua_State *L) {
     Tcl_Interp *interp;  
     
     /* use the special reference with fixed index #1 for fast access

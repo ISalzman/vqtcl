@@ -12,6 +12,7 @@ typedef void *(*SaveDataFun)(void*,const void*,intptr_t);
 
 intptr_t (ViewSave) (vq_View t, void *aux, SaveInitFun fi, SaveDataFun fd);
 
+void (MetaAsDesc) (vq_View meta, Buffer *buffer);
 vq_Type (Meta2DescCmd_V) (vq_Item a[]);
 vq_Type (EmitCmd_V) (vq_Item a[]);
 

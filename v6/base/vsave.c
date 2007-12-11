@@ -21,7 +21,7 @@ static void EmitView (EmitInfo *eip, vq_View t, int describe); /* forward */
     
 #pragma mark - META DESCRIPTIONS -
 
-static void MetaAsDesc (vq_View meta, Buffer *buffer) {
+void MetaAsDesc (vq_View meta, Buffer *buffer) {
     int type, r, rows = vCount(meta);
     const char *name;
     char buf [30];

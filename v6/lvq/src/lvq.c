@@ -141,9 +141,8 @@ static vq_Item toitem (lua_State *L, int t, vq_Type type) {
 
 static void parseargs(lua_State *L, vq_Item *buf, const char *desc) {
     int i;
-    for (i = 0; desc[i]; ++i) {
-        vq_Type type;
-        char c = desc[i];
+    for (i = 0; *desc; ++i) {
+        char c = *desc++;
         if ('a' <= c && c <= 'z') {
             if (lua_isnoneornil(L, i+1)) {
                 buf[i].o.a.p = buf[i].o.b.p = 0;
@@ -152,12 +151,10 @@ static void parseargs(lua_State *L, vq_Item *buf, const char *desc) {
             c += 'A'-'a';
         }
         switch (c) {
-            case 0:     return;
             case 'R':   buf[i] = *checkrow(L, i+1); continue;
             case '-':   continue;
-            default:    type = CharAsType(c); break;
         }
-        buf[i] = toitem(L, i+1, type);
+        buf[i] = toitem(L, i+1, CharAsType(c));
     }
 }
 
