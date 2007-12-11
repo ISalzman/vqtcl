@@ -7,10 +7,10 @@ cd tvq
 
 test 0 {tcl test} {
     exec make
-    set out [exec make test]
+    set out [exec make test]\n
     regsub -line {^Tests began at .*$} $out {Tests began at [...]} out
     regsub -line {^Tests ended at .*$} $out {Tests ended at [...]} out
-    regsub -all {\mluaobj 0x\w+ \d+} $out {luaobj 0x[...]} out
+    regsub -all {\mtvqobj 0x\w+ \d+} $out {tvqobj 0x[...]} out
     exec diff -u - [testsDirectory]/tvq.ref << $out
 } {}
 

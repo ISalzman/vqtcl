@@ -7,7 +7,7 @@ cd vqx
 
 test 0 {vqx test} {
     exec make
-    set out [exec ./try.vq]
+    set out [exec ./try.vq]\n
     regsub -all {\m(function:|table:|view) 0x\w+} $out {\1 0x[...]} out
     exec diff -u - [testsDirectory]/vqx.ref << $out
 } {}

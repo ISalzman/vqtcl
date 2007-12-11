@@ -14,7 +14,7 @@
 #include "stubs.h"
 #endif
 
-/*  Define a custom "luaobj" type for Tcl objects, containing a reference to a
+/*  Define a custom "tvqobj" type for Tcl objects, containing a reference to a
     Lua object.  The "L" state pointer is stored as twoPtrValue.ptr1, the int
     reference is stored as twoPtrValue.ptr2 (via a cast).  Calls Lua's unref
     when the Tcl_Obj is deleted.  The lifetime of the referenced Lua object is
@@ -37,7 +37,7 @@ static void DupLuaIntRep (Tcl_Obj *src, Tcl_Obj *obj) {
 
 static void UpdateLuaStrRep (Tcl_Obj *obj) {
     char buf[50];
-    int n = sprintf(buf, "luaobj %p %d",
+    int n = sprintf(buf, "tvqobj %p %d",
                                     obj->internalRep.twoPtrValue.ptr1,
                                     (int) obj->internalRep.twoPtrValue.ptr2);
     obj->bytes = strcpy(malloc(n+1), buf);
@@ -45,12 +45,12 @@ static void UpdateLuaStrRep (Tcl_Obj *obj) {
 }
 
 static int SetLuaFromAnyRep (Tcl_Interp *interp, Tcl_Obj *obj) {
-    puts("SetLuaFromAnyRep called"); /* conversion to a luaobj is impossible */
+    puts("SetLuaFromAnyRep called"); /* conversion to a tvqobj is impossible */
     return TCL_ERROR;
 }
 
 Tcl_ObjType f_luaObjType = {
-    "luaobj", FreeLuaIntRep, DupLuaIntRep, UpdateLuaStrRep, SetLuaFromAnyRep
+    "tvqobj", FreeLuaIntRep, DupLuaIntRep, UpdateLuaStrRep, SetLuaFromAnyRep
 };
 
 static Tcl_Obj* LuaAsTclObj (lua_State *L, int t) {
@@ -388,9 +388,8 @@ int ObjToItem (vq_Type type, vq_Item *item) {
     return 1;
 }
 
-/*  Callbacks from Lua into Tcl are implemented via the 'c' type in LvqCmd.
-    The argument is treated as a list, to which any further arguments from
-    Lua are appended.  That list is then eval'ed as a command in Tcl.  */
+/*  Callbacks from Lua into Tcl are implemented via the 'tcl' global in lua.
+    The arguments are combined and then eval'ed as a command in Tcl.  */
 
 static int LuaCallback (lua_State *L) {
     Tcl_Obj *list = Tcl_NewListObj(0, 0);

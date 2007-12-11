@@ -7,12 +7,56 @@ test 0 {} {
     package require ratcl
 } $version
 
-puts [tvq dump {A,B[C:I],D:s}]
-puts [tvq dump {view 0 {A,B[C:I],D:s}}]
-puts [tvq dump [tvq meta {A,B[C:I],D:s}]]
-puts [tvq view {meta {A,B[C:I],D:s}}]
-puts [tvq dump {meta {A,B[C:I],D:s}}]
-puts [tvq struct {open ../data/alltypes.db}]
-puts [tvq dump {at {open ../data/simple.db} 0 0}]
+test 1 {} {
+    tvq dump {A,B[C:I],D:s}
+} { \
+  name  type  subv
+  ----  ----  ----
+  A        5    #0
+  B        7    #1
+  D       21    #0}
+
+test 2 {} {
+    tvq dump {view 0 {A,B[C:I],D:s}}
+} { \
+  A  B  D
+  -  -  -}
+
+test 3 {} {
+    tvq dump [tvq meta {A,B[C:I],D:s}]
+} { \
+  name  type  subv
+  ----  ----  ----
+  name     5    #0
+  type     1    #0
+  subv     7    #0}
+
+test 4 {} -body {
+    tvq view {meta {A,B[C:I],D:s}}
+} -match glob -result {tvqobj 0x* 1}
+
+test 5 {} {
+    tvq dump {meta {A,B[C:I],D:s}}
+} { \
+  name  type  subv
+  ----  ----  ----
+  name     5    #0
+  type     1    #0
+  subv     7    #0}
+
+test 6 {} {
+    tvq struct {open ../data/alltypes.db}
+} (IIIIIIILFDSB)
+
+test 7 {} {
+    tvq dump {at {open ../data/simple.db} 0 0}
+} { \
+  abc  
+  -----
+      1
+     22
+    333
+   4444
+  55555}
 
 ::tcltest::cleanupTests
