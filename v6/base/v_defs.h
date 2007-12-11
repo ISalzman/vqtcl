@@ -26,7 +26,7 @@
 #endif
 
 #if !defined(_TCL)
-#define ObjToItem(t,i) 0
+#define ObjToItem(l,t,i) 0
 #endif
 
 #define VQ_UNUSED(x)    ((void)(x))	/* to avoid warnings */
@@ -82,9 +82,8 @@ Object_p (ObjRetain) (Object_p obj);
 void (ObjRelease) (Object_p obj);
 
 void (UpdateVar) (Object_p ref, Object_p val);
-vq_View (ObjAsMetaView) (void *ip, Object_p obj);
-int (ObjToItem) (vq_Type type, vq_Item *item);
-Object_p (ChangesAsList) (vq_View view);
+vq_View (ListAsMetaView) (void *ip, Object_p obj);
+int (ObjToItem) (void *L, vq_Type type, vq_Item *item);
 Object_p (MutableObject) (Object_p obj);
 Object_p (ItemAsObj) (vq_Type type, vq_Item item);
 

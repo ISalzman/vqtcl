@@ -3,11 +3,11 @@
 
 source [file join [file dir [info script]] initests.tcl]
 
-test 0 {} {
+test 0 {load ratcl package} {
     package require ratcl
 } $version
 
-test 1 {} {
+test 1 {display a meta-view} {
     tvq dump {A,B[C:I],D:s}
 } { \
   name  type  subv
@@ -16,13 +16,21 @@ test 1 {} {
   B        7    #1
   D       21    #0}
 
-test 2 {} {
+test 2 {create and display an empty view} {
     tvq dump {view 0 {A,B[C:I],D:s}}
 } { \
   A  B  D
   -  -  -}
 
-test 3 {} {
+test 3 {create and display a view with no data} {
+    tvq dump {view 2 {A,B[C:I],D:s}}
+} { \
+  A  B   D
+  -  --  -
+     #0   
+     #0   }
+
+test 4 {} {
     tvq dump [tvq meta {A,B[C:I],D:s}]
 } { \
   name  type  subv
@@ -31,11 +39,11 @@ test 3 {} {
   type     1    #0
   subv     7    #0}
 
-test 4 {} -body {
+test 5 {} -body {
     tvq view {meta {A,B[C:I],D:s}}
-} -match glob -result {tvqobj 0x* 1}
+} -match glob -result {tvqobj 0x*}
 
-test 5 {} {
+test 6 {} {
     tvq dump {meta {A,B[C:I],D:s}}
 } { \
   name  type  subv
@@ -44,11 +52,11 @@ test 5 {} {
   type     1    #0
   subv     7    #0}
 
-test 6 {} {
+test 7 {} {
     tvq struct {open ../data/alltypes.db}
 } (IIIIIIILFDSB)
 
-test 7 {} {
+test 8 {} {
     tvq dump {at {open ../data/simple.db} 0 0}
 } { \
   abc  

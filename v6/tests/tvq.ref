@@ -12,7 +12,7 @@ ratcl.test
 tvq.test
 
 Tests ended at [...]
-all.tcl:	Total	21	Passed	19	Skipped	2	Failed	0
+all.tcl:	Total	?	Passed	?	Skipped	?	Failed	0
 Sourced 2 Test Files.
 Number of tests skipped for each constraint:
 	2	skip

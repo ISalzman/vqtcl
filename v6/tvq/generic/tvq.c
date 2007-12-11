@@ -5,6 +5,11 @@
 #define USE_TCL_STUBS 1
 #include <tcl.h>
 
+/* shorthand */
+#define _ptr1   internalRep.twoPtrValue.ptr1
+#define _ptr2   internalRep.twoPtrValue.ptr2
+#define TclAppend(list,elem)    Tcl_ListObjAppendElement(NULL,list,elem)
+
 #include "lvq.c"
 
 /* stub interface code, removes the need to link with libtclstub*.a */
@@ -22,12 +27,15 @@
     
     There is a string representation which is only for debugging - once the
     internal rep shimmers away, there is no way to get back the Lua object.  */
-    
-extern Tcl_ObjType f_luaObjType; /* forward */
+
+/* forward */
+static Tcl_ObjType f_tvqObjType;
+static vq_View ObjAsView (Tcl_Interp *interp, Tcl_Obj *obj);
+static Tcl_Obj* ViewAsList (vq_View view);
 
 static void FreeLuaIntRep (Tcl_Obj *obj) {
-    lua_State *L = obj->internalRep.twoPtrValue.ptr1;
-    int ref = (int) obj->internalRep.twoPtrValue.ptr2;
+    lua_State *L = obj->_ptr1;
+    int ref = (int) obj->_ptr2;
     luaL_unref(L, LUA_REGISTRYINDEX, ref);
 }
 
@@ -37,9 +45,7 @@ static void DupLuaIntRep (Tcl_Obj *src, Tcl_Obj *obj) {
 
 static void UpdateLuaStrRep (Tcl_Obj *obj) {
     char buf[50];
-    int n = sprintf(buf, "tvqobj %p %d",
-                                    obj->internalRep.twoPtrValue.ptr1,
-                                    (int) obj->internalRep.twoPtrValue.ptr2);
+    int n = sprintf(buf, "tvqobj %p %d", obj->_ptr1, (int) obj->_ptr2);
     obj->bytes = strcpy(malloc(n+1), buf);
     obj->length = n;
 }
@@ -49,7 +55,7 @@ static int SetLuaFromAnyRep (Tcl_Interp *interp, Tcl_Obj *obj) {
     return TCL_ERROR;
 }
 
-Tcl_ObjType f_luaObjType = {
+static Tcl_ObjType f_tvqObjType = {
     "tvqobj", FreeLuaIntRep, DupLuaIntRep, UpdateLuaStrRep, SetLuaFromAnyRep
 };
 
@@ -72,11 +78,10 @@ static Tcl_Obj* LuaAsTclObj (lua_State *L, int t) {
         default: {
             Tcl_Obj *obj = Tcl_NewObj();
             Tcl_InvalidateStringRep(obj);
-            obj->internalRep.twoPtrValue.ptr1 = L;
+            obj->_ptr1 = L;
             lua_pushvalue(L, t);
-            obj->internalRep.twoPtrValue.ptr2 = 
-                                        (void*) luaL_ref(L, LUA_REGISTRYINDEX);
-            obj->typePtr = &f_luaObjType;
+            obj->_ptr2 = (void*) luaL_ref(L, LUA_REGISTRYINDEX);
+            obj->typePtr = &f_tvqObjType;
             return obj;
         }
     }
@@ -85,21 +90,21 @@ static Tcl_Obj* LuaAsTclObj (lua_State *L, int t) {
 /*  Define various Tcl conversions from/to Vlerq objects.  All calls below
     named ...As... return the result, while calls ...To... store it in arg.  */
 
-vq_View ObjAsMetaView (void *ip, Tcl_Obj *obj) {
+vq_View ListAsMetaView (void *interp, Tcl_Obj *obj) {
     int r, rows, objc;
     Tcl_Obj **objv, *entry;
     const char *name, *sep;
     vq_Type type;
     vq_View table;
 
-    if (Tcl_ListObjLength(ip, obj, &rows) != TCL_OK)
+    if (Tcl_ListObjLength(interp, obj, &rows) != TCL_OK)
         return 0;
 
     table = vq_new(rows, vMeta(EmptyMetaView()));
 
     for (r = 0; r < rows; ++r) {
-        Tcl_ListObjIndex(0, obj, r, &entry);
-        if (Tcl_ListObjGetElements(ip, entry, &objc, &objv) != TCL_OK ||
+        Tcl_ListObjIndex(NULL, obj, r, &entry);
+        if (Tcl_ListObjGetElements(interp, entry, &objc, &objv) != TCL_OK ||
                 objc < 1 || objc > 2)
             return 0;
 
@@ -121,7 +126,7 @@ vq_View ObjAsMetaView (void *ip, Tcl_Obj *obj) {
         Vq_setInt(table, r, 1, type);
 
         if (objc > 1) {
-            vq_View t = ObjAsMetaView(ip, objv[1]);
+            vq_View t = ListAsMetaView(interp, objv[1]);
             if (t == 0)
                 return 0;
             Vq_setView(table, r, 2, t);
@@ -132,19 +137,63 @@ vq_View ObjAsMetaView (void *ip, Tcl_Obj *obj) {
     return table;
 }
 
-static int AdjustCmdDef (Tcl_Obj *cmd) {
-    Tcl_Obj *obj = Tcl_NewStringObj("tvq", 3);
-    return Tcl_ListObjReplace(NULL, cmd, 0, 0, 1, &obj);
+static void AdjustCmdDef (Tcl_Interp *interp, Tcl_Obj *cmd) {
+    Tcl_Obj *origname, *newname;
+    Tcl_CmdInfo cmdinfo;
+    Tcl_Obj *buf[2];
+
+    /* Use "::vops::blah ..." if it exists, else use "::tvq blah ...". */
+    /* TODO: could perhaps be optimized with 8.5 ensembles */
+     
+    Tcl_ListObjIndex(NULL, cmd, 0, &origname);
+
+    /* insert "::vops::" before the first list element */
+    newname = Tcl_NewStringObj("::vops::", -1);
+    Tcl_AppendObjToObj(newname, origname);
+    
+    if (Tcl_GetCommandInfo(interp, Tcl_GetString(newname), &cmdinfo))
+        Tcl_ListObjReplace(NULL, cmd, 0, 1, 1, &newname);
+    else {
+        Tcl_DecrRefCount(newname);
+        buf[0] = Tcl_NewStringObj("::tvq", -1);
+        buf[1] = origname;
+        Tcl_ListObjReplace(NULL, cmd, 0, 1, 2, buf);
+    }
+}
+
+static vq_View ComputeView (Tcl_Interp *interp, Tcl_Obj *cmd, int objc, Tcl_Obj **objv) {
+    int ac;
+    Tcl_Obj **av;
+    vq_View view = NULL;
+    Tcl_SavedResult state;
+
+    Tcl_SaveResult(interp, &state);
+    Tcl_IncrRefCount(cmd);
+
+    AdjustCmdDef(interp, cmd);
+    Tcl_ListObjGetElements(NULL, cmd, &ac, &av);
+    /* don't use Tcl_EvalObjEx, it forces a string conversion */
+    if (Tcl_EvalObjv(interp, ac, av, TCL_EVAL_GLOBAL) == TCL_OK) {
+        /* result to view, may call EvalIndirectView recursively */
+        view = ObjAsView(interp, Tcl_GetObjResult(interp));
+    }
+
+    Tcl_DecrRefCount(cmd);
+    if (view == NULL)
+        Tcl_DiscardResult(&state);
+    else
+        Tcl_RestoreResult(interp, &state);
+    return view;
 }
 
 static vq_View ObjAsView (Tcl_Interp *interp, Tcl_Obj *obj) {
-    int e = TCL_ERROR, objc, rows;
+    int objc, rows = 0;
     Tcl_Obj **objv;
-    vq_View view;
     
-    if (obj->typePtr == &f_luaObjType) {
-        lua_State *L = obj->internalRep.twoPtrValue.ptr1;
-        int ref = (int) obj->internalRep.twoPtrValue.ptr2;
+    if (obj->typePtr == &f_tvqObjType) {
+        vq_View view;
+        lua_State *L = obj->_ptr1;
+        int ref = (int) obj->_ptr2;
         lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
         view = checkview(L, lua_gettop(L));
         lua_pop(L, 1);
@@ -154,65 +203,17 @@ static vq_View ObjAsView (Tcl_Interp *interp, Tcl_Obj *obj) {
     if (Tcl_ListObjGetElements(interp, obj, &objc, &objv) != TCL_OK)
         return NULL;
 
-    switch (objc) {
+    if (objc == 0 || Tcl_GetIntFromObj(NULL, objv[0], &rows) == TCL_OK)
+        return vq_new(rows, NULL);
+    
+    if (objc == 1)
+        return DescToMeta(Tcl_GetString(objv[0]), -1);
 
-        case 0:
-            return vq_new(0, NULL);
-
-        case 1:
-            if (Tcl_GetIntFromObj(interp, objv[0], &rows) == TCL_OK &&
-                                                                rows >= 0) {
-                return vq_new(rows, NULL);
-            } else {
-                const char *desc = Tcl_GetString(objv[0]);
-                return DescToMeta(desc, -1);
-            }
-            
-            break;
-
-        default: {
-            Tcl_Obj *cmd;
-            Tcl_SavedResult state;
-
-            assert(interp != NULL);
-            Tcl_SaveResult(interp, &state);
-
-            cmd = Tcl_DuplicateObj(obj);
-            Tcl_IncrRefCount(cmd);
-            view = NULL;
-
-            /* def -> cmd namespace name conv can prob be avoided in Tcl 8.5 */
-            if (AdjustCmdDef(cmd) == TCL_OK) {
-                int ac;
-                Tcl_Obj **av;
-                Tcl_ListObjGetElements(NULL, cmd, &ac, &av);
-                /* don't use Tcl_EvalObjEx, it forces a string conversion */
-                if (Tcl_EvalObjv(interp, ac, av, TCL_EVAL_GLOBAL) == TCL_OK) {
-                    /* result to view, may call EvalIndirectView recursively */
-                    view = ObjAsView(interp, Tcl_GetObjResult(interp));
-                }
-            }
-
-            Tcl_DecrRefCount(cmd);
-
-            if (view == NULL) {
-                Tcl_DiscardResult(&state);
-                goto FAIL;
-            }
-
-            Tcl_RestoreResult(interp, &state);
-            return view;
-        }
-    }
-
-    e = TCL_OK;
-
-FAIL:
-    return NULL;
+    return ComputeView(interp, Tcl_DuplicateObj(obj), objc, objv);
 }
 
 static Tcl_Obj* MetaViewAsList (vq_View meta) {
-    Tcl_Obj *result = Tcl_NewListObj(0, 0);
+    Tcl_Obj *result = Tcl_NewListObj(0, NULL);
     if (meta != 0) {
         vq_Type type;
         int rowNum;
@@ -231,8 +232,7 @@ static Tcl_Obj* MetaViewAsList (vq_View meta) {
                     assert(subt != 0);
                     if (vCount(subt) > 0) {
                         fieldobj = Tcl_NewListObj(1, &fieldobj);
-                        Tcl_ListObjAppendElement(0, fieldobj,
-                                                        MetaViewAsList(subt));
+                        TclAppend(fieldobj, MetaViewAsList(subt));
                         break;
                     }
                 default:
@@ -240,7 +240,7 @@ static Tcl_Obj* MetaViewAsList (vq_View meta) {
                     Tcl_AppendToObj(fieldobj, TypeAsString(type, buf), 1);
                     break;
             }
-            Tcl_ListObjAppendElement(0, result, fieldobj);
+            TclAppend(result, fieldobj);
         }
     }
     return result;
@@ -248,7 +248,7 @@ static Tcl_Obj* MetaViewAsList (vq_View meta) {
 
 static Tcl_Obj* ColumnAsList (vq_Item colref, int rows, int mode) {
     int i;
-    Tcl_Obj *list = Tcl_NewListObj(0, 0);
+    Tcl_Obj *list = Tcl_NewListObj(0, NULL);
 #if VQ_RANGES_H
     if (mode == 0) {
         Vector ranges = 0;
@@ -266,9 +266,9 @@ static Tcl_Obj* ColumnAsList (vq_Item colref, int rows, int mode) {
         vq_Item item = colref;
         vq_Type type = GetItem(i, &item);
         if (mode < 0 || (mode > 0 && type != VQ_nil))
-            Tcl_ListObjAppendElement(0, list, ItemAsObj(type, item));
+            TclAppend(list, ItemAsObj(type, item));
         else if (mode == 0 && type == VQ_nil)
-            Tcl_ListObjAppendElement(0, list, Tcl_NewIntObj(i));
+            TclAppend(list, Tcl_NewIntObj(i));
     }
 #if VQ_RANGES_H
     if (mode == -2)
@@ -285,60 +285,65 @@ static Tcl_Obj* VectorAsList (Vector v) {
     return ColumnAsList (item, vCount(v), -1);
 }
 
-Tcl_Obj* ChangesAsList (vq_View table) {
+static Tcl_Obj* ChangesAsList (vq_View table) {
     int c, rows = vCount(table), cols = vCount(vq_meta(table));
-    Tcl_Obj *result = Tcl_NewListObj(0, 0);
+    Tcl_Obj *result = Tcl_NewListObj(0, NULL);
     if (IsMutable(table)) {
-        Tcl_ListObjAppendElement(0, result, Tcl_NewStringObj("mutable", 7));
-        Tcl_ListObjAppendElement(0, result, vOref(table));
-        Tcl_ListObjAppendElement(0, result, VectorAsList(vDelv(table)));
-        Tcl_ListObjAppendElement(0, result, VectorAsList(vPerm(table)));
-        Tcl_ListObjAppendElement(0, result, VectorAsList(vInsv(table)));
+        TclAppend(result, Tcl_NewStringObj("mutable", 7));
+        TclAppend(result, vOref(table));
+        TclAppend(result, VectorAsList(vDelv(table)));
+        TclAppend(result, VectorAsList(vPerm(table)));
+        TclAppend(result, VectorAsList(vInsv(table)));
         if (rows > 0)
             for (c = 0; c < cols; ++c) {
                 Vector *vecp = (Vector*) vData(table) + 3 * c;
-                Tcl_ListObjAppendElement(0, result, VectorAsList(vecp[0]));
+                TclAppend(result, VectorAsList(vecp[0]));
                 if (vecp[0] != 0 && vCount(vecp[0]) > 0) {
-                    Tcl_ListObjAppendElement(0, result, VectorAsList(vecp[1]));
-                    Tcl_ListObjAppendElement(0, result, VectorAsList(vecp[2]));
+                    TclAppend(result, VectorAsList(vecp[1]));
+                    TclAppend(result, VectorAsList(vecp[2]));
                 }
             }
     }
     return result;
 }
 
-static Tcl_Obj* ViewAsList (vq_View table) {
-    vq_View meta = vq_meta(table);
-    int c, rows = vCount(table), cols = vCount(meta);
-    Tcl_Obj *result = Tcl_NewListObj(0, 0);
-
-    if (IsMutable(table)) {
-        Tcl_DecrRefCount(result);
-        result = ChangesAsList(table);
-    } else if (meta == vq_meta(meta)) {
-        if (rows > 0) {
-            Tcl_ListObjAppendElement(0, result, Tcl_NewStringObj("mdef", 4));
-            Tcl_ListObjAppendElement(0, result, MetaViewAsList(table));
+static Tcl_Obj* DataAsList (vq_View view) {
+    vq_View meta = vq_meta(view);
+    int c, rows = vCount(view), cols = vCount(meta);
+    Tcl_Obj *result = Tcl_NewListObj(0, NULL);
+    TclAppend(result, Tcl_NewStringObj("data", 4));
+    TclAppend(result, ViewAsList(meta));
+    TclAppend(result, Tcl_NewIntObj(rows));
+    if (rows > 0)
+        for (c = 0; c < cols; ++c) {
+            int length;
+            Tcl_Obj *list = ColumnAsList(view[c], rows, 1);
+            TclAppend(result, list);
+            Tcl_ListObjLength(NULL, list, &length);
+            if (length != 0 && length != rows)
+                TclAppend(result, ColumnAsList(view[c], rows, 0));
         }
-    } else if (cols == 0) {
-        Tcl_ListObjAppendElement(0, result, Tcl_NewIntObj(rows));
-    } else {
-        Tcl_ListObjAppendElement(0, result, Tcl_NewStringObj("data", 4));
-        Tcl_ListObjAppendElement(0, result, ViewAsList(meta));
-        Tcl_ListObjAppendElement(0, result, Tcl_NewIntObj(rows));
-        if (rows > 0)
-            for (c = 0; c < cols; ++c) {
-                int length;
-                Tcl_Obj *list = ColumnAsList(table[c], rows, 1);
-                Tcl_ListObjAppendElement(0, result, list);
-                Tcl_ListObjLength(0, list, &length);
-                if (length != 0 && length != rows) {
-                    list = ColumnAsList(table[c], rows, 0);
-                    Tcl_ListObjAppendElement(0, result, list);
-                }
-            }
-    }
     return result;
+}
+
+static Tcl_Obj* ViewAsList (vq_View view) {
+    vq_View meta = vq_meta(view);
+    
+    if (IsMutable(view))
+        return ChangesAsList(view);
+    
+    if (meta == vq_meta(meta)) {
+        /* FIXME: return a description string i.s.o. mdef */
+        Tcl_Obj *result = Tcl_NewListObj(0, NULL);
+        TclAppend(result, Tcl_NewStringObj("mdef", 4));
+        TclAppend(result, MetaViewAsList(view));
+        return result;
+    }
+    
+    if (vCount(meta) == 0)
+        return Tcl_NewIntObj(vCount(view));
+
+    return DataAsList(view);
 }
 
 Tcl_Obj* ItemAsObj (vq_Type type, vq_Item item) {
@@ -357,12 +362,26 @@ Tcl_Obj* ItemAsObj (vq_Type type, vq_Item item) {
         case VQ_view:   if (item.o.a.v == 0)
                             break;
                         return ViewAsList(item.o.a.v);/* FIXME: LuaAsTclObj? */
-        case VQ_objref: return item.o.a.p;
+        case VQ_objref: if (item.o.a.p == 0)
+                            break;
+                        return item.o.a.p; /* TODO: VQ_objref conv used when? */
     }
     return Tcl_NewObj();
 }
 
-int ObjToItem (vq_Type type, vq_Item *item) {
+static Tcl_Interp* TclInterpreter (lua_State *L) {  
+    Tcl_Interp *interp;  
+    
+    /* use the special reference with fixed index #1 for fast access
+       this must have been set up when Lua was initilized, see Tvq_Init
+       IDEA: could fetch this once in parseargs to reduce # of calls */
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    interp = lua_touserdata(L, -1);
+    lua_pop(L, 1);
+    
+    return interp;    
+}
+int ObjToItem (void *L, vq_Type type, vq_Item *item) {
     switch (type) {
         case VQ_nil:    return 1;
         case VQ_int:    return Tcl_GetIntFromObj(NULL, item->o.a.p,
@@ -381,7 +400,7 @@ int ObjToItem (vq_Type type, vq_Item *item) {
         case VQ_bytes:  item->o.a.p = Tcl_GetByteArrayFromObj(item->o.a.p,
                                                                 &item->o.b.i);
                         break;
-        case VQ_view:   item->o.a.v = ObjAsView(item->o.b.p, item->o.a.p);
+        case VQ_view:   item->o.a.v = ObjAsView(TclInterpreter(L), item->o.a.p);
                         return item->o.a.v != NULL;
         case VQ_objref: assert(0); return 0;
     }
@@ -392,16 +411,16 @@ int ObjToItem (vq_Type type, vq_Item *item) {
     The arguments are combined and then eval'ed as a command in Tcl.  */
 
 static int LuaCallback (lua_State *L) {
-    Tcl_Obj *list = Tcl_NewListObj(0, 0);
-    Tcl_Interp* ip = lua_touserdata(L, lua_upvalueindex(1));
+    Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+    Tcl_Interp* interp = lua_touserdata(L, lua_upvalueindex(1));
     int i, n = lua_gettop(L);
     Tcl_IncrRefCount(list);
     for (i = 1; i <= n; ++i)
-        Tcl_ListObjAppendElement(ip, list, LuaAsTclObj(L, i));
-    i = Tcl_EvalObjEx(ip, list, TCL_EVAL_DIRECT);
+        Tcl_ListObjAppendElement(interp, list, LuaAsTclObj(L, i));
+    i = Tcl_EvalObjEx(interp, list, TCL_EVAL_DIRECT);
     Tcl_DecrRefCount(list);
     if (i == TCL_ERROR)
-        luaL_error(L, "tvq: %s", Tcl_GetStringResult(ip));
+        luaL_error(L, "tvq: %s", Tcl_GetStringResult(interp));
     return 0;
 }
 
@@ -422,7 +441,7 @@ static int TvqCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const
     
     cmd = Tcl_GetStringFromObj(objv[1], NULL);
     lua_getglobal(L, "vops");
-    lua_getfield(L, -1, cmd);
+    lua_getfield(L, -1, cmd); /* TODO: cache f_tvqObjType in objv[1] */
     lua_remove(L, -2);
     if (lua_isnil(L, -1)) {
         Tcl_AppendResult(interp, "not found in vops: ", cmd, NULL);
@@ -430,7 +449,10 @@ static int TvqCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const
     }
                 
     for (i = 2; i < objc; ++i)
-        lua_pushlightuserdata(L, objv[i]);
+        if (objv[i]->typePtr == &f_tvqObjType)
+            lua_rawgeti(L, LUA_REGISTRYINDEX, (int) objv[i]->_ptr2);
+        else
+            lua_pushlightuserdata(L, objv[i]);
 
     v = lua_pcall(L, objc-2, 1, 0);
     if (!lua_isnil(L, -1))
@@ -455,31 +477,39 @@ static int TvqDoLua (lua_State *L) {
 
 DLLEXPORT int Tvq_Init (Tcl_Interp *interp) {
     lua_State *L;
+    int ipref;
     
     if (!MyInitStubs(interp) || Tcl_PkgRequire(interp, "Tcl", "8.4", 0) == NULL)
         return TCL_ERROR;
 
+    /* set up a new instance on Lua, make it clean up when Tcl finishes */
     L = lua_open();
     Tcl_CreateExitHandler((Tcl_ExitProc*) lua_close, L);
     
-    luaL_openlibs(L);
+    luaL_openlibs(L); /* TODO: do we need all the standard Lua libs? */
 
+    /* register a custom Vlerq.tcl userdata type to hold on to Tcl objects */
     luaL_newmetatable(L, "Vlerq.tcl");
     lua_pushcfunction(L, tclobj_gc);
     lua_setfield(L, -2, "__gc");
     lua_pop(L, 1);
 
+    /* initialize lvq */
     lua_pushcfunction(L, luaopen_lvq_core);
     lua_pushstring(L, "lvq.core");
     lua_call(L, 1, 0);
 
+    /* store a pointer to the Tcl interpreter as reference #1 */
   	lua_pushlightuserdata(L, interp);
-    lua_rawseti(L, LUA_GLOBALSINDEX, 1);
-    
-  	lua_pushlightuserdata(L, interp);
+    ipref = luaL_ref(L, LUA_REGISTRYINDEX);
+    assert(ipref == 1); /* make sure it really is 1, lvq's toitem assumes it! */
+
+    /* register a Tcl callback as Lua global "tcl" */
+    lua_pushlightuserdata(L, interp);
   	lua_pushcclosure(L, LuaCallback, 1);
     lua_setglobal(L, "tcl");
 
+    /* define a "dostring" vop to evaluate a string in Lua */
     lua_getglobal(L, "vops");
     lua_pushcfunction(L, TvqDoLua);
     lua_setfield(L, -2, "dostring");
