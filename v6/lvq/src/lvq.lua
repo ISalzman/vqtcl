@@ -62,7 +62,8 @@ end)
 
 -- shorthand for debugging: add ":p()" to print the view at that point
 vopdef ('p', 'V', function (v, ...)
-  print(v:dump(...))
+  -- print(v:dump(...))   -- TODO: this does not yet force a cast to view
+  print(vops.dump(v, ...))
   return v
 end)
 

@@ -78,3 +78,5 @@ vops.iota(4,'N'):p()
 --vops.iota(4,'N',0):p()
 
 vops.virtual(4, "abc:I", function (r,c) return r*r*r end):p()
+
+vops.p{meta='A:I,B,C:D'; 1,'two',3.3,4,'five',6.6,7,'eight',9.9}

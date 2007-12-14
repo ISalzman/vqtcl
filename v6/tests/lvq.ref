@@ -49,3 +49,8 @@ mutable
     1
     8
    27
+  A  B      C  
+  -  -----  ---
+  1  two    3.3
+  4  five   6.6
+  7  eight  9.9

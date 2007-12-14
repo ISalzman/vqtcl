@@ -62,14 +62,15 @@
 
 #define checkrow(L,t)   ((vq_Item*) luaL_checkudata(L, t, "Vlerq.row"))
 
-LUA_API int luaopen_lvq_core (lua_State *L); /* forward */
+/* forward */
+LUA_API int luaopen_lvq_core (lua_State *L);
+static vq_View TableToView (lua_State *L, int t);
 
 static vq_View checkview (lua_State *L, int t) {
     switch (lua_type(L, t)) {
-        case LUA_TNUMBER:
-            return vq_new(luaL_checkinteger(L, t), NULL);
-        case LUA_TSTRING:
-            return DescToMeta(lua_tostring(L, t), -1);
+        case LUA_TNUMBER:   return vq_new(luaL_checkinteger(L, t), NULL);
+        case LUA_TSTRING:   return DescToMeta(lua_tostring(L, t), -1);
+        case LUA_TTABLE:    return TableToView(L, t);
     }
     return *(vq_View*) luaL_checkudata(L, t, "Vlerq.view");
 }
@@ -161,6 +162,33 @@ static void parseargs(lua_State *L, vq_Item *buf, const char *desc) {
 #define LVQ_ARGS(state,args,desc) \
             vq_Item args[sizeof(desc)-1]; \
             parseargs(state, args, desc)
+
+static vq_View TableToView (lua_State *L, int t) {
+    vq_Item item;
+    vq_View m, v;
+    int r, rows, c, cols;
+    lua_getfield(L, t, "meta");
+    m = checkview(L, -1);
+    lua_pop(L, 1);
+    cols = vCount(m);
+    rows = cols > 0 ? lua_objlen(L, t) / cols : 0;
+    v = vq_new(rows, m);
+    for (c = 0; c < cols; ++c) {
+        vq_Type type = Vq_getInt(m, c, 1, VQ_nil) & VQ_TYPEMASK;
+        for (r = 0; r < rows; ++r) {
+            vq_Type ty = type;
+            lua_pushinteger(L, r * cols + c + 1);
+            lua_gettable(L, t);
+            if (lua_isnil(L, -1))
+                ty = VQ_nil;
+            else
+                item = toitem(L, -1, type);
+            vq_set(v, r, c, ty, item);
+            lua_pop(L, 1);
+        }
+    }
+    return v;
+}
 
 #pragma mark - VLERQ.ROW -
 

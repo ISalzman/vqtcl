@@ -541,6 +541,11 @@ DLLEXPORT int Tvq_Init (Tcl_Interp *interp) {
     L = lua_open();
     Tcl_CreateExitHandler((Tcl_ExitProc*) lua_close, L);
     
+    /* first off, store a pointer to the Tcl interpreter as reference #1 */
+  	lua_pushlightuserdata(L, interp);
+    ipref = luaL_ref(L, LUA_REGISTRYINDEX);
+    assert(ipref == 1); /* make sure it really is 1, see TclInterpreter() */
+
     luaL_openlibs(L); /* TODO: do we need all the standard Lua libs? */
 
     /* register a custom Vlerq.tcl userdata type to hold on to Tcl objects */
@@ -553,11 +558,6 @@ DLLEXPORT int Tvq_Init (Tcl_Interp *interp) {
     lua_pushcfunction(L, luaopen_lvq_core);
     lua_pushstring(L, "lvq.core");
     lua_call(L, 1, 0);
-
-    /* store a pointer to the Tcl interpreter as reference #1 */
-  	lua_pushlightuserdata(L, interp);
-    ipref = luaL_ref(L, LUA_REGISTRYINDEX);
-    assert(ipref == 1); /* make sure it really is 1, lvq's toitem assumes it! */
 
     /* register a Tcl callback as Lua global "tcl" */
     lua_pushlightuserdata(L, interp);

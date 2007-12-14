@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>tvq/generic/tvq.c</string>
+	<string>tvq/tests/ratcl.test</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -70,29 +70,29 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>33</integer>
+				<integer>45</integer>
 				<key>line</key>
-				<integer>73</integer>
+				<integer>133</integer>
 			</dict>
 			<key>columnSelection</key>
 			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>0</integer>
+			<integer>60</integer>
 			<key>selectFrom</key>
 			<dict>
 				<key>column</key>
-				<integer>23</integer>
+				<integer>37</integer>
 				<key>line</key>
-				<integer>73</integer>
+				<integer>133</integer>
 			</dict>
 			<key>selectTo</key>
 			<dict>
 				<key>column</key>
-				<integer>38</integer>
+				<integer>45</integer>
 				<key>line</key>
-				<integer>73</integer>
+				<integer>133</integer>
 			</dict>
 		</dict>
 		<key>tests/lvq.ref</key>
@@ -200,9 +200,9 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
 				<integer>55</integer>
+				<key>line</key>
+				<integer>57</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -216,7 +216,7 @@
 				<key>column</key>
 				<integer>0</integer>
 				<key>line</key>
-				<integer>74</integer>
+				<integer>44</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
