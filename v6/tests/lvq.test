@@ -7,7 +7,9 @@ cd lvq
 
 test 0 {lua test} {
     exec make install
-    exec tests/test.lua | diff -u - [testsDirectory]/lvq.ref
+    set out [exec tests/test.lua]\n
+    regsub -all {\m(function|table|row|view): 0x\w+} $out {\1: 0x[...]} out
+    exec diff -u - [testsDirectory]/lvq.ref << $out
 } {}
 
 cd [workingDirectory]

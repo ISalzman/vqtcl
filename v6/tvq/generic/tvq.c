@@ -31,6 +31,7 @@
 /* forward */
 static Tcl_ObjType f_tvqObjType;
 static vq_View ObjAsView (Tcl_Interp *interp, Tcl_Obj *obj);
+static Tcl_Obj* ViewAsList (vq_View view);
 
 static void FreeLuaIntRep (Tcl_Obj *obj) {
     lua_State *L = obj->_ptr1;
@@ -39,24 +40,87 @@ static void FreeLuaIntRep (Tcl_Obj *obj) {
 }
 
 static void DupLuaIntRep (Tcl_Obj *src, Tcl_Obj *obj) {
-    puts("DupLuaIntRep called"); /* could be implemented, no need so far */
+    puts("DupLuaIntRep called!"); /* could be implemented, no need so far */
+}
+
+static vq_View ViewFromTvqObj (Tcl_Obj *obj) {
+    vq_View view;
+    lua_State *L = obj->_ptr1;
+    int ref = (int) obj->_ptr2;
+    assert(obj->typePtr == &f_tvqObjType);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
+    view = checkview(L, lua_gettop(L));
+    lua_pop(L, 1);
+    return view;
 }
 
 static void UpdateLuaStrRep (Tcl_Obj *obj) {
+#if 1 /* FIXME: crash when converting via ViewAsList */
     char buf[50];
-    int n = sprintf(buf, "tvqobj %p %d", obj->_ptr1, (int) obj->_ptr2);
+    int n = sprintf(buf, "tvqobj: %p %d", obj->_ptr1, (int) obj->_ptr2);
     obj->bytes = strcpy(malloc(n+1), buf);
     obj->length = n;
+#else
+    printf("ulsr: %p %d\n", obj->_ptr1, (int) obj->_ptr2);
+{
+    /* TODO: try to avoid extra string/list rep buffering and copying */
+    Tcl_Obj* list = ViewAsList(ViewFromTvqObj(obj));
+    const char* str = Tcl_GetStringFromObj(list, &obj->length);
+    obj->bytes = strcpy(Tcl_Alloc(obj->length+1), str);
+    Tcl_DecrRefCount(list);
+}
+#endif
 }
 
 static int SetLuaFromAnyRep (Tcl_Interp *interp, Tcl_Obj *obj) {
-    puts("SetLuaFromAnyRep called"); /* conversion to a tvqobj is impossible */
+    puts("SetLuaFromAnyRep called!"); /* conversion to a tvqobj is impossible */
     return TCL_ERROR;
 }
 
 static Tcl_ObjType f_tvqObjType = {
     "tvqobj", FreeLuaIntRep, DupLuaIntRep, UpdateLuaStrRep, SetLuaFromAnyRep
 };
+
+static Tcl_Obj* WrapAsTvqObj (lua_State *L, int t) {
+    Tcl_Obj *obj = Tcl_NewObj();
+    Tcl_InvalidateStringRep(obj);
+    obj->_ptr1 = L;
+    lua_pushvalue(L, t);
+    obj->_ptr2 = (void*) luaL_ref(L, LUA_REGISTRYINDEX);
+    obj->typePtr = &f_tvqObjType;
+    return obj;
+}
+
+/*
+static Tcl_Obj* UserdataAsTclObj (lua_State *L, int t) {
+    if (lua_getmetatable(L, t)) {
+        lua_getfield(L, LUA_REGISTRYINDEX, "Vlerq.view");
+        if (lua_rawequal(L, -1, -2)) {
+            lua_pop(L, 2);
+            return ViewAsList(checkview(L, t));
+        }
+        lua_pop(L, 2);
+    }
+    return WrapAsTvqObj(L, t);
+}
+*/
+
+static Tcl_Obj* UnboxTvqObj (lua_State *L, int t) {
+    void* p = lua_touserdata(L, t);
+    if (p) {
+        if (lua_islightuserdata(L, t))
+            return p;   
+        if (lua_getmetatable(L, t)) {
+            lua_getfield(L, LUA_REGISTRYINDEX, "Vlerq.tcl");
+            if (lua_rawequal(L, -1, -2)) {
+                lua_pop(L, 2);
+                return ViewAsList(checkview(L, t));
+            }
+            lua_pop(L, 2);
+        }
+    }
+    return WrapAsTvqObj(L, t);
+}
 
 static Tcl_Obj* LuaAsTclObj (lua_State *L, int t) {
     switch (lua_type(L, t)) {
@@ -74,15 +138,8 @@ static Tcl_Obj* LuaAsTclObj (lua_State *L, int t) {
         }
         case LUA_TBOOLEAN:
             return Tcl_NewBooleanObj(lua_toboolean(L, t));
-        default: {
-            Tcl_Obj *obj = Tcl_NewObj();
-            Tcl_InvalidateStringRep(obj);
-            obj->_ptr1 = L;
-            lua_pushvalue(L, t);
-            obj->_ptr2 = (void*) luaL_ref(L, LUA_REGISTRYINDEX);
-            obj->typePtr = &f_tvqObjType;
-            return obj;
-        }
+        default:
+            return UnboxTvqObj(L, t);
     }
 }
 
@@ -189,15 +246,8 @@ static vq_View ObjAsView (Tcl_Interp *interp, Tcl_Obj *obj) {
     int objc, rows = 0;
     Tcl_Obj **objv;
     
-    if (obj->typePtr == &f_tvqObjType) {
-        vq_View view;
-        lua_State *L = obj->_ptr1;
-        int ref = (int) obj->_ptr2;
-        lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
-        view = checkview(L, lua_gettop(L));
-        lua_pop(L, 1);
-        return view;
-    }
+    if (obj->typePtr == &f_tvqObjType)
+        return ViewFromTvqObj(obj);
     
     if (Tcl_ListObjGetElements(interp, obj, &objc, &objv) != TCL_OK)
         return NULL;

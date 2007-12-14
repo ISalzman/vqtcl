@@ -10,7 +10,7 @@ test 0 {tcl test} {
     set out [exec make test]\n
     regsub -line {^Tests began at .*$} $out {Tests began at [...]} out
     regsub -line {^Tests ended at .*$} $out {Tests ended at [...]} out
-    regsub -all {\mtvqobj 0x\w+ \d+} $out {tvqobj 0x[...]} out
+    regsub -all {\mtvqobj: 0x\w+ \d+} $out {tvqobj: 0x[...]} out
     #all.tcl:	Total	22	Passed	20	Skipped	2	Failed	0
     regsub {(Total	)\d+(	Passed	)\d+(	Skipped	)\d+} $out {\1?\2?\3?} out
     #Sourced ? Test Files.

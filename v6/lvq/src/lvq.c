@@ -217,7 +217,7 @@ static int row_newindex (lua_State *L) {
 
 static int row2string (lua_State *L) {
     LVQ_ARGS(L,A,"R");
-    lua_pushfstring(L, "row %p %d", A[0].o.a.p, A[0].o.b.i);
+    lua_pushfstring(L, "row: %p %d", A[0].o.a.p, A[0].o.b.i);
     return 1;
 }
 
@@ -279,7 +279,7 @@ static int view2string (lua_State *L) {
     luaL_Buffer b;
     LVQ_ARGS(L,A,"V");
     v = A[0].o.a.v;
-    lua_pushfstring(L, "view %p #%d ", v, vq_size(v));
+    lua_pushfstring(L, "view: %p #%d ", v, vq_size(v));
     luaL_buffinit(L, &b);
     view2struct(&b, vMeta(v));
     luaL_pushresult(&b);
@@ -360,6 +360,15 @@ static int vops_at (lua_State *L) {
         return luaL_error(L, "column index %d out of range", c);
     item = v[c];
     return pushitem(L, GetItem(r, &item), &item);
+}
+
+static int vops_row (lua_State *L) {
+    vq_Item *rp;
+    LVQ_ARGS(L,A,"VI");
+    rp = newuserdata(L, sizeof *rp, "Vlerq.row");
+    rp->o.a.v = vq_retain(A[0].o.a.v);
+    rp->o.b.i = A[1].o.a.i;
+    return 1;
 }
 
 static int vops_replace (lua_State *L) {
@@ -481,6 +490,7 @@ static const struct luaL_reg lvqlib_v[] = {
     {"at", vops_at},
     {"empty", vops_empty},
     {"meta", vops_meta},
+    {"row", vops_row},
     {"replace", vops_replace},
     {"struct", vops_struct},
     {"type", vops_type},

@@ -7,11 +7,11 @@ _VERSION	LuaVlerq 1.6
 _PACKAGE	
 LuaVlerq 1.6 - lvq 1.6.0 lo mu op ra sa
 
-view 0x[...] #0 
+view: 0x[...] #0 
 11
 function: 0x[...]
 22
-row 0x106ae0 55
+row: 0x[...] 55
 33
 3
 44
@@ -26,7 +26,7 @@ row 0x106ae0 55
   joe       8
   philip   35
   inez     21
-view 0x[...] #1 (I)
+view: 0x[...] #1 (I)
   abc  
   -----
       1
@@ -34,7 +34,7 @@ view 0x[...] #1 (I)
     333
    4444
   55555
-view 0x[...] #1 (IIIIIIILFDSB)
+view: 0x[...] #1 (IIIIIIILFDSB)
 68
 true
 nil
