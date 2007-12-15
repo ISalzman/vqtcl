@@ -491,8 +491,10 @@ static int vops_view (lua_State *L) {
     vq_View v;
     LVQ_ARGS(L,A,"Vv");
     v = A[0].o.a.v;
-    if (A[1].o.a.v != NULL)
+    if (A[1].o.a.v != NULL) {
+        /* TODO: on-the-fly restructuring i.s.o. always doing a vq_new */
         v = vq_new(vCount(v), mustbemeta(L, A[1].o.a.v));
+    }
     return pushview(L, v);
 }
 

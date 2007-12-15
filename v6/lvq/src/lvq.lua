@@ -12,7 +12,8 @@ local renderers = { [0] = function (x) return '' end,
                     [7] = function (x) return '#'..#x end }
 setmetatable(renderers, { __index = function (x) return tostring end })
 
-function vopdef (name, args, func)
+-- ignore arg types for now
+function vopdef (name, argtypes, func)
   vops[name] = func
 end
 
