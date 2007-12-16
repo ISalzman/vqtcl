@@ -1,6 +1,6 @@
 /*  Support for ranges and missing values.
     $Id$
-    This file is part of Vlerq, see base/vlerq.h for full copyright notice.  */
+    This file is part of Vlerq, see base/vlerq.h for full copyright notice. */
 
 #ifndef VQ_RANGES_H
 #define VQ_RANGES_H 1

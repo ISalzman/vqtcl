@@ -1,6 +1,6 @@
 /*  Tcl extension binding.
     $Id$
-    This file is part of Vlerq, see base/vlerq.h for full copyright notice.  */
+    This file is part of Vlerq, see base/vlerq.h for full copyright notice. */
 
 #define USE_TCL_STUBS 1
 #include <tcl.h>
@@ -26,7 +26,7 @@
     therefore tied to the Tcl_Obj's one.
     
     There is a string representation which is only for debugging - once the
-    internal rep shimmers away, there is no way to get back the Lua object.  */
+    internal rep shimmers away, there is no way to get back the Lua object. */
 
 /* forward */
 static Tcl_ObjType f_tvqObjType;
@@ -144,7 +144,7 @@ static Tcl_Obj* LuaAsTclObj (lua_State *L, int t) {
 }
 
 /*  Define various Tcl conversions from/to Vlerq objects.  All calls below
-    named ...As... return the result, while calls ...To... store it in arg.  */
+    named ...As... return the result, while calls ...To... store it in arg. */
 
 vq_View ListAsMetaView (void *interp, Tcl_Obj *obj) {
     int r, rows, objc;
@@ -463,7 +463,7 @@ int ObjToItem (void *L, vq_Type type, vq_Item *item) {
 }
 
 /*  Callbacks from Lua into Tcl are implemented via the 'tcl' global in lua.
-    The arguments are combined and then eval'ed as a command in Tcl.  */
+    The arguments are combined and then eval'ed as a command in Tcl. */
 
 static int LuaCallback (lua_State *L) {
     Tcl_Obj *list = Tcl_NewListObj(0, NULL);
@@ -482,7 +482,7 @@ static int LuaCallback (lua_State *L) {
 /*  The "tvq" command is the central interface from Tcl into Lua.  It looks up
     its first argument in a global "vops" table and calls that with remaining
     arguments passed on as light userdata pointers.  It is up to the callee
-    to then cast each of its arguments to proper Lua values or references.  */
+    to then cast each of its arguments to proper Lua values or references. */
     
 static int TvqCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
     lua_State *L = data;

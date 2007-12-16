@@ -3,9 +3,23 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>lvq/src/lvq.c</string>
+	<string>../vlerq4/ratcl/docs/v6vops.txt</string>
 	<key>documents</key>
 	<array>
+		<dict>
+			<key>filename</key>
+			<string>../vlerq4/ratcl/docs/v6notes.txt</string>
+			<key>lastUsed</key>
+			<date>2007-12-16T17:40:51Z</date>
+		</dict>
+		<dict>
+			<key>filename</key>
+			<string>../vlerq4/ratcl/docs/v6vops.txt</string>
+			<key>lastUsed</key>
+			<date>2007-12-16T17:40:51Z</date>
+			<key>selected</key>
+			<true/>
+		</dict>
 		<dict>
 			<key>expanded</key>
 			<true/>
@@ -13,8 +27,6 @@
 			<string>v6</string>
 			<key>regexFolderFilter</key>
 			<string>!.*/(\.[^/]*|lua|CVS|_darcs|_MTN|\{arch\}|blib|.*~\.nib|.*\.(framework|app|pbproj|pbxproj|xcode(proj)?|bundle))$</string>
-			<key>selected</key>
-			<true/>
 			<key>sourceDirectory</key>
 			<string></string>
 		</dict>
@@ -23,6 +35,34 @@
 	<integer>156</integer>
 	<key>metaData</key>
 	<dict>
+		<key>../vlerq4/ratcl/docs/v6notes.txt</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>67</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>7</integer>
+		</dict>
+		<key>../vlerq4/ratcl/docs/v6vops.txt</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>46</integer>
+				<key>line</key>
+				<integer>157</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>105</integer>
+		</dict>
 		<key>base/v_defs.h</key>
 		<dict>
 			<key>caret</key>
@@ -35,7 +75,7 @@
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>52</integer>
+			<integer>0</integer>
 		</dict>
 		<key>base/vbuffer.h</key>
 		<dict>
@@ -135,7 +175,21 @@
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>20</integer>
+			<integer>78</integer>
+		</dict>
+		<key>lvq/src/vq_conf.h</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
 		</dict>
 		<key>lvq/tests/test.lua</key>
 		<dict>
@@ -311,8 +365,11 @@
 	<key>openDocuments</key>
 	<array>
 		<string>lvq/src/lvq.c</string>
+		<string>lvq/src/vq_conf.h</string>
 		<string>tvq/generic/tvq.c</string>
 		<string>lvq/src/lvq.lua</string>
+		<string>../vlerq4/ratcl/docs/v6notes.txt</string>
+		<string>../vlerq4/ratcl/docs/v6vops.txt</string>
 		<string>lvq/tests/test.lua</string>
 		<string>base/vload.h</string>
 		<string>base/vlerq.h</string>

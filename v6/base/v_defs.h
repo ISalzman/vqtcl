@@ -1,6 +1,6 @@
 /*  Vlerq private C header.
     $Id$
-    This file is part of Vlerq, see base/vlerq.h for full copyright notice.  */
+    This file is part of Vlerq, see base/vlerq.h for full copyright notice. */
 
 #ifndef VQ_INTERN_H
 #define VQ_INTERN_H

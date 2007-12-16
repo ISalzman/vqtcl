@@ -1,6 +1,6 @@
 /*  Vlerq core definitions and code.
     $Id$
-    This file is part of Vlerq, see base/vlerq.h for full copyright notice.  */
+    This file is part of Vlerq, see base/vlerq.h for full copyright notice. */
 
 #include "v_defs.h"
 

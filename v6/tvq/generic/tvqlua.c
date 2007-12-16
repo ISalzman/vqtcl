@@ -1,6 +1,6 @@
 /*  Embedded Lua engine for Tcl extension.
     $Id$
-    This file is part of Vlerq, see base/vlerq.h for full copyright notice.  */
+    This file is part of Vlerq, see base/vlerq.h for full copyright notice. */
 
 #define luaall_c
 

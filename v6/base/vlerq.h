@@ -1,6 +1,6 @@
 /*  Vlerq core public C header.
     $Id$
-    This file is part of Vlerq, see text at end for full copyright notice.  */
+    This file is part of Vlerq, see text at end for full copyright notice. */
 
 #include <stdint.h>
 #include <unistd.h>
@@ -111,4 +111,4 @@ void        (Vq_setMetaRow) (vq_View v, int row, const char *, int, vq_View);
     TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
     SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   
-    [ MIT license: http://www.opensource.org/licenses/mit-license.php ]  */
+    [ MIT license: http://www.opensource.org/licenses/mit-license.php ] */
