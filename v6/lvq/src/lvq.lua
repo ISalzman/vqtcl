@@ -103,17 +103,59 @@ vopdef ('crep', 'VI', function (v, n)
   return w
 end)
 
+-- tentative, see http://www.equi4.com/ratcl/v6vops
+
+if nil then -- TODO: interferese with current definitions
+  -- return the size of a view as view
+  vopdef ('size', 'V', function (v)
+    return v:cmap(0)
+  end)
+  -- return a 1-column view with 0..n-1 ints
+  vopdef ('iota', 'IS', function (n,name)
+    return vops.view(0,name..':I'):rcat(vops.step(n))
+  end)
+end
+
+-- return view with rows in reverse order
+vopdef ('reverse', 'V', function (v)
+  return v:rmap(v:step(#v-1,-1))
+end)
+-- take n rows from either start or end of a view
+vopdef ('take', 'VI', function (v,n)
+if n<0 then n, v = -n, v:reverse() end
+  return v:rmap(n)
+end)
+-- return the first n rows
+vopdef ('first', 'VI', function (v,n)
+if n>#v then n=#v end
+  return v:rmap(n)
+end)
+-- return the last n rows
+vopdef ('last', 'VI', function (v,n)
+if n>#v then n=#v end
+  return v:rmap(vops.step(n,#v-n))
+end)
+-- add a numbered tag column to a view
+vopdef ('tag', 'VS', function (v,name)
+  return v..v:iota(name)
+end)
+-- return specific rows from a view
+vopdef ('slice', 'VIII', function (v,count,start,step)
+  return v:rmap(vops.step(count,start,step))
+end)
 -- repeat all rows n times
-vopdef ('rrep', 'VI', function (v, n)
-  return v:step(n * #v, 0, 1, 1)
+vopdef ('rrep', 'VI', function (v,n)
+  return v:rmap(n*#v)
 end)
-
 -- repeat each row n times
-vopdef ('spread', 'VI', function (v, n)
-  return v:step(n * #v, 0, 1, n)
+vopdef ('spread', 'VI', function (v,n)
+  return v:rmap(vops.step(n*#v,0,1,n))
 end)
-
 -- cross product
-vopdef ('product', 'VV', function (a, b)
-  return a:spread(#b) .. b:rrep(#a)
+vopdef ('product', 'VV', function (v,w)
+  return v:spread(w)..w:rrep(v)
+end)
+-- box an integer into a new 1-row/1-col view
+vopdef ('intbox', 'I', function (i)
+  return vops.step(1,i)
 end)
