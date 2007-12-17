@@ -78,6 +78,7 @@ typedef struct Tcl_Obj *Object_p;
 typedef void           *Object_p;
 #endif
 
+#define EmptyVop(v,a,b)         vq_empty(v,a,b)
 #define MetaVop(v)              vMeta(v)
 #define ReplaceVop(v,a,b,c)     vq_replace(v,a,b,c)
 

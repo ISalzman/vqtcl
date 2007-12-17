@@ -15,14 +15,14 @@ if {$prefix eq ""} {
 
 proc ctype {c} {
     string map {N nil I int L long F float D double \
-                S string B bytes V view O objref} $c
+                S string B bytes V view O objref T int} $c
 }
 
 proc gencall {name types} {
     set sep ""
     set i -1
     set call "  "
-    set fieldmap {I o.a.i L w F o.a.f D d V o.a.v S o.a.s O o.a.p}
+    set fieldmap {I o.a.i L w F o.a.f D d V o.a.v S o.a.s O o.a.p T o.a.i}
     foreach t [split $types ""] {
         if {$t eq ":"} {
             append call " = " $name "Vop("
@@ -73,22 +73,25 @@ puts $fdc ""
 puts $fdc "#include \"vq_conf.h\""
 
 define - {
-    Meta    V:V
-    Replace V:VIIV
+    Empty       T:VII
+    Meta        V:V
+    Replace     V:VIIV
 }
 
 define LOAD {
-    AsMeta  V:S
-    Open    V:S
+    AsMeta      V:S
+    Open        V:S
 }
 
 define MUTABLE {
-    Mutable V:V
+    Mutable     V:V
 }
 
 define OPDEF {
-    Pass    V:V
-    Step    V:Iiiis
+    Pass        V:V
+    Step        V:Iiiis
+    Type        S:V
+    View        V:Vv
 }
 
 puts $fdc ""

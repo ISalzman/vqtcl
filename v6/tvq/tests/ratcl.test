@@ -25,10 +25,10 @@ test 2 {create and display an empty view} {
 test 3 {create and display a view with no data} {
     tvq dump {view 2 {A,B[C:I],D:s}}
 } { \
-  A  B   D
-  -  --  -
-     #0   
-     #0   }
+  A  B  D
+  -  -  -
+         
+         }
 
 test 4 {} {
     tvq dump [tvq meta {A,B[C:I],D:s}]

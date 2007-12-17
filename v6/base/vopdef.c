@@ -36,4 +36,16 @@ vq_View PassVop (vq_View v) {
     return t;
 }
 
+const char* TypeVop (vq_View v) {
+    return vType(v)->name;
+}
+
+vq_View ViewVop (vq_View v, vq_View m) {
+    assert(v != NULL);
+    /* TODO: on-the-fly restructuring i.s.o. always doing a vq_new */
+    if (m != NULL)
+        v = vq_new(vCount(v), m);
+    return v;
+}
+
 #endif

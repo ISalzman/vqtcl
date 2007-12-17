@@ -9,5 +9,7 @@
 
 vq_View (StepVop) (int rows, int start, int step, int rate, const char *name);
 vq_View (PassVop) (vq_View v);
+const char* (TypeVop) (vq_View v);
+vq_View (ViewVop) (vq_View v, vq_View m);
 
 #endif

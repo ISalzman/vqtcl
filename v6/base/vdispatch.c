@@ -2,6 +2,11 @@
 
 #include "vq_conf.h"
 
+static vq_Type EmptyCmd_VII (vq_Item A[]) {
+  A[0].o.a.i = EmptyVop(A[0].o.a.v,A[1].o.a.i,A[2].o.a.i);
+  return VQ_int;
+}
+
 static vq_Type MetaCmd_V (vq_Item A[]) {
   A[0].o.a.v = MetaVop(A[0].o.a.v);
   return VQ_view;
@@ -47,9 +52,20 @@ static vq_Type StepCmd_Iiiis (vq_Item A[]) {
   return VQ_view;
 }
 
+static vq_Type TypeCmd_V (vq_Item A[]) {
+  A[0].o.a.s = TypeVop(A[0].o.a.v);
+  return VQ_string;
+}
+
+static vq_Type ViewCmd_Vv (vq_Item A[]) {
+  A[0].o.a.v = ViewVop(A[0].o.a.v,A[1].o.a.v);
+  return VQ_view;
+}
+
 #endif
 
 CmdDispatch f_vdispatch[] = {
+  { "empty", "T:VII", EmptyCmd_VII },
   { "meta", "V:V", MetaCmd_V },
   { "replace", "V:VIIV", ReplaceCmd_VIIV },
 #ifdef VQ_LOAD_H
@@ -62,6 +78,8 @@ CmdDispatch f_vdispatch[] = {
 #ifdef VQ_OPDEF_H
   { "pass", "V:V", PassCmd_V },
   { "step", "V:Iiiis", StepCmd_Iiiis },
+  { "type", "S:V", TypeCmd_V },
+  { "view", "V:Vv", ViewCmd_Vv },
 #endif
   {NULL,NULL,NULL}
 };

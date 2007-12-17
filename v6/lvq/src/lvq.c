@@ -90,59 +90,41 @@ static void *newuserdata (lua_State *L, size_t bytes, const char *tag) {
 }
 
 static int pushview (lua_State *L, vq_View v) {
-    vq_View *vp = newuserdata(L, sizeof *vp, "Vlerq.view");
-    *vp = vq_retain(v);
+    if (v == NULL) 
+        lua_pushnil(L);
+    else {
+        vq_View *vp = newuserdata(L, sizeof *vp, "Vlerq.view");
+        *vp = vq_retain(v);
+    }
     return 1;
 }
 
-static int pushitem (lua_State *L, vq_Type type, vq_Item *itemp) {
+static int pushitem (lua_State *L, char c, vq_Item *itemp) {
     if (itemp == NULL)
         return 0;
-    switch (type) {
-        case VQ_nil:    lua_pushnil(L); break;
-        case VQ_int:    lua_pushinteger(L, itemp->o.a.i); break;
-        case VQ_long:   lua_pushnumber(L, itemp->w); break;
-        case VQ_float:  lua_pushnumber(L, itemp->o.a.f); break;
-        case VQ_double: lua_pushnumber(L, itemp->d); break;
-        case VQ_string: lua_pushstring(L, itemp->o.a.s); break;
-        case VQ_bytes:  lua_pushlstring(L, itemp->o.a.p, itemp->o.b.i); break;
-        case VQ_view:   pushview(L, itemp->o.a.v); break;
-        case VQ_objref: lua_rawgeti(L, LUA_REGISTRYINDEX, itemp->o.a.i); break;
+        
+    switch (c) {
+        case 'N':   lua_pushnil(L); break;
+        case 'I':   lua_pushinteger(L, itemp->o.a.i); break;
+        case 'L':   lua_pushnumber(L, itemp->w); break;
+        case 'F':   lua_pushnumber(L, itemp->o.a.f); break;
+        case 'D':   lua_pushnumber(L, itemp->d); break;
+        case 'S':   lua_pushstring(L, itemp->o.a.s); break;
+        case 'B':   lua_pushlstring(L, itemp->o.a.p, itemp->o.b.i); break;
+        case 'V':   pushview(L, itemp->o.a.v); break;
+        case 'O':   lua_rawgeti(L, LUA_REGISTRYINDEX, itemp->o.a.i); break;
+    /* pseudo-types */
+        case 'T':   lua_pushboolean(L, itemp->o.a.i != 0); break;
+        default:    assert(0);
     }
+
     return 1;
-}
-
-static vq_Item toitem (lua_State *L, int t, vq_Type type) {
-    vq_Item item;
-    size_t n;
-
-    if (lua_islightuserdata(L, t)) {
-        item.o.a.p = lua_touserdata(L, t);
-        if (ObjToItem(L, type, &item))
-            return item;
-    }
-
-    switch (type) {
-        case VQ_nil:    break;
-        case VQ_int:    item.o.a.i = luaL_checkinteger(L, t); break;
-        case VQ_long:   item.w = (int64_t) luaL_checknumber(L, t); break;
-        case VQ_float:  item.o.a.f = (float) luaL_checknumber(L, t); break;
-        case VQ_double: item.d = luaL_checknumber(L, t); break;
-        case VQ_string: /* fall through */
-        case VQ_bytes:  item.o.a.s = luaL_checklstring(L, t, &n);
-                        item.o.b.i = n; break;
-        case VQ_view:   item.o.a.v = checkview(L, t); break;
-        case VQ_objref: lua_pushvalue(L, t);
-                        item.o.a.i = luaL_ref(L, LUA_REGISTRYINDEX);
-                         /* FIXME: reference is never released */
-                        break;
-    }
-
-    return item;
 }
 
 static vq_Type checkitem (lua_State *L, int t, char c, vq_Item *itemp) {
+    size_t n;
     vq_Type type;
+
     if ('a' <= c && c <= 'z') {
         if (lua_isnoneornil(L, t)) {
             itemp->o.a.p = itemp->o.b.p = 0;
@@ -150,8 +132,32 @@ static vq_Type checkitem (lua_State *L, int t, char c, vq_Item *itemp) {
         }
         c += 'A'-'a';
     }
+    
     type = CharAsType(c);
-    *itemp = toitem(L, t, type);
+    
+    if (lua_islightuserdata(L, t)) {
+        itemp->o.a.p = lua_touserdata(L, t);
+        if (ObjToItem(L, type, itemp))
+            return type;
+    }
+
+    switch (c) {
+        case 'N':   break;
+        case 'I':   itemp->o.a.i = luaL_checkinteger(L, t); break;
+        case 'L':   itemp->w = (int64_t) luaL_checknumber(L, t); break;
+        case 'F':   itemp->o.a.f = (float) luaL_checknumber(L, t); break;
+        case 'D':   itemp->d = luaL_checknumber(L, t); break;
+        case 'S':   /* fall through */
+        case 'B':   itemp->o.a.s = luaL_checklstring(L, t, &n);
+                    itemp->o.b.i = n; break;
+        case 'V':   itemp->o.a.v = checkview(L, t); break;
+        case 'O':   lua_pushvalue(L, t);
+                    itemp->o.a.i = luaL_ref(L, LUA_REGISTRYINDEX);
+                    /* FIXME: reference is never released */
+                    break;
+        default:    assert(0);
+    }
+
     return type;
 }
 
@@ -181,10 +187,8 @@ static vq_View TableToView (lua_State *L, int t) {
             vq_Type ty = type;
             lua_pushinteger(L, r * cols + c + 1);
             lua_gettable(L, t);
-            if (lua_isnil(L, -1))
-                ty = VQ_nil;
-            else
-                item = toitem(L, -1, type);
+            ty = lua_isnil(L, -1) ? VQ_nil
+                                  : checkitem(L, -1, VQ_TYPES[type], &item);
             vq_set(v, r, c, ty, item);
             lua_pop(L, 1);
         }
@@ -229,7 +233,7 @@ static int row_index (lua_State *L) {
     vq_View v;
     int r, c = rowcolcheck(L, &v, &r);
     vq_Item item = v[c];
-    return pushitem(L, GetItem(r, &item), &item);
+    return pushitem(L, VQ_TYPES[GetItem(r, &item)], &item);
 }
 
 static int row_newindex (lua_State *L) {
@@ -239,7 +243,7 @@ static int row_newindex (lua_State *L) {
     int r, c = rowcolcheck(L, &v, &r);
     if (!lua_isnil(L, 3)) {
         type = Vq_getInt(vMeta(v), c, 1, VQ_nil) & VQ_TYPEMASK;
-        item = toitem(L, 3, type);
+        type = checkitem(L, 3, VQ_TYPES[type], &item);
     }
     vq_set(v, r, c, type, item);
     return 0;
@@ -325,6 +329,7 @@ static void VirtualCleaner (Vector v) {
 }
 
 static vq_Type VirtualGetter (int row, vq_Item *item) {
+    vq_Type type;
     vq_View v = item->o.a.v;
     int col = item->o.b.i;
     lua_State *L = (lua_State*) vData(v);
@@ -334,9 +339,10 @@ static vq_Type VirtualGetter (int row, vq_Item *item) {
     lua_call(L, 2, 1);
     if (lua_isnil(L, -1))
         return VQ_nil;
-    *item = toitem(L, -1, Vq_getInt(vMeta(v), col, 1, VQ_nil) & VQ_TYPEMASK);
+    type = Vq_getInt(vMeta(v), col, 1, VQ_nil) & VQ_TYPEMASK;
+    type = checkitem(L, -1, VQ_TYPES[type], item);
     lua_pop(L, 1);
-    return VQ_int;
+    return type;
 }
 static Dispatch virtab = {
     "virtual", 3, 0, 0, VirtualCleaner, VirtualGetter
@@ -358,18 +364,6 @@ static int vops_virtual (lua_State *L) {
 
 /* ----------------------------------------------------- VIEW OPERATORS ----- */
 
-static int vops_empty (lua_State *L) {
-    LVQ_ARGS(L,A,"VII");
-    lua_pushboolean(L, vq_empty(A[0].o.a.v, A[1].o.a.i, A[2].o.a.i));
-    return 1;
-}
-
-static int vops_type (lua_State *L) {
-    LVQ_ARGS(L,A,"V");
-    lua_pushstring(L, vType(A[0].o.a.v)->name);
-    return 1;
-}
-
 static int vops_at (lua_State *L) {
     vq_View v;
     int r, c, cols;
@@ -380,11 +374,11 @@ static int vops_at (lua_State *L) {
     c = A[2].o.a.i;
     cols = vCount(vMeta(v));
     if (r < 0 || r >= vCount(v))
-        return luaL_error(L, "row index %d out of range", r);
+        return luaL_error(L, "row index out of range");
     if (c < 0 || c >= cols)
-        return luaL_error(L, "column index %d out of range", c);
+        return luaL_error(L, "column index out of range");
     item = v[c];
-    return pushitem(L, GetItem(r, &item), &item);
+    return pushitem(L, VQ_TYPES[GetItem(r, &item)], &item);
 }
 
 static int vops_row (lua_State *L) {
@@ -428,17 +422,6 @@ static int vops_emit (lua_State *L) {
 
 #endif
 
-static int vops_view (lua_State *L) {
-    vq_View v;
-    LVQ_ARGS(L,A,"Vv");
-    v = A[0].o.a.v;
-    if (A[1].o.a.v != NULL) {
-        /* TODO: on-the-fly restructuring i.s.o. always doing a vq_new */
-        v = vq_new(vCount(v), mustbemeta(L, A[1].o.a.v));
-    }
-    return pushview(L, v);
-}
-
 /* ------------------------------------------------------ METHOD TABLES ----- */
 
 static const struct luaL_reg lvqlib_row_m[] = {
@@ -459,11 +442,8 @@ static const struct luaL_reg lvqlib_view_m[] = {
 
 static const struct luaL_reg lvqlib_vops[] = {
     {"at", vops_at},
-    {"empty", vops_empty},
     {"row", vops_row},
     {"struct", vops_struct},
-    {"type", vops_type},
-    {"view", vops_view},
 #if VQ_OPDEF_H
     {"virtual", vops_virtual},
 #endif
@@ -488,7 +468,7 @@ static int vop_check (lua_State *L) {
         else {
             vq_Item item;
             vq_Type type = checkitem(L, i+1, fmt[i], &item);
-            pushitem(L, type, &item);
+            pushitem(L, VQ_TYPES[type], &item);
         }
     lua_call(L, i, 1);
     return 1;
@@ -517,7 +497,8 @@ static int vop_ccall (lua_State *L) {
     fp.p = lua_touserdata(L, lua_upvalueindex(2));
     for (i = 0; fmt[i+2]; ++i)
         checkitem(L, i+1, fmt[i+2], args+i);
-    return pushitem(L, (fp.f)(args), args);
+    (fp.f)(args);
+    return pushitem(L, *fmt, args);
 }
 
 static void register_vops (lua_State *L, CmdDispatch *defs) {
