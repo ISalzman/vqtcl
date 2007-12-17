@@ -7,7 +7,7 @@
 
 #include "v_defs.h"
 
-vq_View (StepView) (int rows, int start, int step, int rate, const char *name);
-vq_View (PassView) (vq_View v);
+vq_View (StepVop) (int rows, int start, int step, int rate, const char *name);
+vq_View (PassVop) (vq_View v);
 
 #endif

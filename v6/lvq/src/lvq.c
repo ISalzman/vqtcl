@@ -12,6 +12,7 @@
 #include "vranges.c"
 #include "vmutable.c"
 #include "vlerq.c"
+#include "vdispatch.c"
 
 #if defined(VQ_EMBED_LUA)
 #define luaall_c
@@ -363,11 +364,6 @@ static int vops_empty (lua_State *L) {
     return 1;
 }
 
-static int vops_meta (lua_State *L) {
-    LVQ_ARGS(L,A,"V");
-    return pushview(L, vq_meta(A[0].o.a.v));
-}
-
 static int vops_type (lua_State *L) {
     LVQ_ARGS(L,A,"V");
     lua_pushstring(L, vType(A[0].o.a.v)->name);
@@ -453,23 +449,6 @@ static int vops_mutable (lua_State *L) {
 
 #endif
 
-#if VQ_OPDEF_H
-
-static int vops_step (lua_State *L) {
-    int step;
-    LVQ_ARGS(L,A,"Iiiis");
-    step = lua_isnoneornil(L, 2) ? 1 : A[2].o.a.i;
-    return pushview(L, StepView(A[0].o.a.i, A[1].o.a.i, 
-                                step, A[3].o.a.i, A[4].o.a.s));
-}
-
-static int vops_pass (lua_State *L) {
-    LVQ_ARGS(L,A,"V");
-    return pushview(L, PassView(A[0].o.a.v));
-}
-
-#endif
-
 #if VQ_SAVE_H
 
 static void* EmitDataFun (void *buf, const void *ptr, intptr_t len) {
@@ -523,7 +502,6 @@ static const struct luaL_reg lvqlib_view_m[] = {
 static const struct luaL_reg lvqlib_vops[] = {
     {"at", vops_at},
     {"empty", vops_empty},
-    {"meta", vops_meta},
     {"row", vops_row},
     {"replace", vops_replace},
     {"struct", vops_struct},
@@ -537,8 +515,6 @@ static const struct luaL_reg lvqlib_vops[] = {
     {"mutable", vops_mutable},
 #endif
 #if VQ_OPDEF_H
-    {"step", vops_step},
-    {"pass", vops_pass},
     {"virtual", vops_virtual},
 #endif
 #if VQ_SAVE_H
@@ -578,6 +554,35 @@ static int vop_def (lua_State *L) {
     return 0;
 }
 
+/* this union is needed to avoid ISO C warnings w.r.t function vs. void ptrs */
+typedef union { void *p; vq_Type (*f)(vq_Item*); } vq_FunPtrCast;
+
+/* cast all vop arguments to the proper type, then call the real C code */
+static int vop_ccall (lua_State *L) {
+    int i;
+    vq_Item args [10];
+    vq_FunPtrCast fp;
+    const char *fmt = luaL_checkstring(L, lua_upvalueindex(1));
+    assert(sizeof fp.p == sizeof fp.f);
+    fp.p = lua_touserdata(L, lua_upvalueindex(2));
+    for (i = 0; fmt[i+2]; ++i)
+        checkitem(L, i+1, fmt[i+2], args+i);
+    return pushitem(L, (fp.f)(args), args);
+}
+
+static void register_vops (lua_State *L, CmdDispatch *defs) {
+    vq_FunPtrCast fp;
+    int t = lua_gettop(L);
+    while (defs->name != NULL) {
+        fp.f = defs->proc;
+        lua_pushstring(L, defs->args);      /* t args */
+        lua_pushlightuserdata(L, fp.p);     /* t args proc */
+        lua_pushcclosure(L, vop_ccall, 2);  /* t f */
+        lua_setfield(L, t, defs->name);     /* t */
+        ++defs;
+    }
+}
+
 LUA_API int luaopen_lvq_core (lua_State *L) {
     const char *sconf = "lvq " VQ_RELEASE
 #if VQ_LOAD_H
@@ -604,6 +609,7 @@ LUA_API int luaopen_lvq_core (lua_State *L) {
     luaL_register(L, NULL, lvqlib_view_m);
     
     lua_newtable(L);
+    register_vops(L, f_vdispatch);
     luaL_register(L, NULL, lvqlib_vops);
     lua_setglobal(L, "vops");
 

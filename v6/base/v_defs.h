@@ -78,6 +78,8 @@ typedef struct Tcl_Obj *Object_p;
 typedef void           *Object_p;
 #endif
 
+#define MetaVop(v) vMeta(v)
+
 Object_p (ObjRetain) (Object_p obj);
 void (ObjRelease) (Object_p obj);
 
