@@ -53,15 +53,15 @@ test 6 {} {
   subv     7    #0}
 
 test 7 {} {
-    tvq struct {open ../data/alltypes.db}
+    tvq struct {open ../etc/alltypes.db}
 } (IIIIIIILFDSB)
 
 test 8 {} -body {
-    tvq row {open ../data/alltypes.db} 0
+    tvq row {open ../etc/alltypes.db} 0
 } -match glob -result {tvqobj: 0x*}
 
 test 9 {} {
-    tvq dump {at {open ../data/simple.db} 0 0}
+    tvq dump {at {open ../etc/simple.db} 0 0}
 } { \
   abc  
   -----

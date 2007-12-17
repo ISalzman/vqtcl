@@ -45,10 +45,10 @@ v[1].first, v[1].age = 'philip', 35
 v[2].first, v[2].age = 'inez', 21
 v:p()
 
-vv=vops.open('../data/simple.db')
+vv=vops.open('../etc/simple.db')
 print(vv)
 vv[0].v:p()
-print(vops.open('../data/alltypes.db'))
+print(vops.open('../etc/alltypes.db'))
 
 --s=v:emit()
 --print(#s)

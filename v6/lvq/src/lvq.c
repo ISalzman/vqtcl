@@ -149,10 +149,6 @@ static vq_Type checkitem (lua_State *L, int t, char c, vq_Item *itemp) {
         }
         c += 'A'-'a';
     }
-    switch (c) {
-        case 'R':   *itemp = *checkrow(L, t); /* fall through */
-        case '-':   return VQ_objref;
-    }
     type = CharAsType(c);
     *itemp = toitem(L, t, type);
     return type;
@@ -249,8 +245,8 @@ static int row_newindex (lua_State *L) {
 }
 
 static int row2string (lua_State *L) {
-    LVQ_ARGS(L,A,"R");
-    lua_pushfstring(L, "row: %p %d", A[0].o.a.p, A[0].o.b.i);
+    vq_Item item = *checkrow(L, 1);
+    lua_pushfstring(L, "row: %p %d", item.o.a.p, item.o.b.i);
     return 1;
 }
 
@@ -607,12 +603,12 @@ LUA_API int luaopen_lvq_core (lua_State *L) {
     luaL_newmetatable(L, "Vlerq.view");
     luaL_register(L, NULL, lvqlib_view_m);
     
-    lua_register(L, "vopdef", vop_def);
-    
     lua_newtable(L);
     luaL_register(L, NULL, lvqlib_vops);
     lua_setglobal(L, "vops");
 
+    lua_register(L, "vopdef", vop_def);
+    
     luaL_register(L, "lvq", lvqlib_f);
     
     lua_pushstring(L, sconf);

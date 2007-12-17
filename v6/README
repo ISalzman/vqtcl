@@ -4,7 +4,7 @@ Directory contents:
 
 	README  - this file
 	base/   - main base code
-	data/   - sample datafiles
+	etc/    - support scripts and data
 	lua/    - Lua sources from lua.org
 	lvq/    - Vlerq as Lua extension
 	tests/	- top-level tests

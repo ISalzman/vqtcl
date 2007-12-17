@@ -19,7 +19,7 @@ test 1 {vqmin test} {
 
 test 2 {vqboot test} {
     exec make vqboot
-    exec ./vqboot ../data/alltypes.db | diff -u - [testsDirectory]/vqboot.ref
+    exec ./vqboot ../etc/alltypes.db | diff -u - [testsDirectory]/vqboot.ref
 } {}
 
 cd [workingDirectory]

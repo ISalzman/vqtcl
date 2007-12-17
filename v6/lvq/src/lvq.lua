@@ -98,12 +98,10 @@ end)
 
 ------------------------------------------ see http://www.equi4.com/ratcl/v6vops
 
-if nil then -- TODO: interferes with current definitions
-  -- return the size of a view as view
-  vopdef ('size', 'V', function (v)
-    return v:cmap(0)
-  end)
-end
+-- return the size of a view as view
+vopdef ('size', 'V', function (v)
+  return v:cmap(0)
+end)
 
 -- return a 1-column view with 0..N-1 ints
 vopdef ('iota', 'IS', function (v,name)
