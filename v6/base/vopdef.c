@@ -6,19 +6,22 @@
 
 #if VQ_OPDEF_H
 
-static vq_Type IotaGetter (int row, vq_Item *item) {
-    item->o.a.i = row + vOffs(item->o.a.v);
+static vq_Type StepGetter (int row, vq_Item *item) {
+    Vector v = vData(item->o.a.v);
+    item->o.a.i = v[0].o.a.i + v[0].o.b.i * (row / v[1].o.a.i);
     return VQ_int;
 }
-static Dispatch iotatab = {
-    "iota", 3, 0, 0, IndirectCleaner, IotaGetter
+static Dispatch steptab = {
+    "step", 3, 0, 0, IndirectCleaner, StepGetter
 };
 
-vq_View IotaView (int rows, const char *name, int base) {
+vq_View StepView (int rows, int start, int step, int rate, const char *name) {
     vq_View v, meta = vq_new(1, vq_meta(0));
-    Vq_setMetaRow(meta, 0, name, VQ_int, NULL);
-    v = IndirectView(meta, &iotatab, rows, 0);
-    vOffs(v) = base;
+    Vq_setMetaRow(meta, 0, name != NULL ? name : "", VQ_int, NULL);
+    v = IndirectView(meta, &steptab, rows, 2 * sizeof(vq_Item));
+    vData(v)[0].o.a.i = start;
+    vData(v)[0].o.b.i = step;
+    vData(v)[1].o.a.i = rate > 0 ? rate : 1;
     return v;
 }
 

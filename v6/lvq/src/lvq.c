@@ -454,9 +454,12 @@ static int vops_mutable (lua_State *L) {
 
 #if VQ_OPDEF_H
 
-static int vops_iota (lua_State *L) {
-    LVQ_ARGS(L,A,"VSi");
-    return pushview(L, IotaView(vCount(A[0].o.a.v), A[1].o.a.s, A[2].o.a.i));
+static int vops_step (lua_State *L) {
+    int step;
+    LVQ_ARGS(L,A,"Iiiis");
+    step = lua_isnoneornil(L, 2) ? 1 : A[2].o.a.i;
+    return pushview(L, StepView(A[0].o.a.i, A[1].o.a.i, 
+                                step, A[3].o.a.i, A[4].o.a.s));
 }
 
 static int vops_pass (lua_State *L) {
@@ -533,7 +536,7 @@ static const struct luaL_reg lvqlib_v[] = {
     {"mutable", vops_mutable},
 #endif
 #if VQ_OPDEF_H
-    {"iota", vops_iota},
+    {"step", vops_step},
     {"pass", vops_pass},
     {"virtual", vops_virtual},
 #endif

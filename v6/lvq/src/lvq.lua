@@ -105,17 +105,18 @@ end)
 
 -- tentative, see http://www.equi4.com/ratcl/v6vops
 
-if nil then -- TODO: interferese with current definitions
+if nil then -- TODO: interferes with current definitions
   -- return the size of a view as view
   vopdef ('size', 'V', function (v)
     return v:cmap(0)
   end)
-  -- return a 1-column view with 0..n-1 ints
-  vopdef ('iota', 'IS', function (n,name)
-    return vops.view(0,name..':I'):rcat(vops.step(n))
-  end)
 end
 
+-- return a 1-column view with 0..N-1 ints
+vopdef ('iota', 'IS', function (v,name)
+  --return v:step(0,1,1,name)
+  return vops.step(v,0,1,1,name)
+end)
 -- return view with rows in reverse order
 vopdef ('reverse', 'V', function (v)
   return v:rmap(v:step(#v-1,-1))
@@ -140,8 +141,8 @@ vopdef ('tag', 'VS', function (v,name)
   return v..v:iota(name)
 end)
 -- return specific rows from a view
-vopdef ('slice', 'VIII', function (v,count,start,step)
-  return v:rmap(vops.step(count,start,step))
+vopdef ('slice', 'VVII', function (v,...)
+  return v:rmap(vops.step(...))
 end)
 -- repeat all rows n times
 vopdef ('rrep', 'VI', function (v,n)
