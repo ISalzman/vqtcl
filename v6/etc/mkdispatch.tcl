@@ -89,6 +89,7 @@ define MUTABLE {
 
 define OPDEF {
     Pass        V:V
+    RowMap      V:VV
     Step        V:Iiiis
     Type        S:V
     View        V:Vv

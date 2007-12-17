@@ -176,7 +176,7 @@ static vq_View TableToView (lua_State *L, int t) {
     vq_View m, v;
     int r, rows, c, cols;
     lua_getfield(L, t, "meta");
-    m = checkview(L, -1);
+    m = lua_isnil(L, -1) ? AsMetaVop(":I") : checkview(L, -1);
     lua_pop(L, 1);
     cols = vCount(m);
     rows = cols > 0 ? lua_objlen(L, t) / cols : 0;

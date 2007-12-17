@@ -47,6 +47,11 @@ static vq_Type PassCmd_V (vq_Item A[]) {
   return VQ_view;
 }
 
+static vq_Type RowMapCmd_VV (vq_Item A[]) {
+  A[0].o.a.v = RowMapVop(A[0].o.a.v,A[1].o.a.v);
+  return VQ_view;
+}
+
 static vq_Type StepCmd_Iiiis (vq_Item A[]) {
   A[0].o.a.v = StepVop(A[0].o.a.i,A[1].o.a.i,A[2].o.a.i,A[3].o.a.i,A[4].o.a.s);
   return VQ_view;
@@ -77,6 +82,7 @@ CmdDispatch f_vdispatch[] = {
 #endif
 #ifdef VQ_OPDEF_H
   { "pass", "V:V", PassCmd_V },
+  { "rowmap", "V:VV", RowMapCmd_VV },
   { "step", "V:Iiiis", StepCmd_Iiiis },
   { "type", "S:V", TypeCmd_V },
   { "view", "V:Vv", ViewCmd_Vv },

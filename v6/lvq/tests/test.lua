@@ -80,3 +80,6 @@ vops.iota(4,'N'):p()
 vops.virtual(4, "abc:I", function (r,c) return r*r*r end):p()
 
 vops.p{meta='A:I,B,C:D'; 1,'two',3.3,4,'five',6.6,7,'eight',9.9}
+
+vv[0].v:rowmap({0,2,4,3,1}):p()
+vv[0].v:rowmap(8):last(4):p()

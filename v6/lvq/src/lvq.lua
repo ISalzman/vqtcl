@@ -74,19 +74,19 @@ end)
 
 -- vops.step    = function (count, start, step, rate)
 -- vops.vconcat = function (...)
--- vops._mccat   = function (meta, ...)
+-- vops._mcolcat   = function (meta, ...)
 
 -- column catenate
-vopdef ('ccat', '', function (...)
+vopdef ('colcat', '', function (...)
   local m = {}
   for i = 1, select('#', ...) do
     m[i] = select(i, ...):meta()
   end
-  return vops._ccat(vops.vconcat(unpack(m)), ...)
+  return vops._colcat(vops.vconcat(unpack(m)), ...)
 end)
 
--- define the .. operator as binary version of ccat
-vops.__concat = vops.ccat
+-- define the .. operator as binary version of colcat
+vops.__concat = vops.colcat
 
 -- repeat all columns n times
 vopdef ('crep', 'VI', function (v, n)
@@ -100,7 +100,7 @@ end)
 
 -- return the size of a view as view
 vopdef ('size', 'V', function (v)
-  return v:cmap(0)
+  return v:colmap(0)
 end)
 
 -- return a 1-column view with 0..N-1 ints
@@ -111,25 +111,25 @@ end)
 
 -- return view with rows in reverse order
 vopdef ('reverse', 'V', function (v)
-  return v:rmap(v:step(#v-1,-1))
+  return v:rowmap(v:step(#v-1,-1))
 end)
 
 -- take n rows from either start or end of a view
 vopdef ('take', 'VI', function (v,n)
   if n<0 then n, v = -n, v:reverse() end
-  return v:rmap(n)
+  return v:rowmap(n)
 end)
 
 -- return the first n rows
 vopdef ('first', 'VI', function (v,n)
   if n>#v then n=#v end
-  return v:rmap(n)
+  return v:rowmap(n)
 end)
 
 -- return the last n rows
 vopdef ('last', 'VI', function (v,n)
   if n>#v then n=#v end
-  return v:rmap(vops.step(n,#v-n))
+  return v:rowmap(vops.step(n,#v-n))
 end)
 
 -- add a numbered tag column to a view
@@ -139,17 +139,17 @@ end)
 
 -- return specific rows from a view
 vopdef ('slice', 'VVII', function (v,...)
-  return v:rmap(vops.step(...))
+  return v:rowmap(vops.step(...))
 end)
 
 -- repeat all rows n times
 vopdef ('rrep', 'VI', function (v,n)
-  return v:rmap(n*#v)
+  return v:rowmap(n*#v)
 end)
 
 -- repeat each row n times
 vopdef ('spread', 'VI', function (v,n)
-  return v:rmap(vops.step(n*#v,0,1,n))
+  return v:rowmap(vops.step(n*#v,0,1,n))
 end)
 
 -- cross product
@@ -160,4 +160,9 @@ end)
 -- box an integer into a new 1-row/1-col view
 vopdef ('intbox', 'I', function (i)
   return vops.step(1,i)
+end)
+
+-- create a view with same structure but no rows
+vopdef ('clone' ,'V', function (v)
+  return v:rowmap(0)
 end)
