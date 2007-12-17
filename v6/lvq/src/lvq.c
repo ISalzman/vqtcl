@@ -190,7 +190,7 @@ static vq_View TableToView (lua_State *L, int t) {
     return v;
 }
 
-#pragma mark - VLERQ.ROW -
+/* ---------------------------------------------------------- VLERQ.ROW ----- */
 
 static int row_gc (lua_State *L) {
     vq_Item *pi = lua_touserdata(L, 1); assert(pi != NULL);
@@ -249,7 +249,7 @@ static int row2string (lua_State *L) {
     return 1;
 }
 
-#pragma mark - VLERQ.VIEW -
+/* --------------------------------------------------------- VLERQ.VIEW ----- */
 
 static int view_gc (lua_State *L) {
     vq_View *vp = lua_touserdata(L, 1); assert(vp != NULL);
@@ -315,7 +315,7 @@ static int view2string (lua_State *L) {
     return 1;
 }
 
-#pragma mark - VIRTUAL VIEWS -
+/* ------------------------------------------------------ VIRTUAL VIEWS ----- */
 
 static void VirtualCleaner (Vector v) {
     lua_unref((lua_State*) vData(v), vOffs(v));
@@ -354,7 +354,7 @@ static int vops_virtual (lua_State *L) {
     return pushview(L, VirtualView(rows, A[1].o.a.v, L, A[2].o.a.i));
 }
 
-#pragma mark - VIEW OPERATORS -
+/* ----------------------------------------------------- VIEW OPERATORS ----- */
 
 static int vops_empty (lua_State *L) {
     LVQ_ARGS(L,A,"VII");
@@ -474,13 +474,13 @@ static void* EmitDataFun (void *buf, const void *ptr, intptr_t len) {
 }
 
 static int vops_emit (lua_State *L) {
-    int e;
+    int n;
     luaL_Buffer b;
     LVQ_ARGS(L,A,"V");
     luaL_buffinit(L, &b);   
-    e = ViewSave(A[0].o.a.v, &b, NULL, EmitDataFun) < 0;
+    n = ViewSave(A[0].o.a.v, &b, NULL, EmitDataFun);
     luaL_pushresult(&b);
-    if (e)
+    if (n < 0)
         return luaL_error(L, "error in view emit");
     return 1;
 }
@@ -498,7 +498,7 @@ static int vops_view (lua_State *L) {
     return pushview(L, v);
 }
 
-#pragma mark - METHOD TABLES -
+/* ------------------------------------------------------ METHOD TABLES ----- */
 
 static const struct luaL_reg lvqlib_row_m[] = {
     {"__gc", row_gc},

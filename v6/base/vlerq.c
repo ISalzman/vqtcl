@@ -4,7 +4,7 @@
 
 #include "v_defs.h"
 
-#pragma mark - MEMORY MANAGEMENT -
+/* -------------------------------------------------- MEMORY MANAGEMENT ----- */
 
 Vector AllocVector (Dispatch *vtab, int bytes) {
     Vector result;
@@ -19,7 +19,7 @@ void FreeVector (Vector v) {
     free(v - vType(v)->prefix);
 }
 
-#pragma mark - REFERENCE COUNTS -
+/* --------------------------------------------------- REFERENCE COUNTS ----- */
 
 Vector vq_retain (Vector v) {
     if (v != 0)
@@ -42,7 +42,7 @@ int vq_release (Vector v) {
     return n;
 }
 
-#pragma mark - DATA VECTORS -
+/* ------------------------------------------------------- DATA VECTORS ----- */
 
 static vq_Type NilVecGetter (int row, vq_Item *item) {
     const char *p = item->o.a.p;
@@ -250,7 +250,7 @@ Vector AllocDataVec (vq_Type type, int rows) {
     return v;
 }
 
-#pragma mark - TABLE CREATION -
+/* ----------------------------------------------------- TABLE CREATION ----- */
 
 static void ViewCleaner (Vector v) {
     int i, n = vCount(vMeta(v));
@@ -318,7 +318,7 @@ vq_View IndirectView (vq_View meta, Dispatch *vtabp, int rows, int extra) {
     return t;
 }
 
-#pragma mark - CORE TABLE FUNCTIONS -
+/* ----------------------------------------------- CORE TABLE FUNCTIONS ----- */
 
 vq_Type GetItem (int row, vq_Item *item) {
     Vector v = item->o.a.v;
@@ -371,7 +371,7 @@ void vq_replace (vq_View t, int start, int count, vq_View data) {
     vType(t)->replacer(t, start, count, data);
 }
 
-#pragma mark - UTILITY WRAPPERS -
+/* --------------------------------------------------- UTILITY WRAPPERS ----- */
 
 int Vq_getInt (vq_View t, int row, int col, int def) {
     vq_Item item;
@@ -423,7 +423,7 @@ void Vq_setMetaRow (vq_View m, int row, const char *nam, int typ, vq_View sub) {
     Vq_setView(m, row, 2, sub != NULL ? sub : EmptyMetaView());
 }
 
-#pragma mark - TYPE DESCRIPTORS -
+/* --------------------------------------------------- TYPE DESCRIPTORS ----- */
 
 int CharAsType (char c) {
     const char *p = strchr(VQ_TYPES, c & ~0x20);
@@ -453,7 +453,7 @@ const char* TypeAsString (int type, char *buf) {
     return buf;
 }
 
-#pragma mark - OPERATOR DISPATCH -
+/* -------------------------------------------------- OPERATOR DISPATCH ----- */
 
 #if 0
 CmdDispatch f_commands[] = {

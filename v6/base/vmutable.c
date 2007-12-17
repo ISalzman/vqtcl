@@ -6,7 +6,7 @@
 
 #if VQ_MUTABLE_H
 
-#pragma mark - RANGE OPERATIONS -
+/* --------------------------------------------------- RANGE OPERATIONS ----- */
 
 static int RangeSpan (Vector v, int offset, int count, int *startp, int miss) {
     int rs, ps = RangeLocate(v, offset, &rs);
@@ -27,7 +27,7 @@ static int RangeExpand (Vector v, int off) {
     return off;
 }
 
-#pragma mark - MUTABLE TABLE -
+/* ------------------------------------------------------ MUTABLE TABLE ----- */
 
 static vq_Type MutVecGetter (int row, vq_Item *item) {
     int col = item->o.b.i, aux = row;
@@ -186,7 +186,7 @@ vq_View WrapMutable (vq_View t, Object_p o) {
     return w;
 }
 
-#pragma mark - OPERATOR WRAPPERS -
+/* -------------------------------------------------- OPERATOR WRAPPERS ----- */
 
 /*
 vq_Type ReplaceCmd_OIIT (vq_Item a[]) {

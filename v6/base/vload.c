@@ -9,7 +9,7 @@
 /* forward */
 static vq_View MapSubview (Vector map, intptr_t offset, vq_View meta);
 
-#pragma mark - META DESCRIPTIONS -
+/* -------------------------------------------------- META DESCRIPTIONS ----- */
 
 static vq_View ParseDesc (char **desc, const char **nbuf, int *tbuf, vq_View *sbuf) {
     char sep, *ptr = *desc;
@@ -87,7 +87,7 @@ vq_View DescToMeta (const char *desc, int length) {
     return meta;
 }
 
-#pragma mark - METAKIT UTILITY CODE -
+/* ----------------------------------------------- METAKIT UTILITY CODE ----- */
 
 #define MF_Data(x) ((x)->o.a.s)
 #define MF_Length(x) ((intptr_t) (x)->o.b.p)
@@ -117,7 +117,7 @@ static intptr_t GetVarPair (const char **nextp) {
     return n;
 }
 
-#pragma mark - MAPPED TABLE COLUMNS -
+/* ----------------------------------------------- MAPPED TABLE COLUMNS ----- */
 
 static void MappedViewCleaner (Vector v) {
     const intptr_t *offsets = (void*) v;
@@ -190,7 +190,7 @@ static Vector MappedViewCol (Vector map, int rows, const char **nextp, vq_View m
     return result;
 }
 
-#pragma mark - MAPPED FIXED-SIZE ENTRY COLUMNS -
+/* ------------------------------------ MAPPED FIXED-SIZE ENTRY COLUMNS ----- */
 
 static Vector MappedFixedCol (Vector map, int rows, const char **nextp, int real) {
     intptr_t bytes = GetVarInt(nextp);
@@ -203,7 +203,7 @@ static Vector MappedFixedCol (Vector map, int rows, const char **nextp, int real
     return result;
 }
 
-#pragma mark - MAPPED STRING COLUMNS -
+/* ---------------------------------------------- MAPPED STRING COLUMNS ----- */
 
 static void MappedStringCleaner (Vector v) {
     vq_release(vMeta(v));
@@ -310,7 +310,7 @@ static Vector MappedStringCol (Vector map, int rows, const char **nextp, int ist
     return result;
 }
 
-#pragma mark - TREE TRAVERSAL -
+/* ----------------------------------------------------- TREE TRAVERSAL ----- */
 
 static vq_View MapCols (Vector map, const char **nextp, vq_View meta) {
     int c, cols, r, rows;
@@ -397,7 +397,7 @@ vq_View MapToView (Vector map) {
     return MapSubview(map, rootoff, EmptyMetaView());
 }
 
-#pragma mark - OPERATOR WRAPPERS -
+/* -------------------------------------------------- OPERATOR WRAPPERS ----- */
 
 vq_Type OpenCmd_S (vq_Item a[]) {
     Vector map = OpenMappedFile(a[0].o.a.s);

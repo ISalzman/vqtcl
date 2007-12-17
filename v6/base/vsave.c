@@ -19,7 +19,7 @@ typedef struct EmitInfo {
 
 static void EmitView (EmitInfo *eip, vq_View t, int describe); /* forward */
     
-#pragma mark - META DESCRIPTIONS -
+/* -------------------------------------------------- META DESCRIPTIONS ----- */
 
 void MetaAsDesc (vq_View meta, Buffer *buffer) {
     int type, r, rows = vCount(meta);
@@ -49,7 +49,7 @@ void MetaAsDesc (vq_View meta, Buffer *buffer) {
     }
 }
 
-#pragma mark - METAKIT DATA SAVE -
+/* -------------------------------------------------- METAKIT DATA SAVE ----- */
 
 static intptr_t EmitBlock (EmitInfo *eip, const void* data, int size) {
     EmitItem item;
@@ -455,7 +455,7 @@ intptr_t ViewSave (vq_View view, void *aux, SaveInitFun initfun, SaveDataFun dat
     return bytes;
 }
 
-#pragma mark - OPERATOR WRAPPERS -
+/* -------------------------------------------------- OPERATOR WRAPPERS ----- */
 
 /*
 vq_Type Meta2DescCmd_T (vq_Item a[]) {
