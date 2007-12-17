@@ -12,14 +12,8 @@ local renderers = { [0] = function (x) return '' end,
                     [7] = function (x) return '#'..#x end }
 setmetatable(renderers, { __index = function (x) return tostring end })
 
--- ignore arg types for now
-function vopdef (name, argtypes, func)
-  vops[name] = func
-end
-
 -- produce a pretty-printed tabular string from a view
 vopdef ('dump', 'V', function (vw, maxrows)
-  vw = vops.view(vw) -- accept any type that casts to a view
   maxrows = math.min(maxrows or 20, #vw)
   -- set up column information
   local desc, funs, names, widths, meta = '', {}, {}, {}, vw:meta()
@@ -63,8 +57,7 @@ end)
 
 -- shorthand for debugging: add ":p()" to print the view at that point
 vopdef ('p', 'V', function (v, ...)
-  -- print(v:dump(...))   -- TODO: this does not yet force a cast to view
-  print(vops.dump(v, ...))
+  print(v:dump(...))
   return v
 end)
 
@@ -103,7 +96,7 @@ vopdef ('crep', 'VI', function (v, n)
   return w
 end)
 
--- tentative, see http://www.equi4.com/ratcl/v6vops
+------------------------------------------ see http://www.equi4.com/ratcl/v6vops
 
 if nil then -- TODO: interferes with current definitions
   -- return the size of a view as view
@@ -117,45 +110,55 @@ vopdef ('iota', 'IS', function (v,name)
   --return v:step(0,1,1,name)
   return vops.step(v,0,1,1,name)
 end)
+
 -- return view with rows in reverse order
 vopdef ('reverse', 'V', function (v)
   return v:rmap(v:step(#v-1,-1))
 end)
+
 -- take n rows from either start or end of a view
 vopdef ('take', 'VI', function (v,n)
-if n<0 then n, v = -n, v:reverse() end
+  if n<0 then n, v = -n, v:reverse() end
   return v:rmap(n)
 end)
+
 -- return the first n rows
 vopdef ('first', 'VI', function (v,n)
-if n>#v then n=#v end
+  if n>#v then n=#v end
   return v:rmap(n)
 end)
+
 -- return the last n rows
 vopdef ('last', 'VI', function (v,n)
-if n>#v then n=#v end
+  if n>#v then n=#v end
   return v:rmap(vops.step(n,#v-n))
 end)
+
 -- add a numbered tag column to a view
 vopdef ('tag', 'VS', function (v,name)
   return v..v:iota(name)
 end)
+
 -- return specific rows from a view
 vopdef ('slice', 'VVII', function (v,...)
   return v:rmap(vops.step(...))
 end)
+
 -- repeat all rows n times
 vopdef ('rrep', 'VI', function (v,n)
   return v:rmap(n*#v)
 end)
+
 -- repeat each row n times
 vopdef ('spread', 'VI', function (v,n)
   return v:rmap(vops.step(n*#v,0,1,n))
 end)
+
 -- cross product
 vopdef ('product', 'VV', function (v,w)
   return v:spread(w)..w:rrep(v)
 end)
+
 -- box an integer into a new 1-row/1-col view
 vopdef ('intbox', 'I', function (i)
   return vops.step(1,i)

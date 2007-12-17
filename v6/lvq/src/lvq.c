@@ -140,23 +140,28 @@ static vq_Item toitem (lua_State *L, int t, vq_Type type) {
     return item;
 }
 
+static vq_Type checkitem (lua_State *L, int t, char c, vq_Item *itemp) {
+    vq_Type type;
+    if ('a' <= c && c <= 'z') {
+        if (lua_isnoneornil(L, t)) {
+            itemp->o.a.p = itemp->o.b.p = 0;
+            return VQ_nil;
+        }
+        c += 'A'-'a';
+    }
+    switch (c) {
+        case 'R':   *itemp = *checkrow(L, t); /* fall through */
+        case '-':   return VQ_objref;
+    }
+    type = CharAsType(c);
+    *itemp = toitem(L, t, type);
+    return type;
+}
+
 static void parseargs(lua_State *L, vq_Item *buf, const char *desc) {
     int i;
-    for (i = 0; *desc; ++i) {
-        char c = *desc++;
-        if ('a' <= c && c <= 'z') {
-            if (lua_isnoneornil(L, i+1)) {
-                buf[i].o.a.p = buf[i].o.b.p = 0;
-                continue;
-            }
-            c += 'A'-'a';
-        }
-        switch (c) {
-            case 'R':   buf[i] = *checkrow(L, i+1); continue;
-            case '-':   continue;
-        }
-        buf[i] = toitem(L, i+1, CharAsType(c));
-    }
+    for (i = 0; *desc; ++i)
+        checkitem(L, i+1, *desc++, buf+i);
 }
 
 #define LVQ_ARGS(state,args,desc) \
@@ -519,7 +524,7 @@ static const struct luaL_reg lvqlib_view_m[] = {
     {NULL, NULL},
 };
 
-static const struct luaL_reg lvqlib_v[] = {
+static const struct luaL_reg lvqlib_vops[] = {
     {"at", vops_at},
     {"empty", vops_empty},
     {"meta", vops_meta},
@@ -550,6 +555,33 @@ static const struct luaL_reg lvqlib_f[] = {
     {NULL, NULL},
 };
 
+/* cast all vop arguments to the proper type, then call the real vop */
+static int vop_check (lua_State *L) {
+    int i;
+    const char *fmt = luaL_checkstring(L, lua_upvalueindex(1));
+    lua_pushvalue(L, lua_upvalueindex(2));
+    for (i = 0; fmt[i]; ++i)
+        if (fmt[i] == '-')
+            lua_pushvalue(L, i+1);
+        else {
+            vq_Item item;
+            vq_Type type = checkitem(L, i+1, fmt[i], &item);
+            pushitem(L, type, &item);
+        }
+    lua_call(L, i, 1);
+    return 1;
+}
+
+/* define a vop as a C closure which first casts its args to the proper type */
+static int vop_def (lua_State *L) {
+    assert(lua_gettop(L) == 3);
+    lua_getglobal(L, "vops");           /* a1 a2 a3 vops */
+    lua_insert(L, 1);                   /* vops a1 a2 a3 */
+    lua_pushcclosure(L, vop_check, 2);  /* vops a1 f */
+    lua_settable(L, 1);                 /* vops */
+    return 0;
+}
+
 LUA_API int luaopen_lvq_core (lua_State *L) {
     const char *sconf = "lvq " VQ_RELEASE
 #if VQ_LOAD_H
@@ -575,8 +607,10 @@ LUA_API int luaopen_lvq_core (lua_State *L) {
     luaL_newmetatable(L, "Vlerq.view");
     luaL_register(L, NULL, lvqlib_view_m);
     
+    lua_register(L, "vopdef", vop_def);
+    
     lua_newtable(L);
-    luaL_register(L, NULL, lvqlib_v);
+    luaL_register(L, NULL, lvqlib_vops);
     lua_setglobal(L, "vops");
 
     luaL_register(L, "lvq", lvqlib_f);

@@ -1,7 +1,6 @@
 _CONFIG	lvq 1.6.0 lo mu op ra sa
 _NAME	lvq
 _COPYRIGHT	Copyright (C) 1996-2007 Jean-Claude Wippler
-vopdef	function: 0x[...]
 _M	table: 0x[...]
 _VERSION	LuaVlerq 1.6
 _PACKAGE	
