@@ -88,38 +88,36 @@ vq_View (ListAsMetaView) (void *ip, Object_p obj);
 int (ObjToItem) (void *L, vq_Type type, vq_Item *item);
 Object_p (ItemAsObj) (vq_Type type, vq_Item item);
 
-/* memory management in core.c */
+/* memory management */
 
 Vector (AllocVector) (Dispatch *vtab, int bytes);
 void (FreeVector) (Vector v);
 
-/* core view functions in core.c */
+/* core view functions */
 
 vq_Type (GetItem) (int row, vq_Item *item);
 
-/* data vectors in core.c */
+/* data vectors */
 
 Vector (AllocDataVec) (vq_Type type, int rows);
 
-/* view creation in core.c */
+/* view creation */
 
 vq_View (EmptyMetaView) (void);
 void (IndirectCleaner) (Vector v);
 vq_View (IndirectView) (vq_View meta, Dispatch *vtab, int rows, int extra);
 
-/* utility wrappers in core.c */
+/* utility wrappers */
 
 int (CharAsType) (char c);
 int (StringAsType) (const char *str);
 const char* (TypeAsString) (int type, char *buf);
 
-/* operator dispatch in core.c */
+/* operator dispatch */
 
 typedef struct {
     const char *name, *args;
     vq_Type (*proc)(vq_Item*);
 } CmdDispatch;
-
-extern CmdDispatch f_commands[];
 
 #endif
