@@ -15,9 +15,4 @@ int (RangeLocate) (Vector v, int off, int *offp);
 void (RangeInsert) (Vector *vecp, int off, int count, int mode);
 void (RangeDelete) (Vector *vecp, int off, int count);
 
-vq_Type (RflipCmd_OII) (vq_Item a[]);
-vq_Type (RlocateCmd_OI) (vq_Item a[]);
-vq_Type (RinsertCmd_OIII) (vq_Item a[]);
-vq_Type (RdeleteCmd_OII) (vq_Item a[]);
-
 #endif

@@ -55,7 +55,7 @@ static vq_View ParseDesc (char **desc, const char **nbuf, int *tbuf, vq_View *sb
     
     return result;
 }
-vq_View DescToMeta (const char *desc, int length) {
+static vq_View DescLenToMeta (const char *desc, int length) {
     int i, bytes, limit = 1;
     void *buffer;
     const char **nbuf;
@@ -63,9 +63,7 @@ vq_View DescToMeta (const char *desc, int length) {
     vq_View *sbuf, meta;
     char *dbuf;
     
-    if (length < 0)
-        length = strlen(desc);
-    if (length == 0)
+    if (length <= 0)
         return EmptyMetaView();
     
     /* find a hard upper bound for the buffer requirements */
@@ -85,6 +83,10 @@ vq_View DescToMeta (const char *desc, int length) {
     
     free(buffer);
     return meta;
+}
+
+vq_View AsMetaVop (const char *desc) {
+    return DescLenToMeta(desc, strlen(desc));
 }
 
 /* ----------------------------------------------- METAKIT UTILITY CODE ----- */
@@ -169,7 +171,7 @@ static Vector MappedViewCol (Vector map, int rows, const char **nextp, vq_View m
         GetVarInt(&next);
         if (cols == 0) {
             intptr_t desclen = GetVarInt(&next);
-            meta = DescToMeta(next, desclen);
+            meta = DescLenToMeta(next, desclen);
             next += desclen;
         }
         if (GetVarInt(&next) > 0) {
@@ -361,7 +363,7 @@ static vq_View MapSubview (Vector map, intptr_t offset, vq_View meta) {
     
     if (vCount(meta) == 0) {
         intptr_t desclen = GetVarInt(&next);
-        meta = DescToMeta(next, desclen);
+        meta = DescLenToMeta(next, desclen);
         next += desclen;
     }
 
@@ -373,7 +375,7 @@ static int BigEndianInt32 (const char *p) {
     return (p[0] << 24) | (up[1] << 16) | (up[2] << 8) | up[3];
 }
 
-vq_View MapToView (Vector map) {
+static vq_View MapToView (Vector map) {
     int i, t[4];
     intptr_t datalen, rootoff;
     
@@ -399,12 +401,9 @@ vq_View MapToView (Vector map) {
 
 /* -------------------------------------------------- OPERATOR WRAPPERS ----- */
 
-vq_Type OpenCmd_S (vq_Item a[]) {
-    Vector map = OpenMappedFile(a[0].o.a.s);
-    if (map == 0)
-        return VQ_nil;
-    a->o.a.v = MapToView(map);
-    return VQ_view;
+vq_View OpenVop (const char *filename) {
+    Vector map = OpenMappedFile(filename);
+    return map != NULL ? MapToView(map) : NULL;
 }
 
 #endif

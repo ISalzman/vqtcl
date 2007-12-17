@@ -74,6 +74,16 @@ puts $fdc "#include \"vq_conf.h\""
 
 define - {
     Meta    V:V
+    Replace V:VIIV
+}
+
+define LOAD {
+    AsMeta  V:S
+    Open    V:S
+}
+
+define MUTABLE {
+    Mutable V:V
 }
 
 define OPDEF {

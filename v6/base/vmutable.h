@@ -8,10 +8,6 @@
 #include "v_defs.h"
 
 int (IsMutable) (vq_View t);
-vq_View (WrapMutable) (vq_View t, Object_p o);
-
-vq_Type (ReplaceCmd_OIIV) (vq_Item a[]);
-vq_Type (SetCmd_OIIO) (vq_Item a[]);
-vq_Type (UnsetCmd_OII) (vq_Item a[]);
+vq_View (MutableVop) (vq_View t);
 
 #endif

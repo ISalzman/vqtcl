@@ -256,7 +256,7 @@ static vq_View ObjAsView (Tcl_Interp *interp, Tcl_Obj *obj) {
         return vq_new(rows, NULL);
     
     if (objc == 1)
-        return DescToMeta(Tcl_GetString(objv[0]), -1);
+        return AsMetaVop(Tcl_GetString(objv[0]));
 
     return ComputeView(interp, Tcl_DuplicateObj(obj), objc, objv);
 }
@@ -334,18 +334,18 @@ static Tcl_Obj* VectorAsList (Vector v) {
     return ColumnAsList (item, vCount(v), -1);
 }
 
-static Tcl_Obj* ChangesAsList (vq_View table) {
-    int c, rows = vCount(table), cols = vCount(vq_meta(table));
+static Tcl_Obj* ChangesAsList (vq_View view) {
+    int c, rows = vCount(view), cols = vCount(vq_meta(view));
     Tcl_Obj *result = Tcl_NewListObj(0, NULL);
-    if (IsMutable(table)) {
+    if (IsMutable(view)) {
         TclAppend(result, Tcl_NewStringObj("mutable", 7));
-        TclAppend(result, vOref(table));
-        TclAppend(result, VectorAsList(vDelv(table)));
-        TclAppend(result, VectorAsList(vPerm(table)));
-        TclAppend(result, VectorAsList(vInsv(table)));
+        TclAppend(result, vOref(view));
+        TclAppend(result, VectorAsList(vDelv(view)));
+        TclAppend(result, VectorAsList(vPerm(view)));
+        TclAppend(result, VectorAsList(vInsv(view)));
         if (rows > 0)
             for (c = 0; c < cols; ++c) {
-                Vector *vecp = (Vector*) vData(table) + 3 * c;
+                Vector *vecp = (Vector*) vData(view) + 3 * c;
                 TclAppend(result, VectorAsList(vecp[0]));
                 if (vecp[0] != 0 && vCount(vecp[0]) > 0) {
                     TclAppend(result, VectorAsList(vecp[1]));

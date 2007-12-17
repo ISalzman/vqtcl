@@ -70,7 +70,7 @@ static vq_View TableToView (lua_State *L, int t);
 static vq_View checkview (lua_State *L, int t) {
     switch (lua_type(L, t)) {
         case LUA_TNUMBER:   return vq_new(luaL_checkinteger(L, t), NULL);
-        case LUA_TSTRING:   return DescToMeta(lua_tostring(L, t), -1);
+        case LUA_TSTRING:   return AsMetaVop(lua_tostring(L, t));
         case LUA_TTABLE:    return TableToView(L, t);
     }
     return *(vq_View*) luaL_checkudata(L, t, "Vlerq.view");
@@ -396,13 +396,6 @@ static int vops_row (lua_State *L) {
     return 1;
 }
 
-static int vops_replace (lua_State *L) {
-    LVQ_ARGS(L,A,"VIIV");
-    vq_replace(A[0].o.a.v, A[1].o.a.i, A[2].o.a.i, A[3].o.a.v);
-    lua_pop(L, 3);
-    return 1;
-}
-
 static int vops_struct (lua_State *L) {
     vq_View v;
     luaL_Buffer b;
@@ -413,41 +406,6 @@ static int vops_struct (lua_State *L) {
     luaL_pushresult(&b);
     return 1;
 }
-
-#if VQ_LOAD_H
-
-/*
-vq_Type lvq_load (lua_State *L) {
-    Vector map;
-    Tcl_Obj *obj = a[0].o.a.p;
-    ObjToItem(VQ_bytes, &a[0]);
-    map = OpenMappedBytes(a[0].o.a.p, a[0].o.b.i, obj);
-    if (map == 0)
-        return VQ_nil;
-    a->o.a.m = MapToTable(map);
-    return VQ_table;
-}
-*/
-
-static int vops_open (lua_State *L) {
-    Vector map;
-    LVQ_ARGS(L,A,"S");
-    map = OpenMappedFile(A[0].o.a.s);
-    if (map == 0)
-        return luaL_error(L, "cannot map '%s' file", A[0].o.a.s);
-    return pushview(L, MapToView(map));
-}
-
-#endif
-
-#if VQ_MUTABLE_H
-
-static int vops_mutable (lua_State *L) {
-    LVQ_ARGS(L,A,"V");
-    return pushview(L, WrapMutable(A[0].o.a.v, NULL));
-}
-
-#endif
 
 #if VQ_SAVE_H
 
@@ -503,17 +461,9 @@ static const struct luaL_reg lvqlib_vops[] = {
     {"at", vops_at},
     {"empty", vops_empty},
     {"row", vops_row},
-    {"replace", vops_replace},
     {"struct", vops_struct},
     {"type", vops_type},
     {"view", vops_view},
-#if VQ_LOAD_H
-    /* {"load", lvq_load}, */
-    {"open", vops_open},
-#endif
-#if VQ_MUTABLE_H
-    {"mutable", vops_mutable},
-#endif
 #if VQ_OPDEF_H
     {"virtual", vops_virtual},
 #endif

@@ -78,18 +78,15 @@ typedef struct Tcl_Obj *Object_p;
 typedef void           *Object_p;
 #endif
 
-#define MetaVop(v) vMeta(v)
+#define MetaVop(v)              vMeta(v)
+#define ReplaceVop(v,a,b,c)     vq_replace(v,a,b,c)
 
 Object_p (ObjRetain) (Object_p obj);
 void (ObjRelease) (Object_p obj);
 
-void (UpdateVar) (Object_p ref, Object_p val);
 vq_View (ListAsMetaView) (void *ip, Object_p obj);
 int (ObjToItem) (void *L, vq_Type type, vq_Item *item);
-Object_p (MutableObject) (Object_p obj);
 Object_p (ItemAsObj) (vq_Type type, vq_Item item);
-
-vq_Type (DataCmd_VIX) (vq_Item a[]);
 
 /* memory management in core.c */
 
@@ -124,10 +121,5 @@ typedef struct {
 } CmdDispatch;
 
 extern CmdDispatch f_commands[];
-
-/* vvopdef.c */
-
-vq_View (IotaView) (int rows, const char *name, int base);
-vq_View (PassView) (vq_View v);
 
 #endif

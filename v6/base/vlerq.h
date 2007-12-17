@@ -70,13 +70,13 @@ int     (vq_release) (vq_View t);
 
 /* core view functions */
 
-vq_View   (vq_new) (int rows, vq_View m);
-vq_View  (vq_meta) (vq_View v);
-int      (vq_size) (vq_View v);
-int     (vq_empty) (vq_View v, int row, int col);
-vq_Item   (vq_get) (vq_View v, int row, int col, vq_Type type, vq_Item def);
-void      (vq_set) (vq_View v, int row, int col, vq_Type type, vq_Item val);
-void  (vq_replace) (vq_View v, int start, int count, vq_View data);
+vq_View      (vq_new) (int rows, vq_View m);
+vq_View     (vq_meta) (vq_View v);
+int         (vq_size) (vq_View v);
+int        (vq_empty) (vq_View v, int row, int col);
+vq_Item      (vq_get) (vq_View v, int row, int col, vq_Type type, vq_Item def);
+void         (vq_set) (vq_View v, int row, int col, vq_Type type, vq_Item val);
+vq_View  (vq_replace) (vq_View v, int start, int count, vq_View data);
 
 /* convenience wrappers */
 

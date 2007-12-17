@@ -7,12 +7,7 @@
 
 #include "v_defs.h"
 
-vq_View (DescToMeta) (const char *desc, int length);
-vq_View (MapToView) (Vector map);
-
-vq_Type (Desc2MetaCmd_S) (vq_Item a[]);
-vq_Type (OpenCmd_S) (vq_Item a[]);
-
-vq_Type (LoadCmd_O) (vq_Item a[]);
+vq_View (AsMetaVop) (const char *desc);
+vq_View (OpenVop) (const char *filename);
 
 #endif

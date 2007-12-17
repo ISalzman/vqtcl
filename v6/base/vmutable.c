@@ -171,8 +171,9 @@ int IsMutable (vq_View t) {
     return vType(t) == &muvtab;
 }
 
-vq_View WrapMutable (vq_View t, Object_p o) {
+vq_View MutableVop (vq_View t) {
     vq_View meta = vMeta(t);
+    Object_p o = 0; /* TODO: cleanup */
     int i, cols = vCount(meta);
     vq_View w = IndirectView(meta, &muvtab, vCount(t),
                                 3 * vCount(meta) * sizeof(Vector));
@@ -185,40 +186,5 @@ vq_View WrapMutable (vq_View t, Object_p o) {
     }
     return w;
 }
-
-/* -------------------------------------------------- OPERATOR WRAPPERS ----- */
-
-/*
-vq_Type ReplaceCmd_OIIT (vq_Item a[]) {
-    Object_p obj = MutableObject(a[0].o.a.p);
-    vq_View t = ObjAsView(obj);
-    vq_replace(t, a[1].o.a.i, a[2].o.a.i, a[3].o.a.v);
-    UpdateVar(a[0].o.a.p, obj);
-    return VQ_nil;
-}
-vq_Type SetCmd_OIIO (vq_Item a[]) {
-    Object_p obj = MutableObject(a[0].o.a.p);
-    vq_View t = ObjAsView(obj);
-    int row = a[1].o.a.i, column = a[2].o.a.i;
-    vq_Type type = Vq_getInt(vMeta(t), column, 1, VQ_nil) & VQ_TYPEMASK;
-    if (ObjToItem(type, a+3)) {
-        if (row >= vCount(t))
-            vCount(t) = row + 1;
-        vq_set(t, row, column, type, a[3]);
-        UpdateVar(a[0].o.a.p, obj);
-    }
-    return VQ_nil;
-}
-vq_Type UnsetCmd_OII (vq_Item a[]) {
-    Object_p obj = MutableObject(a[0].o.a.p);
-    vq_View t = ObjAsView(obj);
-    int row = a[1].o.a.i, column = a[2].o.a.i;
-    if (row >= vCount(t))
-        vCount(t) = row + 1;
-    vq_set(t, row, column, VQ_nil, a[0]);
-    UpdateVar(a[0].o.a.p, obj);
-    return VQ_nil;
-}
-*/
 
 #endif

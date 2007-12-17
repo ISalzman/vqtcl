@@ -365,10 +365,11 @@ void vq_set (vq_View t, int row, int col, vq_Type type, vq_Item val) {
     vType(t)->setter(t, row, col, type != VQ_nil ? &val : 0);
 }
 
-void vq_replace (vq_View t, int start, int count, vq_View data) {
+vq_View vq_replace (vq_View t, int start, int count, vq_View data) {
     assert(start >= 0 && count >= 0 && start + count <= vCount(t));
     assert(t != 0 && vType(t)->replacer != 0);
     vType(t)->replacer(t, start, count, data);
+    return t;
 }
 
 /* --------------------------------------------------- UTILITY WRAPPERS ----- */

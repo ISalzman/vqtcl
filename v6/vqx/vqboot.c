@@ -17,14 +17,13 @@
 #include <stdio.h>
 
 int main (int argc, char **argv) {
-    vq_Item x;
     vq_View v;
     int r;
     
     if (argc > 1) {
-        x.o.a.s = argv[1];
-        if (OpenCmd_S(&x) == VQ_view) {
-            v = vq_meta(Vq_getView(x.o.a.v, 0, 0, 0));
+        v = OpenVop(argv[1]);
+        if (v != NULL) {
+            v = vq_meta(Vq_getView(v, 0, 0, 0));
             
             for (r = 0; r < vq_size(v); ++r)
                 puts(Vq_getString(v, r, 0, ""));
