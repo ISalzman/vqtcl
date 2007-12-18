@@ -104,20 +104,15 @@ vopdef ('size', 'V', function (v)
 end)
 
 -- return a 1-column view with 0..N-1 ints
-vopdef ('iota', 'IS', function (v,name)
+vopdef ('iota', 'VS', function (v,name)
   --return v:step(0,1,1,name)
-  return vops.step(v,0,1,1,name)
+  return vops.step(#v,0,1,1,name)
 end)
 
 -- return view with rows in reverse order
 vopdef ('reverse', 'V', function (v)
-  return v:rowmap(v:step(#v-1,-1))
-end)
-
--- take n rows from either start or end of a view
-vopdef ('take', 'VI', function (v,n)
-  if n<0 then n, v = -n, v:reverse() end
-  return v:rowmap(n)
+  --return v:rowmap(v:step(#v-1,-1))
+  return v:rowmap(vops.step(#v,#v-1,-1))
 end)
 
 -- return the first n rows

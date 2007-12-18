@@ -47,7 +47,8 @@ v:p()
 
 vv=vops.open('../etc/simple.db')
 print(vv)
-vv[0].v:p()
+v0=vv[0].v
+v0:p()
 print(vops.open('../etc/alltypes.db'))
 
 --s=v:emit()
@@ -81,5 +82,8 @@ vops.virtual(4, "abc:I", function (r,c) return r*r*r end):p()
 
 vops.p{meta='A:I,B,C:D'; 1,'two',3.3,4,'five',6.6,7,'eight',9.9}
 
-vv[0].v:rowmap({0,2,4,3,1}):p()
-vv[0].v:rowmap(8):last(4):p()
+v0:rowmap({0,2,4,3,1}):p()
+v0:rowmap(8):last(4):p()
+
+--vops.iota(3,'N'):rowmap(7):p()
+--vops.iota(3,'N'):reverse():rowmap(7):p()
