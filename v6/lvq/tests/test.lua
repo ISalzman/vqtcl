@@ -92,3 +92,5 @@ v0:colmap(3):p()
 
 --vops.rowcat(1,2,3,4):p()
 --v0:rowcat(v0):p()
+--v0:colcat(v0,v0):p()
+--v1=v0..v0..v0; v1:p()

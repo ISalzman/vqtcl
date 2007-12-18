@@ -111,6 +111,7 @@ static Dispatch colmaptab = {
 };
 
 vq_View ColMapVop (vq_View v, vq_View map) {
+    /* TODO: better - store col refs in a new view, avoids extra getter layer */
     vq_View t, m = vMeta(map), mm = RowMapVop(vMeta(v), map);
     t = IndirectView(mm, &colmaptab, vCount(v), sizeof(vq_Item));
     vOrig(t) = vq_retain(v);
@@ -145,8 +146,9 @@ vq_View RowCatVop (Vector views) {
     vq_Item item;
     Vector data;
     int i, n = vCount(views);
+    vq_retain(views);
     assert(n > 0);
-    t = IndirectView(vMeta(views->o.a.v), &rowcattab, 0, n * sizeof(vq_Item));
+    t = IndirectView(vMeta(views[0].o.a.v), &rowcattab, 0, n * sizeof(vq_Item));
     data = vData(t);
     for (i = 0; i < n; ++i) {
         item.o.a.v = views;
@@ -156,6 +158,36 @@ vq_View RowCatVop (Vector views) {
         vCount(t) += data[i].o.b.i;
     }
     vOffs(t) = n;
+    vq_release(views);
+    return t;
+}
+
+vq_View ColCatVop (Vector views) {
+    vq_View t, v;
+    vq_Item item;
+    Vector metas;
+    int i, j, c = 0, cols, n = vCount(views);
+    vq_retain(views);
+    assert(n > 0);
+    metas = AllocDataVec(VQ_view, n);
+    for (i = 0; i < n; ++i) {
+        item.o.a.v = views;
+        GetItem(i, &item);
+        item.o.a.v = vMeta(item.o.a.v);
+        vType(metas)->setter(metas, i, 0, &item);        
+    }
+    t = vq_new(vCount(views[0].o.a.v), RowCatVop(metas));
+    for (i = 0; i < n; ++i) {
+        item.o.a.v = views;
+        GetItem(i, &item);
+        v = item.o.a.v;
+        cols = vCount(vMeta(v));
+        for (j = 0; j < cols; ++j) {
+            t[c++] = v[j];
+            vq_retain(v[j].o.a.v);
+        }
+    }
+    vq_release(views);
     return t;
 }
 

@@ -42,6 +42,11 @@ static vq_Type MutableCmd_V (vq_Item A[]) {
 
 #ifdef VQ_OPDEF_H
 
+static vq_Type ColCatCmd__V (vq_Item A[]) {
+  A[0].o.a.v = ColCatVop(A[0].o.a.v);
+  return VQ_view;
+}
+
 static vq_Type ColMapCmd_VV (vq_Item A[]) {
   A[0].o.a.v = ColMapVop(A[0].o.a.v,A[1].o.a.v);
   return VQ_view;
@@ -91,6 +96,7 @@ CmdDispatch f_vdispatch[] = {
   { "mutable", "V:V", MutableCmd_V },
 #endif
 #ifdef VQ_OPDEF_H
+  { "colcat", "V:_V", ColCatCmd__V },
   { "colmap", "V:VV", ColMapCmd_VV },
   { "pass", "V:V", PassCmd_V },
   { "rowcat", "V:_V", RowCatCmd__V },

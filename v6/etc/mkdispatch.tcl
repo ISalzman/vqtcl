@@ -91,6 +91,7 @@ define MUTABLE {
 }
 
 define OPDEF {
+    ColCat      V:_V
     ColMap      V:VV
     Pass        V:V
     RowCat      V:_V

@@ -13,6 +13,7 @@ const char* (TypeVop) (vq_View v);
 vq_View (ViewVop) (vq_View v, vq_View m);
 vq_View (RowMapVop) (vq_View v, vq_View map);
 vq_View (ColMapVop) (vq_View v, vq_View map);
-vq_View (RowCatVop) (Vector map);
+vq_View (RowCatVop) (Vector views);
+vq_View (ColCatVop) (Vector views);
 
 #endif

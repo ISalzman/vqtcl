@@ -70,23 +70,7 @@ vopdef ('save', 'VS', function (v, fn)
   return #s
 end)
 
--- tentative definitions, not fully worked out yet
-
--- vops.step    = function (count, start, step, rate)
--- vops.vconcat = function (...)
--- vops._mcolcat   = function (meta, ...)
-
--- column catenate
-vopdef ('colcat', '', function (...)
-  local m = {}
-  for i = 1, select('#', ...) do
-    m[i] = select(i, ...):meta()
-  end
-  return vops._colcat(vops.vconcat(unpack(m)), ...)
-end)
-
--- define the .. operator as binary version of colcat
-vops.__concat = vops.colcat
+-------------------------------- tentative definitions, not fully worked out yet
 
 -- repeat all columns n times
 vopdef ('crep', 'VI', function (v, n)
@@ -97,6 +81,9 @@ vopdef ('crep', 'VI', function (v, n)
 end)
 
 ------------------------------------------ see http://www.equi4.com/ratcl/v6vops
+
+-- define the .. operator as binary version of colcat
+getmetatable(vops.view(0)).__concat = vops.colcat
 
 -- return the size of a view as view
 vopdef ('size', 'V', function (v)
