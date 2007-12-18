@@ -23,6 +23,9 @@ proc gencall {name types} {
     set i -1
     set call "  "
     set fieldmap {I o.a.i L w F o.a.f D d V o.a.v S o.a.s O o.a.p T o.a.i}
+    if {[regexp {_(.+)} $types - va]} {
+        set types [regsub {_.*} $types [string repeat V [string length $va]]]
+    }
     foreach t [split $types ""] {
         if {$t eq ":"} {
             append call " = " $name "Vop("
@@ -90,6 +93,7 @@ define MUTABLE {
 define OPDEF {
     ColMap      V:VV
     Pass        V:V
+    RowCat      V:_V
     RowMap      V:VV
     Step        V:Iiiis
     Type        S:V

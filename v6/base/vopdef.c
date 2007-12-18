@@ -121,4 +121,42 @@ vq_View ColMapVop (vq_View v, vq_View map) {
     return t;
 }
 
+static void RowCatCleaner (vq_View v) {
+    int n = vOffs(v);
+    while (--n >= 0)
+        vq_release(vData(v)[n].o.a.v);
+    IndirectCleaner(v);
+}
+
+static vq_Type RowCatGetter (int row, vq_Item *itemp) {
+    vq_Item *v = vData(itemp->o.a.v);
+    while (row >= v->o.b.i)
+        row -= (v++)->o.b.i;
+    *itemp = v->o.a.v[itemp->o.b.i];
+    return GetItem(row, itemp);
+}
+
+static Dispatch rowcattab = {
+    "rowcat", 3, 0, 0, RowCatCleaner, RowCatGetter
+};
+
+vq_View RowCatVop (Vector views) {
+    vq_View t;
+    vq_Item item;
+    Vector data;
+    int i, n = vCount(views);
+    assert(n > 0);
+    t = IndirectView(vMeta(views->o.a.v), &rowcattab, 0, n * sizeof(vq_Item));
+    data = vData(t);
+    for (i = 0; i < n; ++i) {
+        item.o.a.v = views;
+        GetItem(i, &item);
+        data[i].o.a.v = vq_retain(item.o.a.v);
+        data[i].o.b.i = vCount(item.o.a.v);
+        vCount(t) += data[i].o.b.i;
+    }
+    vOffs(t) = n;
+    return t;
+}
+
 #endif

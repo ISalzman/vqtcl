@@ -487,16 +487,38 @@ static int vop_def (lua_State *L) {
 /* this union is needed to avoid ISO C warnings w.r.t function vs. void ptrs */
 typedef union { void *p; vq_Type (*f)(vq_Item*); } vq_FunPtrCast;
 
+/* collect remaining arguments as vectors */
+static void collect_args (lua_State *L, int t, const char* fmt, int argc, vq_Item *argv) {
+    vq_Item item;
+    int i, cols = strlen(fmt), rows;
+    assert(cols > 0 && argc % cols == 0);
+    rows = argc / cols;
+    /* TODO: clean up these new vectors somewhere... */
+    for (i = 0; i < cols; ++i)
+        argv[i].o.a.v = AllocDataVec(CharAsType(fmt[i]), rows);
+    for (i = 0; i < argc; ++i) {
+        int col = i % cols;
+        vq_Type type = checkitem(L, t+i, fmt[col], &item);
+        Vector v = argv[col].o.a.v;
+        vType(v)->setter(v, i/cols, col, type != VQ_nil ? &item : 0);        
+    }
+}
+
 /* cast all vop arguments to the proper type, then call the real C code */
 static int vop_ccall (lua_State *L) {
     int i;
     vq_Item args [10];
     vq_FunPtrCast fp;
-    const char *fmt = luaL_checkstring(L, lua_upvalueindex(1));
+    const char *fmt = luaL_checkstring(L, lua_upvalueindex(1)), *afmt = fmt+2;
     assert(sizeof fp.p == sizeof fp.f);
     fp.p = lua_touserdata(L, lua_upvalueindex(2));
-    for (i = 0; fmt[i+2]; ++i)
-        checkitem(L, i+1, fmt[i+2], args+i);
+    for (i = 0; *afmt; ++i) {
+        if (*afmt == '_') {
+            collect_args(L, i+1, ++afmt, lua_gettop(L)-i, args+i);
+            break;
+        }
+        checkitem(L, i+1, *afmt++, args+i);
+    }
     (fp.f)(args);
     return pushitem(L, *fmt, args);
 }
