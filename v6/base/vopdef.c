@@ -58,8 +58,15 @@ static void RowMapCleaner (vq_View v) {
 static vq_Type RowMapGetter (int row, vq_Item *itemp) {
     vq_View v = itemp->o.a.v;
     vq_Item map = *vData(v);
-    if (map.o.a.v != NULL && GetItem(row, &map) == VQ_int)
+    if (map.o.a.v != NULL && GetItem(row, &map) == VQ_int) {
+        /* extra logic to support special maps with relative offsets < 0 */
+        if (map.o.a.i < 0) {
+            row += map.o.a.i;
+            map = *vData(v);
+            GetItem(row, &map);
+        }
         row = map.o.a.i;
+    }
     v = vOrig(v);
     if (row >= vCount(v) && vCount(v) > 0)
         row %= vCount(v);
