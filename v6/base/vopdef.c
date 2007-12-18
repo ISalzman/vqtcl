@@ -49,13 +49,14 @@ vq_View ViewVop (vq_View v, vq_View m) {
     return v;
 }
 
-static void RowMapCleaner (vq_View v) {
+static void RowColMapCleaner (vq_View v) {
     vq_release(vOrig(v));
     vq_release(vData(v)->o.a.v);
     IndirectCleaner(v);
 }
 
 static vq_Type RowMapGetter (int row, vq_Item *itemp) {
+    int n;
     vq_View v = itemp->o.a.v;
     vq_Item map = *vData(v);
     if (map.o.a.v != NULL && GetItem(row, &map) == VQ_int) {
@@ -68,19 +69,50 @@ static vq_Type RowMapGetter (int row, vq_Item *itemp) {
         row = map.o.a.i;
     }
     v = vOrig(v);
-    if (row >= vCount(v) && vCount(v) > 0)
-        row %= vCount(v);
+    n = vCount(v);
+    if (row >= n && n > 0)
+        row %= n;
     *itemp = v[itemp->o.b.i];
     return GetItem(row, itemp);
 }
 
 static Dispatch rowmaptab = {
-    "rowmap", 3, 0, 0, RowMapCleaner, RowMapGetter
+    "rowmap", 3, 0, 0, RowColMapCleaner, RowMapGetter
 };
 
 vq_View RowMapVop (vq_View v, vq_View map) {
     vq_View t, m = vMeta(map);
     t = IndirectView(vMeta(v), &rowmaptab, vCount(map), sizeof(vq_Item));
+    vOrig(t) = vq_retain(v);
+    if (vCount(m) > 0 && (Vq_getInt(m, 0, 1, VQ_nil) & VQ_TYPEMASK) == VQ_int) {
+        *vData(t) = map[0];
+        vq_retain(map[0].o.a.v);
+    }
+    return t;
+}
+
+static vq_Type ColMapGetter (int row, vq_Item *itemp) {
+    int n;
+    vq_View v = itemp->o.a.v;
+    int col = itemp->o.b.i;
+    vq_Item map = *vData(v);
+    if (map.o.a.v != NULL && GetItem(col, &map) == VQ_int)
+        col = map.o.a.i;
+    v = vOrig(v);
+    n = vCount(vMeta(v));
+    if (col >= n && n > 0)
+        col %= n;
+    *itemp = v[col];
+    return GetItem(row, itemp);
+}
+
+static Dispatch colmaptab = {
+    "colmap", 3, 0, 0, RowColMapCleaner, ColMapGetter
+};
+
+vq_View ColMapVop (vq_View v, vq_View map) {
+    vq_View t, m = vMeta(map), mm = RowMapVop(vMeta(v), map);
+    t = IndirectView(mm, &colmaptab, vCount(v), sizeof(vq_Item));
     vOrig(t) = vq_retain(v);
     if (vCount(m) > 0 && (Vq_getInt(m, 0, 1, VQ_nil) & VQ_TYPEMASK) == VQ_int) {
         *vData(t) = map[0];

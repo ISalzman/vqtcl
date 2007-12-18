@@ -87,3 +87,5 @@ v0:rowmap(8):last(4):p()
 
 --vops.iota(3,'N'):rowmap(7):p()
 --vops.iota(3,'N'):reverse():rowmap(7):p()
+
+v0:colmap(3):p()

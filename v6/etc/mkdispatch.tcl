@@ -88,6 +88,7 @@ define MUTABLE {
 }
 
 define OPDEF {
+    ColMap      V:VV
     Pass        V:V
     RowMap      V:VV
     Step        V:Iiiis
