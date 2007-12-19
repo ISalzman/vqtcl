@@ -6,7 +6,7 @@
 
 #if VQ_OPDEF_H
 
-static vq_Type StepGetter (int row, vq_Item *item) {
+static vq_Type StepGetter (int row, vq_Cell *item) {
     Vector v = vData(item->o.a.v);
     item->o.a.i = v[0].o.a.i + v[0].o.b.i * (row / v[1].o.a.i);
     return VQ_int;
@@ -19,7 +19,7 @@ static Dispatch steptab = {
 vq_View StepVop (int rows, int start, int step, int rate, const char *name) {
     vq_View v, meta = vq_new(1, vq_meta(0));
     Vq_setMetaRow(meta, 0, name != NULL ? name : "", VQ_int, NULL);
-    v = IndirectView(meta, &steptab, rows, 2 * sizeof(vq_Item));
+    v = IndirectView(meta, &steptab, rows, 2 * sizeof(vq_Cell));
     vData(v)[0].o.a.i = start;
     vData(v)[0].o.b.i = rate > 0 ? step : 1;
     vData(v)[1].o.a.i = rate > 0 ? rate : 1;
@@ -55,10 +55,10 @@ static void RowColMapCleaner (vq_View v) {
     IndirectCleaner(v);
 }
 
-static vq_Type RowMapGetter (int row, vq_Item *itemp) {
+static vq_Type RowMapGetter (int row, vq_Cell *itemp) {
     int n;
     vq_View v = itemp->o.a.v;
-    vq_Item map = *vData(v);
+    vq_Cell map = *vData(v);
     if (map.o.a.v != NULL && GetItem(row, &map) == VQ_int) {
         /* extra logic to support special maps with relative offsets < 0 */
         if (map.o.a.i < 0) {
@@ -82,7 +82,7 @@ static Dispatch rowmaptab = {
 
 vq_View RowMapVop (vq_View v, vq_View map) {
     vq_View t, m = vMeta(map);
-    t = IndirectView(vMeta(v), &rowmaptab, vCount(map), sizeof(vq_Item));
+    t = IndirectView(vMeta(v), &rowmaptab, vCount(map), sizeof(vq_Cell));
     vOrig(t) = vq_retain(v);
     if (vCount(m) > 0 && (Vq_getInt(m, 0, 1, VQ_nil) & VQ_TYPEMASK) == VQ_int) {
         *vData(t) = map[0];
@@ -91,11 +91,11 @@ vq_View RowMapVop (vq_View v, vq_View map) {
     return t;
 }
 
-static vq_Type ColMapGetter (int row, vq_Item *itemp) {
+static vq_Type ColMapGetter (int row, vq_Cell *itemp) {
     int n;
     vq_View v = itemp->o.a.v;
     int col = itemp->o.b.i;
-    vq_Item map = *vData(v);
+    vq_Cell map = *vData(v);
     if (map.o.a.v != NULL && GetItem(col, &map) == VQ_int)
         col = map.o.a.i;
     v = vOrig(v);
@@ -113,7 +113,7 @@ static Dispatch colmaptab = {
 vq_View ColMapVop (vq_View v, vq_View map) {
     /* TODO: better - store col refs in a new view, avoids extra getter layer */
     vq_View t, m = vMeta(map), mm = RowMapVop(vMeta(v), map);
-    t = IndirectView(mm, &colmaptab, vCount(v), sizeof(vq_Item));
+    t = IndirectView(mm, &colmaptab, vCount(v), sizeof(vq_Cell));
     vOrig(t) = vq_retain(v);
     if (vCount(m) > 0 && (Vq_getInt(m, 0, 1, VQ_nil) & VQ_TYPEMASK) == VQ_int) {
         *vData(t) = map[0];
@@ -129,8 +129,8 @@ static void RowCatCleaner (vq_View v) {
     IndirectCleaner(v);
 }
 
-static vq_Type RowCatGetter (int row, vq_Item *itemp) {
-    vq_Item *v = vData(itemp->o.a.v);
+static vq_Type RowCatGetter (int row, vq_Cell *itemp) {
+    vq_Cell *v = vData(itemp->o.a.v);
     while (row >= v->o.b.i)
         row -= (v++)->o.b.i;
     *itemp = v->o.a.v[itemp->o.b.i];
@@ -143,12 +143,12 @@ static Dispatch rowcattab = {
 
 vq_View RowCatVop (Vector views) {
     vq_View t;
-    vq_Item item;
+    vq_Cell item;
     Vector data;
     int i, n = vCount(views);
     vq_retain(views);
     assert(n > 0);
-    t = IndirectView(vMeta(views[0].o.a.v), &rowcattab, 0, n * sizeof(vq_Item));
+    t = IndirectView(vMeta(views[0].o.a.v), &rowcattab, 0, n * sizeof(vq_Cell));
     data = vData(t);
     for (i = 0; i < n; ++i) {
         item.o.a.v = views;
@@ -164,7 +164,7 @@ vq_View RowCatVop (Vector views) {
 
 vq_View ColCatVop (Vector views) {
     vq_View t, v;
-    vq_Item item;
+    vq_Cell item;
     Vector metas;
     int i, j, c = 0, cols, n = vCount(views);
     vq_retain(views);

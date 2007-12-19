@@ -3,20 +3,20 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>lvq/src/lvq.c</string>
+	<string>base/vopdef.c</string>
 	<key>documents</key>
 	<array>
 		<dict>
 			<key>filename</key>
 			<string>../vlerq4/ratcl/docs/v6notes.txt</string>
 			<key>lastUsed</key>
-			<date>2007-12-17T08:22:40Z</date>
+			<date>2007-12-19T02:22:22Z</date>
 		</dict>
 		<dict>
 			<key>filename</key>
 			<string>../vlerq4/ratcl/docs/v6vops.txt</string>
 			<key>lastUsed</key>
-			<date>2007-12-17T12:27:51Z</date>
+			<date>2007-12-18T00:04:23Z</date>
 		</dict>
 		<dict>
 			<key>expanded</key>
@@ -25,8 +25,6 @@
 			<string>v6</string>
 			<key>regexFolderFilter</key>
 			<string>!.*/(\.[^/]*|lua|CVS|_darcs|_MTN|\{arch\}|blib|.*~\.nib|.*\.(framework|app|pbproj|pbxproj|xcode(proj)?|bundle))$</string>
-			<key>selected</key>
-			<true/>
 			<key>sourceDirectory</key>
 			<string></string>
 		</dict>
@@ -35,6 +33,50 @@
 	<integer>172</integer>
 	<key>metaData</key>
 	<dict>
+		<key>../vlerq4/ratcl/docs/v6vops.txt</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>56</integer>
+				<key>line</key>
+				<integer>48</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>13</integer>
+		</dict>
+		<key>base/v_defs.h</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>11</integer>
+				<key>line</key>
+				<integer>52</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>38</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>8</integer>
+				<key>line</key>
+				<integer>52</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>13</integer>
+				<key>line</key>
+				<integer>52</integer>
+			</dict>
+		</dict>
 		<key>base/vbuffer.h</key>
 		<dict>
 			<key>caret</key>
@@ -49,7 +91,7 @@
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
 		</dict>
-		<key>lvq/src/lvq.c</key>
+		<key>base/vdispatch.c</key>
 		<dict>
 			<key>caret</key>
 			<dict>
@@ -61,7 +103,167 @@
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>238</integer>
+			<integer>0</integer>
+		</dict>
+		<key>base/vdispatch.h</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>15</integer>
+				<key>line</key>
+				<integer>2</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
+		<key>base/vlerq.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>222</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>182</integer>
+		</dict>
+		<key>base/vlerq.h</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>78</integer>
+				<key>line</key>
+				<integer>77</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>13</integer>
+				<key>line</key>
+				<integer>77</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>78</integer>
+				<key>line</key>
+				<integer>77</integer>
+			</dict>
+		</dict>
+		<key>base/vload.h</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>12</integer>
+				<key>line</key>
+				<integer>9</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>9</integer>
+				<key>line</key>
+				<integer>9</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>18</integer>
+				<key>line</key>
+				<integer>9</integer>
+			</dict>
+		</dict>
+		<key>base/vopdef.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
+		<key>base/vopdef.h</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>33</integer>
+				<key>line</key>
+				<integer>15</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
+		<key>etc/mkdispatch.tcl</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>7</integer>
+				<key>line</key>
+				<integer>93</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>28</integer>
+		</dict>
+		<key>lvq/src/lvq.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>27</integer>
+				<key>line</key>
+				<integer>502</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>451</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>502</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>503</integer>
+			</dict>
 		</dict>
 		<key>lvq/src/lvq.lua</key>
 		<dict>
@@ -70,12 +272,26 @@
 				<key>column</key>
 				<integer>0</integer>
 				<key>line</key>
-				<integer>32</integer>
+				<integer>150</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>3</integer>
+			<integer>71</integer>
+		</dict>
+		<key>lvq/tests/test.lua</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>96</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>17</integer>
 		</dict>
 		<key>tests/lvq.ref</key>
 		<dict>
@@ -84,7 +300,7 @@
 				<key>column</key>
 				<integer>0</integer>
 				<key>line</key>
-				<integer>56</integer>
+				<integer>76</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -118,6 +334,20 @@
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
+		</dict>
+		<key>tests/vqx.ref</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>7</integer>
+				<key>line</key>
+				<integer>26</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>3</integer>
 		</dict>
 		<key>tests/vqx.test</key>
 		<dict>
@@ -179,9 +409,22 @@
 	<key>openDocuments</key>
 	<array>
 		<string>lvq/src/lvq.c</string>
+		<string>base/vlerq.h</string>
+		<string>base/vload.h</string>
 		<string>tvq/generic/tvq.c</string>
 		<string>vqx/vqx.c</string>
 		<string>lvq/src/lvq.lua</string>
+		<string>lvq/tests/test.lua</string>
+		<string>tests/vqx.ref</string>
+		<string>tests/lvq.ref</string>
+		<string>../vlerq4/ratcl/docs/v6vops.txt</string>
+		<string>base/vopdef.c</string>
+		<string>base/v_defs.h</string>
+		<string>etc/mkdispatch.tcl</string>
+		<string>base/vdispatch.h</string>
+		<string>base/vdispatch.c</string>
+		<string>base/vopdef.h</string>
+		<string>base/vlerq.c</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
 	<true/>

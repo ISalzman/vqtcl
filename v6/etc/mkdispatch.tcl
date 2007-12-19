@@ -50,7 +50,7 @@ proc define {module vops} {
         set cmd ${name}Cmd_[string range $types 2 end]
         lappend defs "  { \"[string tolower $name]\", \"$types\", $cmd },"
         puts $fdc ""
-        puts $fdc "static vq_Type $cmd (vq_Item A\[]) {"
+        puts $fdc "static vq_Type $cmd (vq_Cell A\[]) {"
         puts $fdc [gencall $name [string toupper $types]]
         puts $fdc "  return VQ_[ctype [string index $types 0]];"
         puts $fdc "}"

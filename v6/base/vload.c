@@ -132,7 +132,7 @@ static void MappedViewCleaner (Vector v) {
     FreeVector(v);
 }
 
-static vq_Type MappedViewGetter (int row, vq_Item *item) {
+static vq_Type MappedViewGetter (int row, vq_Cell *item) {
     Vector v = item->o.a.v;
     intptr_t *offsets = (void*) v;
     
@@ -213,7 +213,7 @@ static void MappedStringCleaner (Vector v) {
     FreeVector(v);
 }
 
-static vq_Type MappedStringGetter (int row, vq_Item *item) {
+static vq_Type MappedStringGetter (int row, vq_Cell *item) {
     Vector v = item->o.a.v;
     const intptr_t *offsets = (void*) v;
     const char *data = MF_Data(vOrig(v));
@@ -235,7 +235,7 @@ static Dispatch mstab = {
     "mappedstring", 3, 0, 0, MappedStringCleaner, MappedStringGetter
 };
 
-static vq_Type MappedBytesGetter (int row, vq_Item *item) {
+static vq_Type MappedBytesGetter (int row, vq_Cell *item) {
     Vector v = item->o.a.v;
     const intptr_t *offsets = (void*) v;
     const char *data = MF_Data(vOrig(v));
@@ -266,7 +266,7 @@ static Vector MappedStringCol (Vector map, int rows, const char **nextp, int ist
     intptr_t colsize, colpos, *offsets;
     const char *next, *limit;
     Vector result, sizes;
-    vq_Item item;
+    vq_Cell item;
 
     result = AllocVector(istext ? &mstab : &mbtab, rows * sizeof(void*));
     offsets = (void*) result;

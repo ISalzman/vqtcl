@@ -65,8 +65,8 @@ typedef struct vq_Dispatch_s {
     char        unit;                   /* size of single entries (<0 = bits) */
     short       flags;                  /* TODO: unused */
     void      (*cleaner)(Vector);       /* destructor function */
-    vq_Type   (*getter)(int,vq_Item*);  /* getter function */
-    void      (*setter)(vq_View,int,int,const vq_Item*);
+    vq_Type   (*getter)(int,vq_Cell*);  /* getter function */
+    void      (*setter)(vq_View,int,int,const vq_Cell*);
     void      (*replacer)(vq_View,int,int,vq_View);
 } Dispatch;
     
@@ -86,8 +86,8 @@ Object_p (ObjRetain) (Object_p obj);
 void (ObjRelease) (Object_p obj);
 
 vq_View (ListAsMetaView) (void *ip, Object_p obj);
-int (ObjToItem) (void *L, vq_Type type, vq_Item *item);
-Object_p (ItemAsObj) (vq_Type type, vq_Item item);
+int (ObjToItem) (void *L, vq_Type type, vq_Cell *item);
+Object_p (ItemAsObj) (vq_Type type, vq_Cell item);
 
 /* memory management */
 
@@ -96,7 +96,7 @@ void (FreeVector) (Vector v);
 
 /* core view functions */
 
-vq_Type (GetItem) (int row, vq_Item *item);
+vq_Type (GetItem) (int row, vq_Cell *item);
 
 /* data vectors */
 
@@ -118,7 +118,7 @@ const char* (TypeAsString) (int type, char *buf);
 
 typedef struct {
     const char *name, *args;
-    vq_Type (*proc)(vq_Item*);
+    vq_Type (*proc)(vq_Cell*);
 } CmdDispatch;
 
 #endif

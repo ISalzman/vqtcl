@@ -210,7 +210,7 @@ static int* PackedIntVec (const int *data, int rows, intptr_t *outsize) {
     return result;
 }
 
-static int EmitFixCol (EmitInfo *eip, vq_Item column, vq_Type type) {
+static int EmitFixCol (EmitInfo *eip, vq_Cell column, vq_Type type) {
     int r, rows = vCount(column.o.a.v), *tempvec;
     void *buffer;
     intptr_t bufsize;
@@ -220,7 +220,7 @@ static int EmitFixCol (EmitInfo *eip, vq_Item column, vq_Type type) {
             bufsize = rows * sizeof(int);
             tempvec = malloc(bufsize);
             for (r = 0; r < rows; ++r) {
-                vq_Item item = column;
+                vq_Cell item = column;
                 GetItem(r, &item);
                 tempvec[r] = item.o.a.i;
             }
@@ -231,7 +231,7 @@ static int EmitFixCol (EmitInfo *eip, vq_Item column, vq_Type type) {
             bufsize = rows * sizeof(int64_t);
             buffer = malloc(bufsize);
             for (r = 0; r < rows; ++r) {
-                vq_Item item = column;
+                vq_Cell item = column;
                 GetItem(r, &item);
                 ((int64_t*) buffer)[r] = item.w;
             }
@@ -240,7 +240,7 @@ static int EmitFixCol (EmitInfo *eip, vq_Item column, vq_Type type) {
             bufsize = rows * sizeof(float);
             buffer = malloc(bufsize);
             for (r = 0; r < rows; ++r) {
-                vq_Item item = column;
+                vq_Cell item = column;
                 GetItem(r, &item);
                 ((float*) buffer)[r] = item.o.a.f;
             }
@@ -249,7 +249,7 @@ static int EmitFixCol (EmitInfo *eip, vq_Item column, vq_Type type) {
             bufsize = rows * sizeof(double);
             buffer = malloc(bufsize);
             for (r = 0; r < rows; ++r) {
-                vq_Item item = column;
+                vq_Cell item = column;
                 GetItem(r, &item);
                 ((double*) buffer)[r] = item.d;
             }
@@ -262,7 +262,7 @@ static int EmitFixCol (EmitInfo *eip, vq_Item column, vq_Type type) {
     return bufsize != 0;
 }
 
-static void EmitVarCol (EmitInfo *eip, vq_Item column, int istext, int rows) {
+static void EmitVarCol (EmitInfo *eip, vq_Cell column, int istext, int rows) {
     int r, bytes;
     intptr_t buflen;
     Buffer buffer;
@@ -273,7 +273,7 @@ static void EmitVarCol (EmitInfo *eip, vq_Item column, int istext, int rows) {
 
     if (istext)
         for (r = 0; r < rows; ++r) {
-            vq_Item item = column;
+            vq_Cell item = column;
             GetItem(r, &item);
             bytes = strlen(item.o.a.s);
             if (bytes > 0)
@@ -282,7 +282,7 @@ static void EmitVarCol (EmitInfo *eip, vq_Item column, int istext, int rows) {
         }
     else
         for (r = 0; r < rows; ++r) {
-            vq_Item item = column;
+            vq_Cell item = column;
             GetItem(r, &item);
             AddToBuffer(&buffer, item.o.a.p, item.o.b.i);
             sizevec[r] = item.o.b.i;
@@ -291,7 +291,7 @@ static void EmitVarCol (EmitInfo *eip, vq_Item column, int istext, int rows) {
     buflen = BufferFill(&buffer);
     EmitPair(eip, EmitBuffer(eip, &buffer));    
     if (buflen > 0) {
-        vq_Item item;
+        vq_Cell item;
         item.o.a.v = sizes;
         EmitFixCol(eip, item, 1);
     }
@@ -300,7 +300,7 @@ static void EmitVarCol (EmitInfo *eip, vq_Item column, int istext, int rows) {
     EmitVarInt(eip, 0); /* no memos */
 }
     
-static void EmitSubCol (EmitInfo *eip, vq_Item column, int describe, int rows) {
+static void EmitSubCol (EmitInfo *eip, vq_Cell column, int describe, int rows) {
     int r;
     Buffer newcolbuf;
     Buffer *origcolbuf;
@@ -308,7 +308,7 @@ static void EmitSubCol (EmitInfo *eip, vq_Item column, int describe, int rows) {
     eip->colbuf = &newcolbuf;
     InitBuffer(eip->colbuf);
     for (r = 0; r < rows; ++r) {
-        vq_Item item = column;
+        vq_Cell item = column;
         vq_Type type = GetItem (r, &item);
         assert(type == VQ_view); VQ_UNUSED(type);
         EmitView(eip, item.o.a.v, describe);
@@ -458,7 +458,7 @@ intptr_t ViewSave (vq_View view, void *aux, SaveInitFun initfun, SaveDataFun dat
 /* -------------------------------------------------- OPERATOR WRAPPERS ----- */
 
 /*
-vq_Type Meta2DescCmd_T (vq_Item a[]) {
+vq_Type Meta2DescCmd_T (vq_Cell a[]) {
     Buffer buffer;
     InitBuffer(&buffer);
     MetaAsDesc(vMeta(a[0].o.a.v), &buffer);

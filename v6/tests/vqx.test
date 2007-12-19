@@ -5,23 +5,28 @@ source [file join [file dir [info script]] initests.tcl]
 
 cd vqx
 
-test 0 {vqx test} {
+test 0 {vqx test} -body {
     exec make
     set out [exec ./try.vq]\n
     regsub -all {\m(function|table|row|view): 0x\w+} $out {\1: 0x[...]} out
-    exec diff -u - [testsDirectory]/vqx.ref << $out
-} {}
+    exec diff -u - test.ref << $out
+} -result {} -setup {
+    # the test output ends with the complete output in lvq.ref
+    exec cat ../tests/vqx.ref ../tests/lvq.ref >test.ref    
+} -cleanup {
+    file delete test.ref
+}
 
 test 1 {vqmin test} {
     exec make vqmin
-    exec ./vqmin | diff -u - [testsDirectory]/vqmin.ref
+    exec ./vqmin | diff -u - ../tests/vqmin.ref
 } {}
 
 test 2 {vqboot test} {
     exec make vqboot
-    exec ./vqboot ../etc/alltypes.db | diff -u - [testsDirectory]/vqboot.ref
+    exec ./vqboot ../etc/alltypes.db | diff -u - ../tests/vqboot.ref
 } {}
 
-cd [workingDirectory]
+cd ..
 
 ::tcltest::cleanupTests

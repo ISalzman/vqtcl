@@ -29,7 +29,7 @@ static int RangeExpand (Vector v, int off) {
 
 /* ------------------------------------------------------ MUTABLE TABLE ----- */
 
-static vq_Type MutVecGetter (int row, vq_Item *item) {
+static vq_Type MutVecGetter (int row, vq_Cell *item) {
     int col = item->o.b.i, aux = row;
     Vector v = item->o.a.v, *vecp = (Vector*) vData(v) + 3 * col;
     if (vecp[0] != 0 && RangeLocate(vecp[0], row, &aux) & 1) { /* translucent */
@@ -73,7 +73,7 @@ static void InitMutVec (Vector v, int col) {
     }
 }
 
-static void MutVecSetter (Vector v, int row, int col, const vq_Item *item) {
+static void MutVecSetter (Vector v, int row, int col, const vq_Cell *item) {
     int fill, miss;
     Vector *vecp = (Vector*) vData(v) + 3 * col;
     InitMutVec(v, col);
@@ -131,7 +131,7 @@ static void MutVecReplacer (vq_View t, int offset, int delrows, vq_View data) {
             RangeInsert(vecp, offset, insrows, 0); /* new translucent range */
             if (c < vCount(vMeta(data)))
                 for (r = 0; r < insrows; ++r) {
-                    vq_Item item = data[c];
+                    vq_Cell item = data[c];
                     if (GetItem(r, &item) == coltype)
                         MutVecSetter(t, offset + r, c, &item);
                 }

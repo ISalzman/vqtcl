@@ -61,7 +61,7 @@
 
 #endif
 
-#define checkrow(L,t)   ((vq_Item*) luaL_checkudata(L, t, "Vlerq.row"))
+#define checkrow(L,t)   ((vq_Cell*) luaL_checkudata(L, t, "Vlerq.row"))
 
 /* forward */
 LUA_API int luaopen_lvq_core (lua_State *L);
@@ -99,7 +99,7 @@ static int pushview (lua_State *L, vq_View v) {
     return 1;
 }
 
-static int pushitem (lua_State *L, char c, vq_Item *itemp) {
+static int pushitem (lua_State *L, char c, vq_Cell *itemp) {
     if (itemp == NULL)
         return 0;
         
@@ -121,7 +121,7 @@ static int pushitem (lua_State *L, char c, vq_Item *itemp) {
     return 1;
 }
 
-static vq_Type checkitem (lua_State *L, int t, char c, vq_Item *itemp) {
+static vq_Type checkitem (lua_State *L, int t, char c, vq_Cell *itemp) {
     size_t n;
     vq_Type type;
 
@@ -161,18 +161,18 @@ static vq_Type checkitem (lua_State *L, int t, char c, vq_Item *itemp) {
     return type;
 }
 
-static void parseargs(lua_State *L, vq_Item *buf, const char *desc) {
+static void parseargs(lua_State *L, vq_Cell *buf, const char *desc) {
     int i;
     for (i = 0; *desc; ++i)
         checkitem(L, i+1, *desc++, buf+i);
 }
 
 #define LVQ_ARGS(state,args,desc) \
-            vq_Item args[sizeof(desc)-1]; \
+            vq_Cell args[sizeof(desc)-1]; \
             parseargs(state, args, desc)
 
 static vq_View TableToView (lua_State *L, int t) {
-    vq_Item item;
+    vq_Cell item;
     vq_View m, v;
     int r, rows, c, cols;
     lua_getfield(L, t, "meta");
@@ -199,7 +199,7 @@ static vq_View TableToView (lua_State *L, int t) {
 /* ---------------------------------------------------------- VLERQ.ROW ----- */
 
 static int row_gc (lua_State *L) {
-    vq_Item *pi = lua_touserdata(L, 1); assert(pi != NULL);
+    vq_Cell *pi = lua_touserdata(L, 1); assert(pi != NULL);
     vq_release(pi->o.a.v);
     return 0;
 }
@@ -207,7 +207,7 @@ static int row_gc (lua_State *L) {
 static int rowcolcheck (lua_State *L, vq_View *pv, int *pr) {
     vq_View v, meta;
     int r, c, cols;
-    vq_Item *item = checkrow(L, 1);
+    vq_Cell *item = checkrow(L, 1);
     *pv = v = item->o.a.v;
     *pr = r = item->o.b.i;
     meta = vMeta(v);
@@ -232,13 +232,13 @@ static int rowcolcheck (lua_State *L, vq_View *pv, int *pr) {
 static int row_index (lua_State *L) {
     vq_View v;
     int r, c = rowcolcheck(L, &v, &r);
-    vq_Item item = v[c];
+    vq_Cell item = v[c];
     return pushitem(L, VQ_TYPES[GetItem(r, &item)], &item);
 }
 
 static int row_newindex (lua_State *L) {
     vq_View v;
-    vq_Item item;
+    vq_Cell item;
     vq_Type type = VQ_nil;
     int r, c = rowcolcheck(L, &v, &r);
     if (!lua_isnil(L, 3)) {
@@ -250,7 +250,7 @@ static int row_newindex (lua_State *L) {
 }
 
 static int row2string (lua_State *L) {
-    vq_Item item = *checkrow(L, 1);
+    vq_Cell item = *checkrow(L, 1);
     lua_pushfstring(L, "row: %p %d", item.o.a.p, item.o.b.i);
     return 1;
 }
@@ -265,7 +265,7 @@ static int view_gc (lua_State *L) {
 
 static int view_index (lua_State *L) {
     if (lua_isnumber(L, 2)) {
-        vq_Item *rp;
+        vq_Cell *rp;
         LVQ_ARGS(L,A,"VI");
         rp = newuserdata(L, sizeof *rp, "Vlerq.row");
         rp->o.a.v = vq_retain(A[0].o.a.v);
@@ -328,7 +328,7 @@ static void VirtualCleaner (Vector v) {
     FreeVector(v);
 }
 
-static vq_Type VirtualGetter (int row, vq_Item *item) {
+static vq_Type VirtualGetter (int row, vq_Cell *item) {
     vq_Type type;
     vq_View v = item->o.a.v;
     int col = item->o.b.i;
@@ -367,7 +367,7 @@ static int vops_virtual (lua_State *L) {
 static int vops_at (lua_State *L) {
     vq_View v;
     int r, c, cols;
-    vq_Item item;
+    vq_Cell item;
     LVQ_ARGS(L,A,"VII");
     v = A[0].o.a.v;
     r = A[1].o.a.i;
@@ -382,7 +382,7 @@ static int vops_at (lua_State *L) {
 }
 
 static int vops_row (lua_State *L) {
-    vq_Item *rp;
+    vq_Cell *rp;
     LVQ_ARGS(L,A,"VI");
     rp = newuserdata(L, sizeof *rp, "Vlerq.row");
     rp->o.a.v = vq_retain(A[0].o.a.v);
@@ -466,7 +466,7 @@ static int vop_check (lua_State *L) {
         if (fmt[i] == '-')
             lua_pushvalue(L, i+1);
         else {
-            vq_Item item;
+            vq_Cell item;
             vq_Type type = checkitem(L, i+1, fmt[i], &item);
             pushitem(L, VQ_TYPES[type], &item);
         }
@@ -485,11 +485,11 @@ static int vop_def (lua_State *L) {
 }
 
 /* this union is needed to avoid ISO C warnings w.r.t function vs. void ptrs */
-typedef union { void *p; vq_Type (*f)(vq_Item*); } vq_FunPtrCast;
+typedef union { void *p; vq_Type (*f)(vq_Cell*); } vq_FunPtrCast;
 
 /* collect remaining arguments as vectors */
-static void collect_args (lua_State *L, int t, const char* fmt, int argc, vq_Item *argv) {
-    vq_Item item;
+static void collect_args (lua_State *L, int t, const char* fmt, int argc, vq_Cell *argv) {
+    vq_Cell item;
     int i, cols = strlen(fmt), rows;
     assert(cols > 0 && argc % cols == 0);
     rows = argc / cols;
@@ -507,7 +507,7 @@ static void collect_args (lua_State *L, int t, const char* fmt, int argc, vq_Ite
 /* cast all vop arguments to the proper type, then call the real C code */
 static int vop_ccall (lua_State *L) {
     int i;
-    vq_Item args [10];
+    vq_Cell args [10];
     vq_FunPtrCast fp;
     const char *fmt = luaL_checkstring(L, lua_upvalueindex(1)), *afmt = fmt+2;
     assert(sizeof fp.p == sizeof fp.f);

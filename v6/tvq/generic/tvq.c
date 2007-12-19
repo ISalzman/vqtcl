@@ -295,14 +295,14 @@ static Tcl_Obj* MetaViewAsList (vq_View meta) {
     return result;
 }
 
-static Tcl_Obj* ColumnAsList (vq_Item colref, int rows, int mode) {
+static Tcl_Obj* ColumnAsList (vq_Cell colref, int rows, int mode) {
     int i;
     Tcl_Obj *list = Tcl_NewListObj(0, NULL);
 #if VQ_RANGES_H
     if (mode == 0) {
         Vector ranges = 0;
         for (i = 0; i < rows; ++i) {
-            vq_Item item = colref;
+            vq_Cell item = colref;
             if (GetItem(i, &item) == VQ_nil)
                 RangeFlip(&ranges, i, 1);
         }
@@ -312,7 +312,7 @@ static Tcl_Obj* ColumnAsList (vq_Item colref, int rows, int mode) {
     }
 #endif
     for (i = 0; i < rows; ++i) {
-        vq_Item item = colref;
+        vq_Cell item = colref;
         vq_Type type = GetItem(i, &item);
         if (mode < 0 || (mode > 0 && type != VQ_nil))
             TclAppend(list, ItemAsObj(type, item));
@@ -327,7 +327,7 @@ static Tcl_Obj* ColumnAsList (vq_Item colref, int rows, int mode) {
 }
 
 static Tcl_Obj* VectorAsList (Vector v) {
-    vq_Item item;
+    vq_Cell item;
     if (v == 0)
         return Tcl_NewObj();
     item.o.a.v = v;
@@ -401,7 +401,7 @@ static Tcl_Obj* ViewAsList (vq_View view) {
     return DataAsList(view);
 }
 
-Tcl_Obj* ItemAsObj (vq_Type type, vq_Item item) {
+Tcl_Obj* ItemAsObj (vq_Type type, vq_Cell item) {
     switch (type) {
         case VQ_nil:    break;
         case VQ_int:    return Tcl_NewIntObj(item.o.a.i);
@@ -436,7 +436,7 @@ static Tcl_Interp* TclInterpreter (lua_State *L) {
     
     return interp;    
 }
-int ObjToItem (void *L, vq_Type type, vq_Item *item) {
+int ObjToItem (void *L, vq_Type type, vq_Cell *item) {
     switch (type) {
         case VQ_nil:    return 1;
         case VQ_int:    return Tcl_GetIntFromObj(NULL, item->o.a.p,

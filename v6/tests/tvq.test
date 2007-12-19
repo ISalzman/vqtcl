@@ -12,12 +12,11 @@ test 0 {tcl test} {
     regsub -line {^Tests ended at .*$} $out {Tests ended at [...]} out
     regsub -all {\mtvqobj: 0x\w+ \d+} $out {tvqobj: 0x[...]} out
     #all.tcl:	Total	22	Passed	20	Skipped	2	Failed	0
-    regsub {(Total	)\d+(	Passed	)\d+(	Skipped	)\d+} $out {\1?\2?\3?} out
-    #Sourced ? Test Files.
-    #regsub {(Sourced )\d+( Test Files)} $out {\1?\2} out
-    exec diff -u - [testsDirectory]/tvq.ref << $out
+    regsub {(Total	)\d+(	Passed	)\d+(	Skipped	)\d+(	Failed	0)} $out \
+        {\1?\2?\3?\4} out
+    exec diff -u - ../tests/tvq.ref << $out
 } {}
 
-cd [workingDirectory]
+cd ..
 
 ::tcltest::cleanupTests

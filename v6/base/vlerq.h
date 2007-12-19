@@ -15,7 +15,7 @@
 #define VQ_ObjRef_t int
 #endif
 
-/* vq_Type lists all types of data, usually passed around via vq_Item's */
+/* vq_Type lists all types of data, usually passed around via vq_Cell's */
 
 typedef enum { 
     VQ_nil, 
@@ -31,13 +31,13 @@ typedef enum {
 
 #define VQ_TYPES "NILFDSBVO" /* canonical char code, when indexed by vq_Type */
 
-/* a vq_View object is an array of vq_Item's */
+/* a vq_View object is an array of vq_Cell's */
 
-typedef union vq_Item_u *vq_View;
+typedef union vq_Cell_u *vq_View;
 
-/* a vq_Item can hold a wide range of data types, often as pairs */
+/* a vq_Cell can hold a wide range of data types, often as pairs */
 
-typedef union vq_Item_u {
+typedef union vq_Cell_u {
     struct {
         union {
             int                    i;
@@ -45,7 +45,7 @@ typedef union vq_Item_u {
             const char            *s;
             const uint8_t         *b;
             void                  *p;
-            union vq_Item_u       *v;
+            union vq_Cell_u       *v;
             void                 (*c)(void*);
             struct vq_Dispatch_s  *h;
             int                   *n;
@@ -54,14 +54,14 @@ typedef union vq_Item_u {
         union {
             int               i;
             void             *p;
-            union vq_Item_u  *v;
+            union vq_Cell_u  *v;
         } b;
     }        o;
     int64_t  w;
     double   d;
     char     c[sizeof(void*)*2];    /* for byte order flips */
     int      q[sizeof(void*)/2];    /* for hash calculations */
-} vq_Item;
+} vq_Cell;
 
 /* reference counting is used for views and vectors */
 
@@ -74,8 +74,8 @@ vq_View      (vq_new) (int rows, vq_View m);
 vq_View     (vq_meta) (vq_View v);
 int         (vq_size) (vq_View v);
 int        (vq_empty) (vq_View v, int row, int col);
-vq_Item      (vq_get) (vq_View v, int row, int col, vq_Type type, vq_Item def);
-void         (vq_set) (vq_View v, int row, int col, vq_Type type, vq_Item val);
+vq_Cell      (vq_get) (vq_View v, int row, int col, vq_Type type, vq_Cell def);
+void         (vq_set) (vq_View v, int row, int col, vq_Type type, vq_Cell val);
 vq_View  (vq_replace) (vq_View v, int start, int count, vq_View data);
 
 /* convenience wrappers */

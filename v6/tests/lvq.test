@@ -9,9 +9,9 @@ test 0 {lua test} {
     exec make install
     set out [exec tests/test.lua]\n
     regsub -all {\m(function|table|row|view): 0x\w+} $out {\1: 0x[...]} out
-    exec diff -u - [testsDirectory]/lvq.ref << $out
+    exec diff -u - ../tests/lvq.ref << $out
 } {}
 
-cd [workingDirectory]
+cd ..
 
 ::tcltest::cleanupTests

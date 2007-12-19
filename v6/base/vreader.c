@@ -66,7 +66,7 @@ Vector OpenMappedFile (const char *filename) {
     if (length < 0)
         return NULL;
 
-    map = AllocVector(&vmmap, 2 * sizeof(vq_Item));
+    map = AllocVector(&vmmap, 2 * sizeof(vq_Cell));
     map[0].o.a.s = map[1].o.a.s = (void*) data;
     map[0].o.b.i = map[1].o.b.i = length;
     return map;
@@ -80,7 +80,7 @@ static void BytesCleaner (Vector map) {
 static Dispatch vbytes = { "bytes", 1, 0, 0, BytesCleaner };
 
 Vector OpenMappedBytes (const void *data, int length, Object_p ref) {
-    Vector map = AllocVector(&vbytes, 3 * sizeof(vq_Item));
+    Vector map = AllocVector(&vbytes, 3 * sizeof(vq_Cell));
     map[0].o.a.s = map[1].o.a.s = (void*) data;
     map[0].o.b.i = map[1].o.b.i = length;
     map[2].o.a.p = ref; /* ObjRetain(ref); */
@@ -93,34 +93,34 @@ const char *AdjustMappedFile (Vector map, int offset) {
     return map[0].o.a.s;
 }
 
-static vq_Type Rgetter_i0 (int row, vq_Item *item) {
+static vq_Type Rgetter_i0 (int row, vq_Cell *item) {
     VQ_UNUSED(row);
     item->o.a.i = 0;
     return VQ_int;
 }
-static vq_Type Rgetter_i1 (int row, vq_Item *item) {
+static vq_Type Rgetter_i1 (int row, vq_Cell *item) {
     const char *ptr = (const char*) vData(item->o.a.v);
     item->o.a.i = (ptr[row>>3] >> (row&7)) & 1;
     return VQ_int;
 }
-static vq_Type Rgetter_i2 (int row, vq_Item *item) {
+static vq_Type Rgetter_i2 (int row, vq_Cell *item) {
     const char *ptr = (const char*) vData(item->o.a.v);
     item->o.a.i = (ptr[row>>2] >> 2*(row&3)) & 3;
     return VQ_int;
 }
-static vq_Type Rgetter_i4 (int row, vq_Item *item) {
+static vq_Type Rgetter_i4 (int row, vq_Cell *item) {
     const char *ptr = (const char*) vData(item->o.a.v);
     item->o.a.i = (ptr[row>>1] >> 4*(row&1)) & 15;
     return VQ_int;
 }
-static vq_Type Rgetter_i8 (int row, vq_Item *item) {
+static vq_Type Rgetter_i8 (int row, vq_Cell *item) {
     const char *ptr = (const char*) vData(item->o.a.v);
     item->o.a.i = (int8_t) ptr[row];
     return VQ_int;
 }
 
 #ifdef VQ_MUSTALIGN
-static vq_Type Rgetter_i16 (int row, vq_Item *item) {
+static vq_Type Rgetter_i16 (int row, vq_Cell *item) {
     const uint8_t *ptr = (const uint8_t*) vData(item->o.a.v) + row * 2;
 #ifdef VQ_BIGENDIAN
     item->o.a.i = (((int8_t) ptr[0]) << 8) | ptr[1];
@@ -129,57 +129,57 @@ static vq_Type Rgetter_i16 (int row, vq_Item *item) {
 #endif
     return VQ_int;
 }
-static vq_Type Rgetter_i32 (int row, vq_Item *item) {
+static vq_Type Rgetter_i32 (int row, vq_Cell *item) {
     const char *ptr = (const char*) vData(item->o.a.v) + row * 4;
     int i;
     for (i = 0; i < 4; ++i)
         item->b[i] = ptr[i];
     return VQ_int;
 }
-static vq_Type Rgetter_i64 (int row, vq_Item *item) {
+static vq_Type Rgetter_i64 (int row, vq_Cell *item) {
     const char *ptr = (const char*) vData(item->o.a.v) + row * 8;
     int i;
     for (i = 0; i < 8; ++i)
         item->b[i] = ptr[i];
     return VQ_wide;
 }
-static vq_Type Rgetter_f32 (int row, vq_Item *item) {
+static vq_Type Rgetter_f32 (int row, vq_Cell *item) {
     Rgetter_i32(row, item);
     return VQ_float;
 }
-static vq_Type Rgetter_f64 (int row, vq_Item *item) {
+static vq_Type Rgetter_f64 (int row, vq_Cell *item) {
     Rgetter_i64(row, item);
     return VQ_double;
 }
 #else
-static vq_Type Rgetter_i16 (int row, vq_Item *item) {
+static vq_Type Rgetter_i16 (int row, vq_Cell *item) {
     const char *ptr = (const char*) vData(item->o.a.v);
     item->o.a.i = ((short*) ptr)[row];
     return VQ_int;
 }
-static vq_Type Rgetter_i32 (int row, vq_Item *item) {
+static vq_Type Rgetter_i32 (int row, vq_Cell *item) {
     const char *ptr = (const char*) vData(item->o.a.v);
     item->o.a.i = ((const int*) ptr)[row];
     return VQ_int;
 }
-static vq_Type Rgetter_i64 (int row, vq_Item *item) {
+static vq_Type Rgetter_i64 (int row, vq_Cell *item) {
     const char *ptr = (const char*) vData(item->o.a.v);
     item->w = ((const int64_t*) ptr)[row];
     return VQ_long;
 }
-static vq_Type Rgetter_f32 (int row, vq_Item *item) {
+static vq_Type Rgetter_f32 (int row, vq_Cell *item) {
     const char *ptr = (const char*) vData(item->o.a.v);
     item->o.a.f = ((const float*) ptr)[row];
     return VQ_float;
 }
-static vq_Type Rgetter_f64 (int row, vq_Item *item) {
+static vq_Type Rgetter_f64 (int row, vq_Cell *item) {
     const char *ptr = (const char*) vData(item->o.a.v);
     item->d = ((const double*) ptr)[row];
     return VQ_double;
 }
 #endif
 
-static vq_Type Rgetter_i16r (int row, vq_Item *item) {
+static vq_Type Rgetter_i16r (int row, vq_Cell *item) {
     const uint8_t *ptr = (const uint8_t*) vData(item->o.a.v) + row * 2;
 #ifdef VQ_BIGENDIAN
     item->o.a.i = (((int8_t) ptr[1]) << 8) | ptr[0];
@@ -188,25 +188,25 @@ static vq_Type Rgetter_i16r (int row, vq_Item *item) {
 #endif
     return VQ_int;
 }
-static vq_Type Rgetter_i32r (int row, vq_Item *item) {
+static vq_Type Rgetter_i32r (int row, vq_Cell *item) {
     const char *ptr = (const char*) vData(item->o.a.v) + row * 4;
     int i;
     for (i = 0; i < 4; ++i)
         item->c[i] = ptr[3-i];
     return VQ_int;
 }
-static vq_Type Rgetter_i64r (int row, vq_Item *item) {
+static vq_Type Rgetter_i64r (int row, vq_Cell *item) {
     const char *ptr = (const char*) vData(item->o.a.v) + row * 8;
     int i;
     for (i = 0; i < 8; ++i)
         item->c[i] = ptr[7-i];
     return VQ_long;
 }
-static vq_Type Rgetter_f32r (int row, vq_Item *item) {
+static vq_Type Rgetter_f32r (int row, vq_Cell *item) {
     Rgetter_i32r(row, item);
     return VQ_float;
 }
-static vq_Type Rgetter_f64r (int row, vq_Item *item) {
+static vq_Type Rgetter_f64r (int row, vq_Cell *item) {
     Rgetter_i64r(row, item);
     return VQ_double;
 }
