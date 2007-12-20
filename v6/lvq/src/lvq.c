@@ -4,6 +4,7 @@
 
 #include "vq_conf.h"
 
+#include "vutil.c"
 #include "vopdef.c"
 #include "vreader.c"
 #include "vload.c"
@@ -182,7 +183,7 @@ static vq_View TableToView (lua_State *L, int t) {
     rows = cols > 0 ? lua_objlen(L, t) / cols : 0;
     v = vq_new(rows, m);
     for (c = 0; c < cols; ++c) {
-        vq_Type type = Vq_getInt(m, c, 1, VQ_nil) & VQ_TYPEMASK;
+        vq_Type type = vq_getInt(m, c, 1, VQ_nil) & VQ_TYPEMASK;
         for (r = 0; r < rows; ++r) {
             vq_Type ty = type;
             lua_pushinteger(L, r * cols + c + 1);
@@ -222,7 +223,7 @@ static int rowcolcheck (lua_State *L, vq_View *pv, int *pr) {
         const char *s = luaL_checkstring(L, 2);
         /* TODO: optimize this dumb linear search */
         for (c = 0; c < cols; ++c)
-            if (strcmp(s, Vq_getString(meta, c, 0, "")) == 0)
+            if (strcmp(s, vq_getString(meta, c, 0, "")) == 0)
                 return c;
         return luaL_error(L, "column '%s' not found", s);
     }   
@@ -242,7 +243,7 @@ static int row_newindex (lua_State *L) {
     vq_Type type = VQ_nil;
     int r, c = rowcolcheck(L, &v, &r);
     if (!lua_isnil(L, 3)) {
-        type = Vq_getInt(vMeta(v), c, 1, VQ_nil) & VQ_TYPEMASK;
+        type = vq_getInt(vMeta(v), c, 1, VQ_nil) & VQ_TYPEMASK;
         type = checkitem(L, 3, VQ_TYPES[type], &item);
     }
     vq_set(v, r, c, type, item);
@@ -290,9 +291,9 @@ static void view2struct (luaL_Buffer *B, vq_View meta) {
     int c;
     char buf[30];
     for (c = 0; c < vCount(meta); ++c) {
-        int type = Vq_getInt(meta, c, 1, VQ_nil);
+        int type = vq_getInt(meta, c, 1, VQ_nil);
         if ((type & VQ_TYPEMASK) == VQ_view) {
-            vq_View m = Vq_getView(meta, c, 2, NULL);
+            vq_View m = vq_getView(meta, c, 2, NULL);
             if (m != NULL) {
                 if (m == meta)
                     luaL_addchar(B, '^');
@@ -339,7 +340,7 @@ static vq_Type VirtualGetter (int row, vq_Cell *item) {
     lua_call(L, 2, 1);
     if (lua_isnil(L, -1))
         return VQ_nil;
-    type = Vq_getInt(vMeta(v), col, 1, VQ_nil) & VQ_TYPEMASK;
+    type = vq_getInt(vMeta(v), col, 1, VQ_nil) & VQ_TYPEMASK;
     type = checkitem(L, -1, VQ_TYPES[type], item);
     lua_pop(L, 1);
     return type;
@@ -538,6 +539,9 @@ static void register_vops (lua_State *L, CmdDispatch *defs) {
 
 LUA_API int luaopen_lvq_core (lua_State *L) {
     const char *sconf = "lvq " VQ_RELEASE
+#if VQ_DISPATCH_H
+                        " di"
+#endif
 #if VQ_LOAD_H
                         " lo"
 #endif
@@ -552,6 +556,9 @@ LUA_API int luaopen_lvq_core (lua_State *L) {
 #endif
 #if VQ_SAVE_H
                         " sa"
+#endif
+#if VQ_UTIL_H
+                        " ut"
 #endif
                         ;
 

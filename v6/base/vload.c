@@ -51,7 +51,7 @@ static vq_View ParseDesc (char **desc, const char **nbuf, int *tbuf, vq_View *sb
     result = vq_new(cols, vMeta(empty));
 
     for (c = 0; c < cols; ++c)
-        Vq_setMetaRow(result, c, names[c], types[c], subts[c]);
+        vq_setMetaRow(result, c, names[c], types[c], subts[c]);
     
     return result;
 }
@@ -177,7 +177,7 @@ static Vector MappedViewCol (Vector map, int rows, const char **nextp, vq_View m
         if (GetVarInt(&next) > 0) {
             subcols = vCount(meta);
             for (c = 0; c < subcols; ++c)
-                switch (Vq_getInt(meta, c, 1, VQ_nil) & VQ_TYPEMASK) {
+                switch (vq_getInt(meta, c, 1, VQ_nil) & VQ_TYPEMASK) {
                     case VQ_bytes: case VQ_string:
                         if (GetVarPair(&next))
                             GetVarPair(&next);
@@ -328,7 +328,7 @@ static vq_View MapCols (Vector map, const char **nextp, vq_View meta) {
     if (rows > 0)
         for (c = 0; c < cols; ++c) {
             r = rows;
-            switch (Vq_getInt(meta, c, 1, VQ_nil) & VQ_TYPEMASK) {
+            switch (vq_getInt(meta, c, 1, VQ_nil) & VQ_TYPEMASK) {
                 case VQ_int:
                 case VQ_long:
                     vec = MappedFixedCol(map, r, nextp, 0); 
@@ -344,7 +344,7 @@ static vq_View MapCols (Vector map, const char **nextp, vq_View meta) {
                     vec = MappedStringCol(map, r, nextp, 0);
                     break;
                 case VQ_view:
-                    sub = Vq_getView(meta, c, 2, 0);
+                    sub = vq_getView(meta, c, 2, 0);
                     vec = MappedViewCol(map, r, nextp, sub); 
                     break;
                 default:

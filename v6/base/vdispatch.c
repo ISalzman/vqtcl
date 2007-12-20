@@ -2,6 +2,8 @@
 
 #include "vq_conf.h"
 
+#if VQ_DISPATCH_H
+
 static vq_Type EmptyCmd_VII (vq_Cell A[]) {
   A[0].o.a.i = EmptyVop(A[0].o.a.v,A[1].o.a.i,A[2].o.a.i);
   return VQ_int;
@@ -107,5 +109,7 @@ CmdDispatch f_vdispatch[] = {
 #endif
   {NULL,NULL,NULL}
 };
+
+#endif
 
 /* end of generated code */

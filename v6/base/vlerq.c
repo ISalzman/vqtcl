@@ -275,7 +275,7 @@ vq_View vq_new (int rows, vq_View meta) {
     if (rows > 0) {
         int i, n = vCount(meta);
         for (i = 0; i < n; ++i) {
-            int type = Vq_getInt(meta, i, 1, VQ_nil) & VQ_TYPEMASK;
+            int type = vq_getInt(meta, i, 1, VQ_nil) & VQ_TYPEMASK;
             t[i].o.a.v = vq_retain(AllocDataVec(type, rows));
         }
     }
@@ -292,30 +292,11 @@ vq_View EmptyMetaView (void) {
         mm[1].o.a.v = vq_retain(AllocDataVec(VQ_int, 3));
         mm[2].o.a.v = vq_retain(AllocDataVec(VQ_view, 3));
         meta = vq_new(0, mm); /* retained forever */
-        Vq_setMetaRow(mm, 0, "name", VQ_string, meta);
-        Vq_setMetaRow(mm, 1, "type", VQ_int, meta);
-        Vq_setMetaRow(mm, 2, "subv", VQ_view, meta);
+        vq_setMetaRow(mm, 0, "name", VQ_string, meta);
+        vq_setMetaRow(mm, 1, "type", VQ_int, meta);
+        vq_setMetaRow(mm, 2, "subv", VQ_view, meta);
     }
     return meta;
-}
-
-void IndirectCleaner (Vector v) {
-    vq_release(vMeta(v));
-    FreeVector(v);
-}
-
-vq_View IndirectView (vq_View meta, Dispatch *vtabp, int rows, int extra) {
-    int i, cols = vCount(meta);
-    vq_View t = AllocVector(vtabp, cols * sizeof *t + extra);
-    assert(vtabp->prefix >= 3);
-    vMeta(t) = vq_retain(meta);
-    vData(t) = t + cols;
-    vCount(t) = rows;
-    for (i = 0; i < cols; ++i) {
-        t[i].o.a.v = t;
-        t[i].o.b.i = i;
-    }
-    return t;
 }
 
 /* ----------------------------------------------- CORE TABLE FUNCTIONS ----- */
@@ -355,7 +336,7 @@ vq_Cell vq_get (vq_View t, int row, int column, vq_Type type, vq_Cell def) {
     return GetItem(row, &item) != VQ_nil ? item : def;
 }
 
-void vq_set (vq_View t, int row, int col, vq_Type type, vq_Cell val) {
+vq_View vq_set (vq_View t, int row, int col, vq_Type type, vq_Cell val) {
     /* use view setter if defined, else column setter */
     if (vType(t)->setter == 0) {
         t = t[col].o.a.v;
@@ -363,6 +344,7 @@ void vq_set (vq_View t, int row, int col, vq_Type type, vq_Cell val) {
     }
     /* TODO: copy-on-write of columns if refcount > 1 */
     vType(t)->setter(t, row, col, type != VQ_nil ? &val : 0);
+    return t;
 }
 
 vq_View vq_replace (vq_View t, int start, int count, vq_View data) {
@@ -374,82 +356,52 @@ vq_View vq_replace (vq_View t, int start, int count, vq_View data) {
 
 /* --------------------------------------------------- UTILITY WRAPPERS ----- */
 
-int Vq_getInt (vq_View t, int row, int col, int def) {
+int vq_getInt (vq_View t, int row, int col, int def) {
     vq_Cell item;
     item.o.a.i = def;
     item = vq_get(t, row, col, VQ_int, item);
     return item.o.a.i;
 }
 
-const char *Vq_getString (vq_View t, int row, int col, const char *def) {
+const char *vq_getString (vq_View t, int row, int col, const char *def) {
     vq_Cell item;
     item.o.a.s = def;
     item = vq_get(t, row, col, VQ_string, item);
     return item.o.a.s;
 }
 
-vq_View Vq_getView (vq_View t, int row, int col, vq_View def) {
+vq_View vq_getView (vq_View t, int row, int col, vq_View def) {
     vq_Cell item;
     item.o.a.v = def;
     item = vq_get(t, row, col, VQ_view, item);
     return item.o.a.v;
 }
 
-void Vq_setEmpty (vq_View t, int row, int col) {
+void vq_setEmpty (vq_View t, int row, int col) {
     vq_Cell item;
     vq_set(t, row, col, VQ_nil, item);
 }
 
-void Vq_setInt (vq_View t, int row, int col, int val) {
+void vq_setInt (vq_View t, int row, int col, int val) {
     vq_Cell item;
     item.o.a.i = val;
     vq_set(t, row, col, VQ_int, item);
 }
 
-void Vq_setString (vq_View t, int row, int col, const char *val) {
+void vq_setString (vq_View t, int row, int col, const char *val) {
     vq_Cell item;
     item.o.a.s = val;
     vq_set(t, row, col, val != 0 ? VQ_string : VQ_nil, item);
 }
 
-void Vq_setView (vq_View t, int row, int col, vq_View val) {
+void vq_setView (vq_View t, int row, int col, vq_View val) {
     vq_Cell item;
     item.o.a.v = val;
     vq_set(t, row, col, val != 0 ? VQ_view : VQ_nil, item);
 }
 
-void Vq_setMetaRow (vq_View m, int row, const char *nam, int typ, vq_View sub) {
-    Vq_setString(m, row, 0, nam);
-    Vq_setInt(m, row, 1, typ);
-    Vq_setView(m, row, 2, sub != NULL ? sub : EmptyMetaView());
-}
-
-/* --------------------------------------------------- TYPE DESCRIPTORS ----- */
-
-int CharAsType (char c) {
-    const char *p = strchr(VQ_TYPES, c & ~0x20);
-    int type = p != 0 ? p - VQ_TYPES : VQ_nil;
-    if (c & 0x20)
-        type |= VQ_NULLABLE;
-    return type;
-}
-
-int StringAsType (const char *str) {
-    int type = CharAsType(*str);
-    while (*++str != 0)
-        if ('a' <= *str && *str <= 'z')
-        type |= 1 << (*str - 'a' + 5);
-    return type;
-}
-
-const char* TypeAsString (int type, char *buf) {
-    char c, *p = buf; /* buffer should have room for at least 28 bytes */
-    *p++ = VQ_TYPES[type&VQ_TYPEMASK];
-    if (type & VQ_NULLABLE)
-        p[-1] |= 0x20;
-    for (c = 'a'; c <= 'z'; ++c)
-        if (type & (1 << (c - 'a' + 5)))
-            *p++ = c;
-    *p = 0;
-    return buf;
+void vq_setMetaRow (vq_View m, int row, const char *nam, int typ, vq_View sub) {
+    vq_setString(m, row, 0, nam);
+    vq_setInt(m, row, 1, typ);
+    vq_setView(m, row, 2, sub != NULL ? sub : EmptyMetaView());
 }

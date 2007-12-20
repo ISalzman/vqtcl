@@ -57,7 +57,7 @@ static void InitMutVec (Vector v, int col) {
     Vector *vecp = (Vector*) vData(v) + 3 * col;
     if (vecp[0] == 0) {
         /* TODO: try to avoid allocating all vectors right away */
-        vq_Type type = Vq_getInt(vMeta(v), col, 1, VQ_nil) & VQ_TYPEMASK;
+        vq_Type type = vq_getInt(vMeta(v), col, 1, VQ_nil) & VQ_TYPEMASK;
         vecp[0] = vq_retain(AllocDataVec(VQ_int, 2));
         vecp[1] = vq_retain(AllocDataVec(VQ_int, 2));
         vecp[2] = vq_retain(AllocDataVec(type, 2));
@@ -114,7 +114,7 @@ static void MutVecReplacer (vq_View t, int offset, int delrows, vq_View data) {
     }
     vCount(t) += insrows;
     for (c = 0; c < cols; ++c) {
-        vq_Type coltype = Vq_getInt(vMeta(t), c, 1, VQ_nil) & VQ_TYPEMASK;
+        vq_Type coltype = vq_getInt(vMeta(t), c, 1, VQ_nil) & VQ_TYPEMASK;
         Vector *vecp = (Vector*) vData(t) + 3 * c;
         InitMutVec(t, c);
         if (delrows > 0) {

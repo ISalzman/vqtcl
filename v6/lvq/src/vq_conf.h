@@ -4,6 +4,7 @@
 
 /* The choice of headers below determines which parts get included: */
 
+#include "vutil.h"
 #include "vranges.h"
 #include "vmutable.h"
 #include "vreader.h"
@@ -11,3 +12,4 @@
 #include "vload.h"
 #include "vsave.h"
 #include "vopdef.h"
+#include "vdispatch.h"

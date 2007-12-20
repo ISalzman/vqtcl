@@ -31,11 +31,11 @@ typedef enum {
 
 #define VQ_TYPES "NILFDSBVO" /* canonical char code, when indexed by vq_Type */
 
-/* a vq_View object is an array of vq_Cell's */
+/* a vq_View points to an array of vq_Cell's */
 
 typedef union vq_Cell_u *vq_View;
 
-/* a vq_Cell can hold a wide range of data types, often as pairs */
+/* a vq_Cell can hold various data types, often as pairs */
 
 typedef union vq_Cell_u {
     struct {
@@ -75,20 +75,20 @@ vq_View     (vq_meta) (vq_View v);
 int         (vq_size) (vq_View v);
 int        (vq_empty) (vq_View v, int row, int col);
 vq_Cell      (vq_get) (vq_View v, int row, int col, vq_Type type, vq_Cell def);
-void         (vq_set) (vq_View v, int row, int col, vq_Type type, vq_Cell val);
+vq_View      (vq_set) (vq_View v, int row, int col, vq_Type type, vq_Cell val);
 vq_View  (vq_replace) (vq_View v, int start, int count, vq_View data);
 
 /* convenience wrappers */
 
-int             (Vq_getInt) (vq_View v, int row, int col, int def);
-const char  *(Vq_getString) (vq_View v, int row, int col, const char *def);
-vq_View        (Vq_getView) (vq_View v, int row, int col, vq_View def);
+int             (vq_getInt) (vq_View v, int row, int col, int def);
+const char  *(vq_getString) (vq_View v, int row, int col, const char *def);
+vq_View        (vq_getView) (vq_View v, int row, int col, vq_View def);
            
-void          (Vq_setEmpty) (vq_View v, int row, int col);
-void            (Vq_setInt) (vq_View v, int row, int col, int val);
-void         (Vq_setString) (vq_View v, int row, int col, const char *val);
-void           (Vq_setView) (vq_View v, int row, int col, vq_View val);
-void        (Vq_setMetaRow) (vq_View v, int row, const char *, int, vq_View);
+void          (vq_setEmpty) (vq_View v, int row, int col);
+void            (vq_setInt) (vq_View v, int row, int col, int val);
+void         (vq_setString) (vq_View v, int row, int col, const char *val);
+void           (vq_setView) (vq_View v, int row, int col, vq_View val);
+void        (vq_setMetaRow) (vq_View v, int row, const char *, int, vq_View);
 
 /*  Copyright (C) 1996-2007 Jean-Claude Wippler.  All rights reserved.
   

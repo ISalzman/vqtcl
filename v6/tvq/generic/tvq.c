@@ -174,20 +174,20 @@ vq_View ListAsMetaView (void *interp, Tcl_Obj *obj) {
             buf[n] = 0;
             if (sep[1] != 0)
                 type = StringAsType(sep+1);
-            Vq_setString(table, r, 0, buf);
+            vq_setString(table, r, 0, buf);
             free(buf);
         } else
-            Vq_setString(table, r, 0, name);
+            vq_setString(table, r, 0, name);
 
-        Vq_setInt(table, r, 1, type);
+        vq_setInt(table, r, 1, type);
 
         if (objc > 1) {
             vq_View t = ListAsMetaView(interp, objv[1]);
             if (t == 0)
                 return 0;
-            Vq_setView(table, r, 2, t);
+            vq_setView(table, r, 2, t);
         } else
-            Vq_setView(table, r, 2, EmptyMetaView());
+            vq_setView(table, r, 2, EmptyMetaView());
     }
 
     return table;
@@ -271,13 +271,13 @@ static Tcl_Obj* MetaViewAsList (vq_View meta) {
         char buf[30];
 
         for (rowNum = 0; rowNum < vCount(meta); ++rowNum) {
-            fieldobj = Tcl_NewStringObj(Vq_getString(meta, rowNum, 0, ""), -1);
-            type = Vq_getInt(meta, rowNum, 1, VQ_nil);
+            fieldobj = Tcl_NewStringObj(vq_getString(meta, rowNum, 0, ""), -1);
+            type = vq_getInt(meta, rowNum, 1, VQ_nil);
             switch (type) {
                 case VQ_string:
                     break;
                 case VQ_view:
-                    subt = Vq_getView(meta, rowNum, 2, 0);
+                    subt = vq_getView(meta, rowNum, 2, 0);
                     assert(subt != 0);
                     if (vCount(subt) > 0) {
                         fieldobj = Tcl_NewListObj(1, &fieldobj);

@@ -65,7 +65,17 @@ proc define {module vops} {
 set fdh [open $prefix.h w]
 puts $fdh "/* [file tail $prefix].h - generated code, do not edit */"
 puts $fdh ""
+puts $fdh "#ifndef VQ_DISPATCH_H"
+puts $fdh "#define VQ_DISPATCH_H 1"
+puts $fdh ""
+puts $fdh "typedef struct {"
+puts $fdh "    const char *name, *args;"
+puts $fdh "    vq_Type (*proc)(vq_Cell*);"
+puts $fdh "} CmdDispatch;"
+puts $fdh ""
 puts $fdh "extern CmdDispatch f_[file tail $prefix]\[];"
+puts $fdh ""
+puts $fdh "#endif"
 puts $fdh ""
 puts $fdh "/* end of generated code */"
 close $fdh
@@ -74,6 +84,8 @@ set fdc [open $prefix.c w]
 puts $fdc "/* [file tail $prefix].c - generated code, do not edit */"
 puts $fdc ""
 puts $fdc "#include \"vq_conf.h\""
+puts $fdh ""
+puts $fdh "#if VQ_DISPATCH_H"
 
 define - {
     Empty       T:VII
@@ -106,6 +118,8 @@ puts $fdh "CmdDispatch f_[file tail $prefix]\[] = {"
 puts $fdc [join $defs \n]
 puts $fdc "  {NULL,NULL,NULL}"
 puts $fdc "};"
+puts $fdh ""
+puts $fdh "#endif"
 puts $fdc ""
 puts $fdc "/* end of generated code */"
 close $fdc

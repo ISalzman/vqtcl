@@ -4,12 +4,7 @@
 
 /* disable almost all optional code */
 
-#define VQ_VBUFFER_H    0
-#define VQ_VMUTABLE_H   0
-#define VQ_VOPDEF_H     0
-#define VQ_VRANGES_H    0
-#define VQ_VSAVE_H      0
-
+#include "vutil.c"
 #include "vreader.c"
 #include "vload.c"
 #include "vlerq.c"
@@ -17,17 +12,17 @@
 #include <stdio.h>
 
 int main (int argc, char **argv) {
-    vq_View v;
+    vq_View v, m;
     int r;
     
     if (argc > 1) {
         v = OpenVop(argv[1]);
         if (v != NULL) {
-            v = vq_meta(Vq_getView(v, 0, 0, 0));
-            
-            for (r = 0; r < vq_size(v); ++r)
-                puts(Vq_getString(v, r, 0, ""));
+            m = vq_meta(vq_getView(v, 0, 0, 0));
+            for (r = 0; r < vq_size(m); ++r)
+                puts(vq_getString(m, r, 0, ""));
         }
+        vq_release(v);
     }
     
     return 0;

@@ -18,7 +18,7 @@ static Dispatch steptab = {
 
 vq_View StepVop (int rows, int start, int step, int rate, const char *name) {
     vq_View v, meta = vq_new(1, vq_meta(0));
-    Vq_setMetaRow(meta, 0, name != NULL ? name : "", VQ_int, NULL);
+    vq_setMetaRow(meta, 0, name != NULL ? name : "", VQ_int, NULL);
     v = IndirectView(meta, &steptab, rows, 2 * sizeof(vq_Cell));
     vData(v)[0].o.a.i = start;
     vData(v)[0].o.b.i = rate > 0 ? step : 1;
@@ -84,7 +84,7 @@ vq_View RowMapVop (vq_View v, vq_View map) {
     vq_View t, m = vMeta(map);
     t = IndirectView(vMeta(v), &rowmaptab, vCount(map), sizeof(vq_Cell));
     vOrig(t) = vq_retain(v);
-    if (vCount(m) > 0 && (Vq_getInt(m, 0, 1, VQ_nil) & VQ_TYPEMASK) == VQ_int) {
+    if (vCount(m) > 0 && (vq_getInt(m, 0, 1, VQ_nil) & VQ_TYPEMASK) == VQ_int) {
         *vData(t) = map[0];
         vq_retain(map[0].o.a.v);
     }
@@ -115,7 +115,7 @@ vq_View ColMapVop (vq_View v, vq_View map) {
     vq_View t, m = vMeta(map), mm = RowMapVop(vMeta(v), map);
     t = IndirectView(mm, &colmaptab, vCount(v), sizeof(vq_Cell));
     vOrig(t) = vq_retain(v);
-    if (vCount(m) > 0 && (Vq_getInt(m, 0, 1, VQ_nil) & VQ_TYPEMASK) == VQ_int) {
+    if (vCount(m) > 0 && (vq_getInt(m, 0, 1, VQ_nil) & VQ_TYPEMASK) == VQ_int) {
         *vData(t) = map[0];
         vq_retain(map[0].o.a.v);
     }
