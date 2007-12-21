@@ -1,4 +1,4 @@
-INC = -I../lua/src -I../base -I../lvq/src
+INC = -I../lua/src -I../base -I../lvq
 
 vqx: vqx.c
 	$(CC) -o $@ $(INC) -DNDEBUG -Os vqx.c -lm && strip $@

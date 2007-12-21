@@ -44,13 +44,13 @@ static vq_Type MutableCmd_V (vq_Cell A[]) {
 
 #ifdef VQ_OPDEF_H
 
-static vq_Type ColCatCmd__V (vq_Cell A[]) {
-  A[0].o.a.v = ColCatVop(A[0].o.a.v);
+static vq_Type ColMapCmd_VV (vq_Cell A[]) {
+  A[0].o.a.v = ColMapVop(A[0].o.a.v,A[1].o.a.v);
   return VQ_view;
 }
 
-static vq_Type ColMapCmd_VV (vq_Cell A[]) {
-  A[0].o.a.v = ColMapVop(A[0].o.a.v,A[1].o.a.v);
+static vq_Type PairCmd__V (vq_Cell A[]) {
+  A[0].o.a.v = PairVop(A[0].o.a.v);
   return VQ_view;
 }
 
@@ -59,8 +59,8 @@ static vq_Type PassCmd_V (vq_Cell A[]) {
   return VQ_view;
 }
 
-static vq_Type RowCatCmd__V (vq_Cell A[]) {
-  A[0].o.a.v = RowCatVop(A[0].o.a.v);
+static vq_Type PlusCmd__V (vq_Cell A[]) {
+  A[0].o.a.v = PlusVop(A[0].o.a.v);
   return VQ_view;
 }
 
@@ -98,10 +98,10 @@ CmdDispatch f_vdispatch[] = {
   { "mutable", "V:V", MutableCmd_V },
 #endif
 #ifdef VQ_OPDEF_H
-  { "colcat", "V:_V", ColCatCmd__V },
   { "colmap", "V:VV", ColMapCmd_VV },
+  { "pair", "V:_V", PairCmd__V },
   { "pass", "V:V", PassCmd_V },
-  { "rowcat", "V:_V", RowCatCmd__V },
+  { "plus", "V:_V", PlusCmd__V },
   { "rowmap", "V:VV", RowMapCmd_VV },
   { "step", "V:Iiiis", StepCmd_Iiiis },
   { "type", "S:V", TypeCmd_V },

@@ -5,30 +5,30 @@ CONFIG = ./config
 include $(CONFIG)
 
 B = ../base
-DEPS = src/$T.c src/vq_conf.h $B/vlerq.c $B/vlerq.h $B/v_defs.h $B/vload.c \
+DEPS = $T.c vq_conf.h $B/vlerq.c $B/vlerq.h $B/v_defs.h $B/vload.c \
 	$B/vmutable.c $B/vbuffer.c $B/vsave.c $B/vranges.c $B/vreader.c \
 	$B/vopdef.c $B/vload.h $B/vmutable.h $B/vopdef.h $B/vranges.h \
 	$B/vsave.h $B/vreader.h $B/vbuffer.h $B/vdispatch.c $B/vdispatch.h \
 	$B/vutil.h $B/vutil.c
 	
-OBJS = src/$T.o
-LUAS = src/$T.lua
+OBJS = $T.o
+LUAS = $T.lua
 
-lib: src/$(LIBNAME)
+lib: $(LIBNAME)
 
-src/$(LIBNAME): $(OBJS)
-	$(CC) $(CFLAGS) $(LIB_OPTION) -o src/$(LIBNAME) $(OBJS)
+$(LIBNAME): $(OBJS)
+	$(CC) $(CFLAGS) $(LIB_OPTION) -o $(LIBNAME) $(OBJS)
 
-src/$T.o: $(DEPS) Makefile config
+$T.o: $(DEPS) Makefile $(CONFIG)
 
 $B/vdispatch.c: ../etc/mkdispatch.tcl
 	cd ../etc && make dispatch
 
-install: src/$(LIBNAME)
+install: $(LIBNAME)
 	mkdir -p $(LUA_LIBDIR)/$T
-	cp src/$(LIBNAME) $(LUA_LIBDIR)/$T/core.so
+	cp $(LIBNAME) $(LUA_LIBDIR)/$T/core.so
 	mkdir -p $(LUA_DIR)
 	cp $(LUAS) $(LUA_DIR)
 
 clean:
-	rm -f src/$(LIBNAME) $(OBJS)
+	rm -f $(LIBNAME) $(OBJS)

@@ -122,14 +122,14 @@ vq_View ColMapVop (vq_View v, vq_View map) {
     return t;
 }
 
-static void RowCatCleaner (vq_View v) {
+static void PlusCleaner (vq_View v) {
     int n = vOffs(v);
     while (--n >= 0)
         vq_release(vData(v)[n].o.a.v);
     IndirectCleaner(v);
 }
 
-static vq_Type RowCatGetter (int row, vq_Cell *itemp) {
+static vq_Type PlusGetter (int row, vq_Cell *itemp) {
     vq_Cell *v = vData(itemp->o.a.v);
     while (row >= v->o.b.i)
         row -= (v++)->o.b.i;
@@ -137,18 +137,18 @@ static vq_Type RowCatGetter (int row, vq_Cell *itemp) {
     return GetItem(row, itemp);
 }
 
-static Dispatch rowcattab = {
-    "rowcat", 3, 0, 0, RowCatCleaner, RowCatGetter
+static Dispatch plustab = {
+    "plus", 3, 0, 0, PlusCleaner, PlusGetter
 };
 
-vq_View RowCatVop (Vector views) {
+vq_View PlusVop (Vector views) {
     vq_View t;
     vq_Cell item;
     Vector data;
     int i, n = vCount(views);
     vq_retain(views);
     assert(n > 0);
-    t = IndirectView(vMeta(views[0].o.a.v), &rowcattab, 0, n * sizeof(vq_Cell));
+    t = IndirectView(vMeta(views[0].o.a.v), &plustab, 0, n * sizeof(vq_Cell));
     data = vData(t);
     for (i = 0; i < n; ++i) {
         item.o.a.v = views;
@@ -162,7 +162,7 @@ vq_View RowCatVop (Vector views) {
     return t;
 }
 
-vq_View ColCatVop (Vector views) {
+vq_View PairVop (Vector views) {
     vq_View t, v;
     vq_Cell item;
     Vector metas;
@@ -176,7 +176,7 @@ vq_View ColCatVop (Vector views) {
         item.o.a.v = vMeta(item.o.a.v);
         vType(metas)->setter(metas, i, 0, &item);        
     }
-    t = vq_new(vCount(views[0].o.a.v), RowCatVop(metas));
+    t = vq_new(vCount(views[0].o.a.v), PlusVop(metas));
     for (i = 0; i < n; ++i) {
         item.o.a.v = views;
         GetItem(i, &item);

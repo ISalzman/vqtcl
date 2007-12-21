@@ -1,5 +1,5 @@
 all:
-	cd lvq && make install && tests/test.lua
+	cd lvq && make install && test.lua
 	cd tvq && make test
 	cd vqx && make all && ./vqmin && ./vqx try.vq
 

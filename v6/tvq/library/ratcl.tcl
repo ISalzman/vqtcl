@@ -10,4 +10,4 @@ lua { package.loaded['lvq.core'] = lvq }    ;# emulate module setup
 #   lua { tcl('puts','Hi!') }
 
 # emulate a require, but from a specific file
-lua { loadfile('../lvq/src/lvq.lua')('lvq') }
+lua { loadfile('../lvq/lvq.lua')('lvq') }

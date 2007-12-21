@@ -90,7 +90,7 @@ v0:rowmap(8):last(4):p()
 
 v0:colmap(3):p()
 
---vops.rowcat(1,2,3,4):p()
---v0:rowcat(v0):p()
---v0:colcat(v0,v0):p()
+--vops.plus(1,2,3,4):p()
+--v0:plus(v0):p()
+--v0:pair(v0,v0):p()
 --v1=v0..v0..v0; v1:p()

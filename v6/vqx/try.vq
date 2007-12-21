@@ -1,6 +1,6 @@
 #!./vqx
 
 package.loaded['lvq.core'] = lvq
-loadfile '../lvq/src/lvq.lua' ('lvq')
+loadfile '../lvq/lvq.lua' ('lvq')
 for k,v in pairs(lvq) do print(k,v) end
-dofile '../lvq/tests/test.lua'
+dofile '../lvq/test.lua'

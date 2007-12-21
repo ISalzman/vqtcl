@@ -82,8 +82,8 @@ end)
 
 ------------------------------------------ see http://www.equi4.com/ratcl/v6vops
 
--- define the .. operator as binary version of colcat
-getmetatable(vops.view(0)).__concat = vops.colcat
+-- define the .. operator as binary version of pair
+getmetatable(vops.view(0)).__concat = vops.pair
 
 -- return the size of a view as view
 vopdef ('size', 'V', function (v)
@@ -125,7 +125,7 @@ vopdef ('slice', 'VVII', function (v,...)
 end)
 
 -- repeat all rows n times
-vopdef ('rrep', 'VI', function (v,n)
+vopdef ('times', 'VI', function (v,n)
   return v:rowmap(n*#v)
 end)
 
@@ -136,7 +136,7 @@ end)
 
 -- cross product
 vopdef ('product', 'VV', function (v,w)
-  return v:spread(w)..w:rrep(v)
+  return v:spread(w)..w:times(v)
 end)
 
 -- box an integer into a new 1-row/1-col view

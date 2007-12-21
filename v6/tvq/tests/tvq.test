@@ -25,7 +25,7 @@ test 3 {print a string from Lua} skip {
 
 test 4 {run the lvq.lua wrapper} {
     # emulate a require, but from a specific file
-    lua { loadfile('../lvq/src/lvq.lua')('lvq') }
+    lua { loadfile('../lvq/lvq.lua')('lvq') }
 } {}
 
 test 5 {lua error handling} {
@@ -38,7 +38,7 @@ test 6 {string evaluation in lua} {
 
 test 7 {run the lvq tests} skip {
     # skipped because Lua's output bypasses Tcl's IO system
-    lua { dofile '../lvq/tests/test.lua' }
+    lua { dofile '../lvq/test.lua' }
 } {}
 
 test 8 {tcl callback} {
