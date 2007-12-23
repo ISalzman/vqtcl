@@ -537,7 +537,7 @@ static int PipeCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *cons
                 break;
 
         if (n > 0) {
-            cvec = n > 8 ? malloc((n+2) * sizeof(Object_p)) : buf;
+            cvec = n > 8 ? malloc((n+2) * sizeof(Tcl_Obj*)) : buf;
                 
             if (Tcl_GetIndexFromObjStruct(NULL, *objv,
                                             f_vdispatch, sizeof *f_vdispatch, 
@@ -555,7 +555,7 @@ static int PipeCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *cons
 
             if (index < 0 || *f_vdispatch[index].args != 'V') {
                 int ac;
-                Object_p *av;
+                Tcl_Obj **av;
                 AdjustCmdDef(interp, result);
                 Tcl_ListObjGetElements(NULL, result, &ac, &av);
                 /* don't use Tcl_EvalObjEx, it forces a string conversion */
@@ -573,6 +573,183 @@ static int PipeCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *cons
     }
 
     return e;
+}
+
+static int StringLookup (const char *name, vq_Cell col) {
+    return -1;
+}
+
+static Tcl_Obj* BufferAsTclList (Buffer* bp) {
+    int argc;
+    Tcl_Obj *result;
+    
+    argc = BufferFill(bp) / sizeof(Tcl_Obj*);
+    result = Tcl_NewListObj(argc, BufferAsPtr(bp, 1));
+    ReleaseBuffer(bp, 0);
+    return result;
+}
+
+static Tcl_Obj* GetViewRows (vq_View view, int row, int rows, int tags) {
+    int r, c, cols;
+    vq_View meta;
+    vq_Cell item;
+    struct Buffer buf;
+    
+    meta = vMeta(view);
+    cols = vCount(meta);
+    InitBuffer(&buf);
+    
+    for (r = 0; r < rows; ++r)
+        for (c = 0; c < cols; ++c) {
+            if (tags) {
+                item = meta[0];
+                ADD_PTR_TO_BUF(buf, ItemAsObj(GetItem(c, &item), item));
+            }
+            item = view[c];
+            ADD_PTR_TO_BUF(buf, ItemAsObj(GetItem(r + row, &item), item));
+        }
+        
+    return BufferAsTclList(&buf);
+}
+
+static int ColumnNumber(Tcl_Interp *interp, Tcl_Obj* obj, vq_View meta) {
+    int col;
+    const char *name = Tcl_GetString(obj);
+    
+    switch (*name) {
+
+        case '#': return -2;
+        case '*': return -1;
+        case '-': case '0': case '1': case '2': case '3': case '4':
+                  case '5': case '6': case '7': case '8': case '9':
+            if (Tcl_GetIntFromObj(interp, obj, &col) != TCL_OK)
+                return -3;
+
+            if (col < 0)
+                col += vCount(meta);
+                
+            if (col < 0 || col >= vCount(meta))
+                return -4;
+            break;
+
+        default:
+            col = StringLookup(name, meta[0]);
+            if (col < 0)
+                return -3;
+    }
+
+    return col;
+}
+
+static int GetCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
+    vq_View view;
+    int i, r, row, col, rows;
+    vq_Type currtype;
+    vq_Cell item;
+
+    if (objc < 2) {
+        Tcl_WrongNumArgs(interp, 1, objv, "view ?...?");
+        return TCL_ERROR;
+    }
+    
+    item.o.a.v = view = ObjAsView(interp, objv[1]);
+    currtype = VQ_view;
+    
+    objc -= 2; objv += 2;
+    if (objc == 0) {
+        Tcl_SetObjResult(interp, GetViewRows(view, 0, vCount(view), 0));
+        return TCL_OK;
+    }
+    
+    for (i = 0; i < objc; ++i) {
+        if (currtype == VQ_view)
+            view = item.o.a.v;
+        else /* TODO: make sure the object does not leak if newly created */
+            view = ObjAsView(interp, ItemAsObj(currtype, item));
+        
+        if (view == NULL)
+            return TCL_ERROR;
+
+        rows = vCount(view);
+
+        if (Tcl_GetIntFromObj(0, objv[i], &row) != TCL_OK)
+            switch (*Tcl_GetString(objv[i])) {
+                case '@':   item.o.a.v = vMeta(view);
+                            currtype = VQ_view;
+                            continue;
+                case '#':   item.o.a.i = rows;
+                            currtype = VQ_int;
+                            continue;
+                case '*':   row = -1;
+                            break;
+                default:    Tcl_GetIntFromObj(interp, objv[i], &row);
+                            return TCL_ERROR;
+            }
+        else if (row < 0) {
+            row += rows;
+            if (row < 0) {
+                Tcl_SetResult(interp, "row is out of range", TCL_STATIC);
+                return TCL_ERROR;
+            }
+        }
+
+        if (++i >= objc) {
+            if (row >= 0)
+                item.o.a.p = GetViewRows(view, row, 1, 1); /* one tagged row */
+            else {
+                struct Buffer buf;
+                InitBuffer(&buf);
+                for (r = 0; r < rows; ++r)
+                    ADD_PTR_TO_BUF(buf, GetViewRows(view, r, 1, 0));
+                item.o.a.p = BufferAsTclList(&buf);
+            }
+            Tcl_SetObjResult(interp, item.o.a.p);
+            return TCL_OK;
+        }
+
+        col = ColumnNumber(interp, objv[i], vMeta(view));
+
+        if (row >= 0)
+            switch (col) {
+                default:    item = view[col];
+                            currtype = GetItem(row, &item);
+                            break;
+                case -1:    item.o.a.p = GetViewRows(view, row, 1, 0);
+                            currtype = VQ_objref;
+                            break;
+                case -2:    item.o.a.i = row;
+                            currtype = VQ_int;
+                            break;
+                case -3:    return TCL_ERROR;
+                case -4:    Tcl_SetResult(interp, "column is out of range",
+                                                                TCL_STATIC);
+                            return TCL_ERROR;
+            }
+        else
+            switch (col) {
+                default:    item = view[col];
+/*
+                            currtype = VQ_column;
+*/
+                            break;
+                case -1:    item.o.a.p = GetViewRows(view, 0, rows, 0);
+                            currtype = VQ_objref;
+                            break;
+                case -2:    assert(0);
+/*
+                            args->c = NewIotaColumn(rows);
+                            currtype = VQ_column;
+*/
+                            break;
+                case -3:    return TCL_ERROR;
+                case -4:    Tcl_SetResult(interp, "column is out of range",
+                                                                TCL_STATIC);
+                            return TCL_ERROR;
+            }
+    }
+    
+    Tcl_SetObjResult(interp, ItemAsObj(currtype, item));
+    return TCL_OK;
 }
 
 static int tclobj_gc (lua_State *L) {
@@ -631,6 +808,7 @@ DLLEXPORT int Tvq_Init (Tcl_Interp *interp) {
 
     Tcl_CreateObjCommand(interp, "tvq", TvqCmd, L, NULL);
     Tcl_CreateObjCommand(interp, "tvq::pipe", PipeCmd, L, NULL);
+    Tcl_CreateObjCommand(interp, "tvq::get", GetCmd, L, NULL);
     
     assert(strcmp(PACKAGE_VERSION, VQ_RELEASE) == 0);
     return Tcl_PkgProvide(interp, "tvq", PACKAGE_VERSION);

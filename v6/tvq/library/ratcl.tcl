@@ -13,3 +13,4 @@ lua { package.loaded['lvq.core'] = lvq }    ;# emulate module setup
 lua { loadfile('../lvq/lvq.lua')('lvq') }
 
 interp alias {} V {} tvq::pipe
+interp alias {} vops::get {} tvq::get
