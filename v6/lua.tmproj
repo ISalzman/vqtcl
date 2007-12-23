@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>lua/src/luaconf.h</string>
+	<string>lua/src/ldo.h</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -21,6 +21,50 @@
 	<integer>214</integer>
 	<key>metaData</key>
 	<dict>
+		<key>lua/HISTORY</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>28</integer>
+				<key>line</key>
+				<integer>37</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
+		<key>lua/etc/min.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>23</integer>
+				<key>line</key>
+				<integer>34</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>16</integer>
+				<key>line</key>
+				<integer>34</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>23</integer>
+				<key>line</key>
+				<integer>34</integer>
+			</dict>
+		</dict>
 		<key>lua/src/lapi.c</key>
 		<dict>
 			<key>caret</key>
@@ -100,14 +144,44 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>0</integer>
+				<integer>41</integer>
 				<key>line</key>
-				<integer>614</integer>
+				<integer>42</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>2</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>34</integer>
+				<key>line</key>
+				<integer>42</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>41</integer>
+				<key>line</key>
+				<integer>42</integer>
+			</dict>
+		</dict>
+		<key>lua/src/ldebug.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>6</integer>
+				<key>line</key>
+				<integer>536</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>564</integer>
+			<integer>520</integer>
 		</dict>
 		<key>lua/src/ldo.h</key>
 		<dict>
@@ -348,7 +422,7 @@
 				<key>column</key>
 				<integer>0</integer>
 				<key>line</key>
-				<integer>559</integer>
+				<integer>588</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -368,6 +442,50 @@
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
+		</dict>
+		<key>lua/src/ltablib.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>50</integer>
+				<key>line</key>
+				<integer>103</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>93</integer>
+		</dict>
+		<key>lua/src/ltm.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>13</integer>
+				<key>line</key>
+				<integer>35</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>5</integer>
+				<key>line</key>
+				<integer>35</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>13</integer>
+				<key>line</key>
+				<integer>35</integer>
+			</dict>
 		</dict>
 		<key>lua/src/lua.h</key>
 		<dict>
@@ -434,14 +552,30 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>28</integer>
+				<integer>17</integer>
 				<key>line</key>
-				<integer>36</integer>
+				<integer>20</integer>
 			</dict>
+			<key>columnSelection</key>
+			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>8</integer>
+				<key>line</key>
+				<integer>20</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>22</integer>
+				<key>line</key>
+				<integer>20</integer>
+			</dict>
 		</dict>
 		<key>lua/src/lvm.c</key>
 		<dict>
@@ -482,6 +616,7 @@
 		<string>lua/src/ltable.h</string>
 		<string>lua/src/lauxlib.h</string>
 		<string>lua/src/lbaselib.c</string>
+		<string>lua/HISTORY</string>
 		<string>lua/src/lgc.h</string>
 		<string>lua/src/lgc.c</string>
 		<string>lua/src/lobject.h</string>
@@ -494,8 +629,12 @@
 		<string>lua/src/lparser.c</string>
 		<string>lua/src/llimits.h</string>
 		<string>lua/src/lualib.h</string>
+		<string>lua/src/ltablib.c</string>
+		<string>lua/etc/min.c</string>
 		<string>lua/src/luaconf.h</string>
+		<string>lua/src/ldebug.c</string>
 		<string>lua/src/ltable.c</string>
+		<string>lua/src/ltm.c</string>
 		<string>lua/src/lstate.h</string>
 		<string>lua/src/lfunc.h</string>
 	</array>

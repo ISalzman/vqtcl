@@ -71,4 +71,15 @@ test 9 {} {
    4444
   55555}
 
+test 10 {trivial pipeline} {
+    V 5 tag N | dump
+} { \
+  N
+  -
+  0
+  1
+  2
+  3
+  4}
+
 ::tcltest::cleanupTests

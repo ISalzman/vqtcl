@@ -466,13 +466,16 @@ int ObjToItem (void *L, vq_Type type, vq_Cell *item) {
     The arguments are combined and then eval'ed as a command in Tcl. */
 
 static int LuaCallback (lua_State *L) {
-    Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+    Tcl_Obj *list = Tcl_NewListObj(0, NULL), **av;
     Tcl_Interp* interp = lua_touserdata(L, lua_upvalueindex(1));
-    int i, n = lua_gettop(L);
+    int i, n = lua_gettop(L), ac;
     Tcl_IncrRefCount(list);
+    /* TODO: could use a buffer instead */
     for (i = 1; i <= n; ++i)
         Tcl_ListObjAppendElement(interp, list, LuaAsTclObj(L, i));
-    i = Tcl_EvalObjEx(interp, list, TCL_EVAL_DIRECT);
+    /* don't use Tcl_EvalObjEx, it forces a string conversion */
+    Tcl_ListObjGetElements(interp, list, &ac, &av);
+    i = Tcl_EvalObjv(interp, ac, av, TCL_EVAL_GLOBAL);
     Tcl_DecrRefCount(list);
     if (i == TCL_ERROR)
         luaL_error(L, "tvq: %s", Tcl_GetStringResult(interp));
@@ -514,6 +517,62 @@ static int TvqCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const
         Tcl_SetObjResult(interp, LuaAsTclObj(L, -1));
     lua_pop(L, 1);
     return v == 0 ? TCL_OK : TCL_ERROR;
+}
+
+static int PipeCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
+    int e = TCL_OK, i, n, index;
+    Tcl_Obj *result, *buf[10], **cvec;
+
+    if (objc < 2) {
+        Tcl_WrongNumArgs(interp, 1, objv, "view ?op ...? ?| ...?");
+        return TCL_ERROR;
+    }
+    
+    Tcl_SetObjResult(interp, objv[1]); objc -= 2; objv += 2;
+    
+    while (e == TCL_OK && objc > 0) {
+        for (n = 0; n < objc; ++n)
+            if (objv[n]->bytes != 0 && *objv[n]->bytes == '|' && 
+                    objv[n]->length == 1)
+                break;
+
+        if (n > 0) {
+            cvec = n > 8 ? malloc((n+2) * sizeof(Object_p)) : buf;
+                
+            if (Tcl_GetIndexFromObjStruct(NULL, *objv,
+                                            f_vdispatch, sizeof *f_vdispatch, 
+                                            "", TCL_EXACT, &index) != TCL_OK)
+                index = -1;
+
+            cvec[0] = Tcl_NewStringObj("vlerq", -1);
+            cvec[1] = objv[0];
+            cvec[2] = Tcl_GetObjResult(interp);
+            Tcl_IncrRefCount(cvec[2]);
+            for (i = 1; i < n; ++i)
+                cvec[i+2] = objv[i];
+            
+            result = Tcl_NewListObj(n+1, cvec+1);
+
+            if (index < 0 || *f_vdispatch[index].args != 'V') {
+                int ac;
+                Object_p *av;
+                AdjustCmdDef(interp, result);
+                Tcl_ListObjGetElements(NULL, result, &ac, &av);
+                /* don't use Tcl_EvalObjEx, it forces a string conversion */
+                e = Tcl_EvalObjv(interp, ac, av, 0);
+                Tcl_DecrRefCount(result);
+            } else
+                Tcl_SetObjResult(interp, result);
+            
+            Tcl_DecrRefCount(cvec[2]);
+            if (n > 8)
+                free(cvec);
+        }
+        
+        objc -= n+1; objv += n+1; /*++k;*/
+    }
+
+    return e;
 }
 
 static int tclobj_gc (lua_State *L) {
@@ -571,6 +630,7 @@ DLLEXPORT int Tvq_Init (Tcl_Interp *interp) {
     lua_pop(L, 1);
 
     Tcl_CreateObjCommand(interp, "tvq", TvqCmd, L, NULL);
+    Tcl_CreateObjCommand(interp, "tvq::pipe", PipeCmd, L, NULL);
     
     assert(strcmp(PACKAGE_VERSION, VQ_RELEASE) == 0);
     return Tcl_PkgProvide(interp, "tvq", PACKAGE_VERSION);
