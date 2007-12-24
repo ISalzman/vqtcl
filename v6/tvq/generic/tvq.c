@@ -30,8 +30,9 @@
 
 /* forward */
 static Tcl_ObjType f_tvqObjType;
-static vq_View ObjAsView (Tcl_Interp *interp, Tcl_Obj *obj);
-static Tcl_Obj* ViewAsList (vq_View view);
+static vq_View (ObjAsView) (Tcl_Interp *interp, Tcl_Obj *obj);
+static Tcl_Obj* (ViewAsList) (vq_View view);
+static Object_p (ItemAsObj) (vq_Type type, vq_Cell item);
 
 static void FreeLuaIntRep (Tcl_Obj *obj) {
     lua_State *L = obj->_ptr1;
@@ -401,7 +402,7 @@ static Tcl_Obj* ViewAsList (vq_View view) {
     return DataAsList(view);
 }
 
-Tcl_Obj* ItemAsObj (vq_Type type, vq_Cell item) {
+static Tcl_Obj* ItemAsObj (vq_Type type, vq_Cell item) {
     switch (type) {
         case VQ_nil:    break;
         case VQ_int:    return Tcl_NewIntObj(item.o.a.i);

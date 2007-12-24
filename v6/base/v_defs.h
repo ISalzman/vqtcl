@@ -87,7 +87,6 @@ void (ObjRelease) (Object_p obj);
 
 vq_View (ListAsMetaView) (void *ip, Object_p obj);
 int (ObjToItem) (void *L, vq_Type type, vq_Cell *item);
-Object_p (ItemAsObj) (vq_Type type, vq_Cell item);
 Vector (AllocVector) (Dispatch *vtab, int bytes);
 void (FreeVector) (Vector v);
 vq_Type (GetItem) (int row, vq_Cell *item);
