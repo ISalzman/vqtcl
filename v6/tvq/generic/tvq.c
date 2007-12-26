@@ -340,10 +340,14 @@ static Tcl_Obj* ChangesAsList (vq_View view) {
     Tcl_Obj *result = Tcl_NewListObj(0, NULL);
     if (IsMutable(view)) {
         TclAppend(result, Tcl_NewStringObj("mutable", 7));
-        TclAppend(result, vOref(view));
-        TclAppend(result, VectorAsList(vDelv(view)));
-        TclAppend(result, VectorAsList(vPerm(view)));
-        TclAppend(result, VectorAsList(vInsv(view)));
+    /*  TclAppend(result, vOref(view));  */
+    /*  TclAppend(result, VectorAsList(vDelv(view)));  */
+    /*  TclAppend(result, VectorAsList(vPerm(view)));  */
+    /*  TclAppend(result, VectorAsList(vInsv(view)));  */
+        TclAppend(result, Tcl_NewObj());
+        TclAppend(result, Tcl_NewObj());
+        TclAppend(result, Tcl_NewObj());
+        TclAppend(result, Tcl_NewObj());
         if (rows > 0)
             for (c = 0; c < cols; ++c) {
                 Vector *vecp = (Vector*) vData(view) + 3 * c;

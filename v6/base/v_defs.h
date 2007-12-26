@@ -53,12 +53,6 @@ typedef vq_View Vector;
 #define vOffs(vecptr)   ((vecptr)[-3].o.a.i)    /* same slot as vOrig */
 #define vData(vecptr)   ((vecptr)[-3].o.b.v)
 
-#define vInsv(vecptr)   ((vecptr)[-4].o.a.v)
-#define vDelv(vecptr)   ((vecptr)[-4].o.b.v)
-
-#define vOref(vecptr)   ((vecptr)[-5].o.a.p)
-#define vPerm(vecptr)   ((vecptr)[-5].o.b.p)
-
 typedef struct vq_Dispatch_s {
     const char *name;                   /* type name, introspection */
     char        prefix;                 /* # of cells before vector */

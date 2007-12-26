@@ -6,6 +6,11 @@
 
 #if VQ_MUTABLE_H
 
+#define vInsv(vecptr)   ((vecptr)[-4].o.a.v)
+#define vDelv(vecptr)   ((vecptr)[-4].o.b.v)
+#define vOref(vecptr)   ((vecptr)[-5].o.a.p)
+#define vPerm(vecptr)   ((vecptr)[-5].o.b.p)
+
 /* --------------------------------------------------- RANGE OPERATIONS ----- */
 
 static int RangeSpan (Vector v, int offset, int count, int *startp, int miss) {
