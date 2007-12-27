@@ -366,7 +366,6 @@ static Tcl_Obj* MetaAsObj (vq_View meta) {
     Buffer buffer;
     InitBuffer(&buffer);
     MetaAsDesc(meta, &buffer);
-    ADD_CHAR_TO_BUF(buffer, 0);
     obj = Tcl_NewStringObj(BufferAsPtr(&buffer, 1), BufferFill(&buffer));
     ReleaseBuffer(&buffer, 0);
     return obj;
@@ -648,8 +647,7 @@ static int ColumnNumber(Tcl_Interp *interp, Tcl_Obj* obj, vq_View meta) {
 
 static int GetCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
     vq_View view;
-    int i, r, row, col, rows;
-    vq_Type currtype;
+    int i, r, row, col, rows, currtype;
     vq_Cell item;
 
     if (objc < 2) {
@@ -733,9 +731,7 @@ static int GetCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const
         else
             switch (col) {
                 default:    item = view[col];
-/*
-                            currtype = VQ_column;
-*/
+                            currtype = -1;
                             break;
                 case -1:    item.o.a.p = GetViewRows(view, 0, rows, 0);
                             currtype = VQ_objref;
@@ -753,7 +749,8 @@ static int GetCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *const
             }
     }
     
-    Tcl_SetObjResult(interp, ItemAsObj(currtype, item));
+    Tcl_SetObjResult(interp, currtype < 0 ? ColumnAsList (item, rows, -1)
+                                          : ItemAsObj(currtype, item));
     return TCL_OK;
 }
 

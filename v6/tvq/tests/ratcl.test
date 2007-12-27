@@ -87,4 +87,22 @@ test 11 {simple get} {
     V $v pair $v | get |
 } {0 0 1 1 2 2 3 3 4 4}
 
+test 12 {meta column get} {
+    V "" meta | meta | get * 0
+} {name type subv}
+
+test 13 {meta row get} {
+    V "" meta | meta | get 0 *
+} {name 5 name:S,type:I,subv:V}
+
+test 14 {meta row tagged get} {
+    V "" meta | meta | get 0
+} {name name type 5 subv name:S,type:I,subv:V}
+
+test 15 {meta row tagged get all} {
+    V "" meta | meta | get *
+} {{name 5 name:S,type:I,subv:V}\
+   {type 1 name:S,type:I,subv:V}\
+   {subv 7 name:S,type:I,subv:V}}
+
 ::tcltest::cleanupTests

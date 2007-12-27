@@ -10,9 +10,9 @@ int main (void) {
     int r, rows, c, cols;
     
     m = vq_new(3, vq_meta(0));
-    vq_setMetaRow (m, 0, "A", VQ_int, 0);
-    vq_setMetaRow (m, 1, "B", VQ_int, 0);
-    vq_setMetaRow (m, 2, "C", VQ_int, 0);
+    vq_setMetaRow (m, 0, "A", VQ_int, NULL);
+    vq_setMetaRow (m, 1, "B", VQ_int, NULL);
+    vq_setMetaRow (m, 2, "C", VQ_int, NULL);
     
     v = vq_new(4, m);
     rows = vq_size(v);
