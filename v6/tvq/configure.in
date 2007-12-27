@@ -66,7 +66,7 @@ TEA_ADD_INCLUDES([-I../lua/src -I../base -I../lvq])
 TEA_ADD_LIBS([])
 TEA_ADD_CFLAGS([-DLUA_USE_POSIX])
 TEA_ADD_STUB_SOURCES([])
-TEA_ADD_TCL_SOURCES([library/ratcl.tcl])
+TEA_ADD_TCL_SOURCES([library/mkclvfs.tcl library/ratcl.tcl])
 
 #--------------------------------------------------------------------
 # A few miscellaneous platform-specific items:

@@ -397,7 +397,7 @@ static Tcl_Obj* ViewAsList (vq_View view) {
         return ChangesAsList(view);
     
     if (meta == vq_meta(meta))
-        return MetaAsObj(meta);
+        return MetaAsObj(view);
     
     if (vCount(meta) == 0)
         return Tcl_NewIntObj(vCount(view));
@@ -579,10 +579,6 @@ static int PipeCmd (ClientData data, Tcl_Interp *interp, int objc, Tcl_Obj *cons
     return e;
 }
 
-static int StringLookup (const char *name, vq_Cell col) {
-    return -1;
-}
-
 static Tcl_Obj* BufferAsTclList (Buffer* bp) {
     int argc;
     Tcl_Obj *result;
@@ -637,9 +633,10 @@ static int ColumnNumber(Tcl_Interp *interp, Tcl_Obj* obj, vq_View meta) {
             break;
 
         default:
-            col = StringLookup(name, meta[0]);
-            if (col < 0)
-                return -3;
+        for (col = 0; col < vCount(meta); ++col)
+            if (strcmp(name, vq_getString(meta, col, 0, "")) == 0)
+                return col;
+            return -3;
     }
 
     return col;

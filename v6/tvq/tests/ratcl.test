@@ -53,14 +53,18 @@ test 6 {} {
   subv     7    #0}
 
 test 7 {} {
+    tvq struct [tvq open ../etc/alltypes.db]
+} (IIIIIIILFDSB)
+
+test 8 {} {
     tvq struct {open ../etc/alltypes.db}
 } (IIIIIIILFDSB)
 
-test 8 {} -body {
+test 9 {} -body {
     tvq row {open ../etc/alltypes.db} 0
 } -match glob -result {tvqobj: 0x*}
 
-test 9 {} {
+test 10 {} {
     tvq dump {at {open ../etc/simple.db} 0 0}
 } { \
   abc  
@@ -71,7 +75,7 @@ test 9 {} {
    4444
   55555}
 
-test 10 {trivial pipeline} {
+test 11 {trivial pipeline} {
     V 5 tag N | dump |
 } { \
   N
@@ -82,27 +86,42 @@ test 10 {trivial pipeline} {
   3
   4}
 
-test 11 {simple get} {
+test 12 {simple get} {
     set v [V 5 tag N]
     V $v pair $v | get |
 } {0 0 1 1 2 2 3 3 4 4}
 
-test 12 {meta column get} {
-    V "" meta | meta | get * 0
+test 13 {meta column get} {
+    set v [V "" meta | meta]
+    V $v get * 0
 } {name type subv}
 
-test 13 {meta row get} {
-    V "" meta | meta | get 0 *
-} {name 5 name:S,type:I,subv:V}
+test 14 {meta row get} {
+    V $v get 0 *
+} {name 5 {}}
 
-test 14 {meta row tagged get} {
-    V "" meta | meta | get 0
-} {name name type 5 subv name:S,type:I,subv:V}
+test 15 {meta row tagged get} {
+    V $v get 0
+} {name name type 5 subv {}}
 
-test 15 {meta row tagged get all} {
-    V "" meta | meta | get *
-} {{name 5 name:S,type:I,subv:V}\
-   {type 1 name:S,type:I,subv:V}\
-   {subv 7 name:S,type:I,subv:V}}
+test 16 {meta row tagged get all} {
+    V $v get *
+} {{name 5 {}} {type 1 {}} {subv 7 {}}}
+
+test 17 {meta column get by name} {
+    V $v get * type
+} {5 1 7}
+
+test 18 {get from file} {
+    set db [V ../etc/lkit-le.db open]
+    V $db meta | dump
+} { \
+  name  type  subv
+  ----  ----  ----
+  dirs     7    #3}
+  
+test 19 {structure from file} {
+    tvq struct $db
+} (SI(SIIB))
 
 ::tcltest::cleanupTests

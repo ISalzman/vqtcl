@@ -50,6 +50,15 @@ assert(m:meta():meta():dump() == [[
   name     5    #0
   type     1    #0
   subv     7    #0]])
+assert(m:meta():meta():at(2,2):dump() == [[
+  name  type  subv
+  ----  ----  ----]])
+assert(m:meta():meta():meta():dump() == [[
+  name  type  subv
+  ----  ----  ----
+  name     5    #0
+  type     1    #0
+  subv     7    #0]])
 
 v=vops.view(3,'first,age:I')
 v[0].first, v[0].age = 'joe', 8

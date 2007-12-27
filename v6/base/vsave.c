@@ -25,7 +25,7 @@ void MetaAsDesc (vq_View meta, Buffer *buffer) {
     int type, r, rows = vCount(meta);
     const char *name;
     char buf [30];
-    vq_View subt;
+    vq_View subv;
 
     for (r = 0; r < rows; ++r) {
         if (r > 0)
@@ -33,13 +33,13 @@ void MetaAsDesc (vq_View meta, Buffer *buffer) {
 
         name = vq_getString(meta, r, 0, "");
         type = vq_getInt(meta, r, 1, VQ_nil);
-        subt = vq_getView(meta, r, 2, 0);
-        assert(subt != 0);
+        subv = vq_getView(meta, r, 2, 0);
+        assert(subv != 0);
 
         AddToBuffer(buffer, name, strlen(name));
-        if (type == VQ_view && vCount(subt) > 0) {
+        if (type == VQ_view && vCount(subv) > 0) {
             ADD_CHAR_TO_BUF(*buffer, '[');
-            MetaAsDesc(subt, buffer);
+            MetaAsDesc(subv, buffer);
             ADD_CHAR_TO_BUF(*buffer, ']');
         } else {
             ADD_CHAR_TO_BUF(*buffer, ':');
@@ -322,7 +322,7 @@ static void EmitCols (EmitInfo *eip, vq_View view) {
     EmitVarInt(eip, rows);
     if (rows > 0) {
         int c;
-        vq_View subt, meta = vMeta(view);
+        vq_View subv, meta = vMeta(view);
         for (c = 0; c < vCount(meta); ++c) {                          
             vq_Type type = vq_getInt(meta, c, 1, VQ_nil);
             switch (type) {
@@ -339,8 +339,8 @@ static void EmitCols (EmitInfo *eip, vq_View view) {
                     EmitVarCol(eip, view[c], 0, rows);
                     break;
                 case VQ_view:
-                    subt = vq_getView(meta, c, 2, 0);
-                    EmitSubCol(eip, view[c], vCount(subt) == 0, rows);
+                    subv = vq_getView(meta, c, 2, 0);
+                    EmitSubCol(eip, view[c], vCount(subv) == 0, rows);
                     break;
                 default: assert(0);
             }
