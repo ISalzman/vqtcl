@@ -4,6 +4,8 @@
 
 #include "vlerq.h"
 
+#include <lauxlib.h>
+
 static const struct luaL_reg lvqlib_f[] = {
     {NULL, NULL},
 };
