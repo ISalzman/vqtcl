@@ -32,7 +32,7 @@ static vqView check_view (lua_State *L, int t) {
     return v;
 }
 
-static int pushitem (lua_State *L, char c, vqCell *cp) {
+static int pushcell (lua_State *L, char c, vqCell *cp) {
     if (cp == 0)
         return 0;
         
@@ -128,7 +128,7 @@ static int row_index (lua_State *L) {
     vqView v;
     int r, c = rowcolcheck(L, &v, &r);
     vqCell cell = vwCol(v,c);
-    return pushitem(L, VQ_TYPES[GetCell(r, &cell)], &cell);
+    return pushcell(L, VQ_TYPES[GetCell(r, &cell)], &cell);
 }
 
 static int row_newindex (lua_State *L) {
@@ -244,7 +244,7 @@ LUA_API int luaopen_lvq_core (lua_State *L) {
     luaL_newmetatable(L, "Vlerq.view");
     luaL_register(L, 0, lvqlib_view_m);
     
-    /* InitEmpty(L); */
+    InitEmpty(L);
     
     luaL_register(L, "lvq", lvqlib_f);
     lua_pushliteral(L, "LuaVlerq " VQ_VERSION);

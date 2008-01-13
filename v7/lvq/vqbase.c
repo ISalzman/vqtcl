@@ -154,12 +154,190 @@ static void *PushNewVector (lua_State *L, const vqDispatch *vtab, int bytes) {
     return data;
 }
 
+static vqType NilVecGetter (int row, vqCell *cp) {
+    const char *p = cp->p;
+    /* cp->i = (p[row/8] >> (row&7)) & 1; */
+    return (p[row/8] >> (row&7)) & 1 ? VQ_int : VQ_nil;
+}
+static vqType IntVecGetter (int row, vqCell *cp) {
+    const int *p = cp->p;
+    cp->i = p[row];
+    return VQ_int;
+}
+static vqType LongVecGetter (int row, vqCell *cp) {
+    const int64_t *p = cp->p;
+    cp->l = p[row];
+    return VQ_long;
+}
+static vqType FloatVecGetter (int row, vqCell *cp) {
+    const float *p = cp->p;
+    cp->f = p[row];
+    return VQ_float;
+}
+static vqType DoubleVecGetter (int row, vqCell *cp) {
+    const double *p = cp->p;
+    cp->d = p[row];
+    return VQ_double;
+}
+static vqType StringVecGetter (int row, vqCell *cp) {
+    const char **p = cp->p;
+    cp->s = p[row] != 0 ? p[row] : "";
+    return VQ_string;
+}
+static vqType BytesVecGetter (int row, vqCell *cp) {
+    vqCell *p = cp->p;
+    *cp = p[row];
+    return VQ_bytes;
+}
+static vqType ViewVecGetter (int row, vqCell *cp) {
+    vqView *p = cp->p;
+    cp->v = p[row];
+    return VQ_view;
+}
+
+static void NilVecSetter (void *q, int row, int col, const vqCell *cp) {
+    vqVec v = q;
+    char *p = (char*) v;
+    int bit = 1 << (row&7);
+    VQ_UNUSED(col);
+    if (cp != 0)
+        p[row/8] |= bit;
+    else
+        p[row/8] &= ~bit;
+}
+static void IntVecSetter (void *q, int row, int col, const vqCell *cp) {
+    vqVec v = q;
+    int *p = (int*) v;
+    VQ_UNUSED(col);
+    p[row] = cp != 0 ? cp->i : 0;
+}
+static void LongVecSetter (void *q, int row, int col, const vqCell *cp) {
+    vqVec v = q;
+    int64_t *p = (int64_t*) v;
+    VQ_UNUSED(col);
+    p[row] = cp != 0 ? cp->l : 0;
+}
+static void FloatVecSetter (void *q, int row, int col, const vqCell *cp) {
+    vqVec v = q;
+    float *p = (float*) v;
+    VQ_UNUSED(col);
+    p[row] = cp != 0 ? cp->f : 0;
+}
+static void DoubleVecSetter (void *q, int row, int col, const vqCell *cp) {
+    vqVec v = q;
+    double *p = (double*) v;
+    VQ_UNUSED(col);
+    p[row] = cp != 0 ? cp->d : 0;
+}
+static void StringVecSetter (void *q, int row, int col, const vqCell *cp) {
+    vqVec v = q;
+    const char **p = (const char**) v, *x = p[row];
+    VQ_UNUSED(col);
+    p[row] = cp != 0 ? strcpy(malloc(strlen(cp->s)+1), cp->s) : 0;
+    free((void*) x);
+}
+static void BytesVecSetter (void *q, int row, int col, const vqCell *cp) {
+    vqVec v = q;
+    vqCell *p = (vqCell*) v, x = p[row];
+    VQ_UNUSED(col);
+    if (cp != 0) {
+        p[row].p = memcpy(malloc(cp->x.y.i), cp->p, cp->x.y.i);
+        p[row].x.y.i = cp->x.y.i;
+    } else {
+        p[row].p = 0;
+        p[row].x.y.i = 0;
+    }
+    free(x.p);
+}
+static void ViewVecSetter (void *q, int row, int col, const vqCell *cp) {
+    lua_State *L = vwState(cp->v);
+    vqVec v = q;
+    vqCell *p = (vqCell*) v;
+    VQ_UNUSED(col);
+    luaL_unref(L, LUA_REGISTRYINDEX, p[row].x.y.i);
+    p[row].v = cp->v;
+    p[row].x.y.i = luaL_ref(L, LUA_REGISTRYINDEX);
+}
+
+static void StringVecCleaner (void *q) {
+    int i;
+    vqView v = q;
+    const char **p = (const char**) v;
+    for (i = 0; i < vwRows(v); ++i)
+        free((void*) p[i]);
+}
+static void BytesVecCleaner (void *q) {
+    int i;
+    vqView v = q;
+    vqCell *p = q;
+    for (i = 0; i < vwRows(v); ++i)
+        free(p[i].p);
+}
+static void ViewVecCleaner (void *q) {
+    int i;
+    vqView v = q;
+    lua_State *L = vwState(v);
+    vqCell *p = q;
+    for (i = 0; i < vwRows(v); ++i)
+        luaL_unref(L, LUA_REGISTRYINDEX, p[i].x.y.i);
+}
+
+static vqDispatch nvtab = {
+    "nilvec", 2, -1, 0, NilVecGetter, NilVecSetter
+};
+static vqDispatch ivtab = {
+    "intvec", 2, 4, 0, IntVecGetter, IntVecSetter
+};
+static vqDispatch lvtab = {
+    "longvec", 2, 8, 0, LongVecGetter, LongVecSetter 
+};
+static vqDispatch fvtab = {
+    "floatvec", 2, 4, 0, FloatVecGetter, FloatVecSetter 
+};
+static vqDispatch dvtab = {
+    "doublevec", 2, 8, 0, DoubleVecGetter, DoubleVecSetter 
+};
+static vqDispatch svtab = {
+    "stringvec", 2, sizeof(void*), 
+    StringVecCleaner, StringVecGetter, StringVecSetter
+};
+static vqDispatch bvtab = {
+    "bytesvec", 2, sizeof(vqCell), 
+    BytesVecCleaner, BytesVecGetter, BytesVecSetter
+};
+static vqDispatch tvtab = {
+    "viewvec", 2, sizeof(void*), 
+    ViewVecCleaner, ViewVecGetter, ViewVecSetter
+};
+
 static void NewDataVec (lua_State *L, vqType type, int rows, vqCell *cp) {
     if (rows == 0) {
         cp->p = 0;
         lua_pushnil(L);
     } else {
-        /* ... */
+        int bytes;
+        vqDispatch *vtab;
+        switch (type) {
+            case VQ_nil:
+                vtab = &nvtab; bytes = ((rows+31)/32) * sizeof(int); break;
+            case VQ_int:
+                vtab = &ivtab; bytes = rows * sizeof(int); break;
+            case VQ_long:
+                vtab = &lvtab; bytes = rows * sizeof(int64_t); break;
+            case VQ_float:
+                vtab = &fvtab; bytes = rows * sizeof(float); break;
+            case VQ_double:
+                vtab = &dvtab; bytes = rows * sizeof(double); break;
+            case VQ_string:
+                vtab = &svtab; bytes = rows * sizeof(const char*); break;
+            case VQ_bytes:
+                vtab = &bvtab; bytes = rows * sizeof(vqCell); break;
+            case VQ_view:
+                vtab = &tvtab; bytes = rows * sizeof(vqView); break;
+            default: assert(0); return;
+        }
+        cp->v = PushNewVector(L, vtab, bytes);
+        vwRows(cp->v) = /* vLimit(cp->v) = */ rows;
     }
     cp->x.y.i = luaL_ref(L, LUA_REGISTRYINDEX);
 }
