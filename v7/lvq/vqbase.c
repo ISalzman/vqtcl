@@ -7,24 +7,24 @@
 
 #include <unistd.h>
 
-static void get_pool (lua_State *L) {
+static void PushPool (lua_State *L) {
     lua_getfield(L, LUA_REGISTRYINDEX, "lvq.pool");
 }
 
-static void get_view (vqView v) {
+static void PushView (vqView v) {
     lua_State *L = vwState(v);
-    get_pool(L); /* t */
+    PushPool(L); /* t */
     lua_pushlightuserdata(L, v); /* t key */
     lua_rawget(L, -2); /* t ud */
     lua_remove(L, -2); /* ud */
 }
 
-static void *AllocVector (lua_State *L, const vqDispatch *vtab, int bytes) {
+static void *PushNewVector (lua_State *L, const vqDispatch *vtab, int bytes) {
     char *data;
-    int off = vtab->prefix * sizeof(vqCell);
+    int off = vtab->prefix;
 
     data = (char*) lua_newuserdata(L, bytes + off) + off; /* ud */
-    get_pool(L); /* ud t */
+    PushPool(L); /* ud t */
     lua_pushlightuserdata(L, data); /* ud t key */
     lua_pushvalue(L, -3); /* ud t key ud */
     lua_rawset(L, -3); /* ud t */
@@ -34,56 +34,61 @@ static void *AllocVector (lua_State *L, const vqDispatch *vtab, int bytes) {
     return data;
 }
 
-static vqType NotYetGetter (int row, vqCell *cp) {
-    VQ_UNUSED(row);
-    VQ_UNUSED(cp);
-    return VQ_nil;
-}
-
-static vqView EmptyMetaView (void) {
+static vqView EmptyMetaView (lua_State *L) {
+    lua_pushnil(L); /* ... */
+    lua_setfield(L, LUA_REGISTRYINDEX, "lvq.emv"); /* <none> */
     return 0;
 }
 
 vqView vq_init (lua_State *L) {
     vqView v;
     
-    lua_newtable(L);
-    lua_pushstring(L, "v");
-    lua_setfield(L, -2, "__mode");
-    lua_setfield(L, LUA_REGISTRYINDEX, "lvq.pool");
+    lua_newtable(L); /* t */
+    lua_pushstring(L, "v"); /* t s */
+    lua_setfield(L, -2, "__mode"); /* t */
+    lua_setfield(L, LUA_REGISTRYINDEX, "lvq.pool"); /* <none> */
 
-    v = EmptyMetaView();
+    v = EmptyMetaView(L);
     vwState(v) = L;
     return v;
 }
 
-lua_State *vq_state (vqView v) {
-    return vwState(v);
+static void NewDataVec (lua_State *L, vqType type, int rows, vqCell *cp) {
+    if (rows == 0) {
+        cp->p = 0;
+        lua_pushnil(L);
+    } else {
+        /* ... */
+    }
+    cp->x.y.i = luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
-static vqDispatch vtab = { "?", 0, 0, 0, NotYetGetter };
+static void ViewCleaner (vqVec p) {
+    vqView v = (vqView) p;
+    lua_State *L = vwState(v);
+    int c, cols = vwCols(v);
+    for (c = 0; c < cols; ++c)
+        luaL_unref(L, LUA_REGISTRYINDEX, vwCol(v,c).x.y.i);
+    luaL_unref(L, LUA_REGISTRYINDEX, vHead(v,mref));
+}
 
-vqView vq_new (vqView m, int rows) {
-    lua_State *L = vwState(m);
+static vqDispatch vtab = { "view", sizeof(struct vqView_s), 0, ViewCleaner };
+
+vqView vq_new (vqView meta, int rows) {
+    vqView v;
+    lua_State *L = vwState(meta);
+    int c, cols = vwRows(meta);
     
-    vqView v = AllocVector(L, &vtab, vwRows(m) * sizeof(vqCell));
+    v = PushNewVector(L, &vtab, cols * sizeof(vqCell)); /* vw */
     vwRows(v) = rows;
-    vwMeta(v) = m;
-    
-    lua_newtable(L);
-    get_view(m);
-    lua_setfield(L, -2, "meta");
-    lua_setfenv(L, -2);
+    vwMeta(v) = meta;
+    PushView(meta); /* vw ud */
+    vHead(v,mref) = luaL_ref(L, LUA_REGISTRYINDEX); /* vw */
+
+    for (c = 0; c < cols; ++c)
+        NewDataVec(L, VQ_int, rows, &vwCol(v,c));
     
     return v;
-}
-
-vqView vq_meta (vqView v) {
-    return vwMeta(v);
-}
-
-int vq_rows (vqView v) {
-    return vwRows(v);
 }
 
 static vqType GetCell (int row, vqCell *cp) {

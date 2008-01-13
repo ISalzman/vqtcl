@@ -47,6 +47,7 @@ struct vqInfo_s {
 struct vqView_s {
     lua_State *state;
     vqView meta;
+    int mref;
     vqView orig;
     vqInfo info;
 };

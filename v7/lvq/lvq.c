@@ -2,9 +2,17 @@
     $Id$
     This file is part of Vlerq, see lvq/vlerq.h for full copyright notice. */
 
+#include <lauxlib.h>
+
 #include "vqbase.c"
 
-#include <lauxlib.h>
+/*
+static int view_rows (lua_State *L) {
+    vqView v = check_view(L, 1);
+    lua_pushinteger(L, vwRows(v));
+    return 1;
+}
+*/
 
 static const struct luaL_reg lvqlib_f[] = {
     {NULL, NULL},
