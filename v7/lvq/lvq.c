@@ -2,7 +2,7 @@
     $Id$
     This file is part of Vlerq, see lvq/vlerq.h for full copyright notice. */
 
-#include "vlerq.h"
+#include "vqbase.c"
 
 #include <lauxlib.h>
 
@@ -11,7 +11,6 @@ static const struct luaL_reg lvqlib_f[] = {
 };
 
 LUA_API int luaopen_lvq_core (lua_State *L) {
-
     luaL_register(L, "lvq", lvqlib_f);
     
     lua_pushliteral(L, VQ_COPYRIGHT);

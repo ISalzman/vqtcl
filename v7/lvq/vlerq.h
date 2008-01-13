@@ -2,9 +2,10 @@
     $Id$
     This file is part of Vlerq, see lvq/vlerq.h for full copyright notice. */
 
-#include <stdint.h>
-#include <unistd.h>
+#ifndef VLERQ_H
+#define VLERQ_H
 
+#include <stdint.h>
 #include <lua.h>
 
 #define VQ_VERSION      "1.7"
@@ -13,8 +14,7 @@
 
 LUA_API int luaopen_lvq_core (lua_State *L);
 
-/* vq_Type lists all types of data, usually passed around via vqCell's */
-
+/* vqType defines all types of data, usually passed around as vqCell */
 typedef enum { 
     VQ_nil, 
     VQ_int,
@@ -24,37 +24,31 @@ typedef enum {
     VQ_string,
     VQ_bytes, 
     VQ_view
-} vq_Type;
+} vqType;
 
-#define VQ_TYPES "NILFDSBV" /* canonical char code, when indexed by vq_Type */
+#define VQ_TYPES "NILFDSBV" /* canonical char code, when indexed by vqType */
 
-/* a vqView is an opaque type at this level */
-
+/* a vqView is an opaque pointer at this level */
 typedef struct vqView_s *vqView;
 
-/* a vqCell can hold various data types, often as pairs */
-
+/* a vqCell can hold various data types, including some pairs */
 typedef union vqCell_u {
     int i;
-    int64_t w;
+    int64_t l;
     float f;
     double d;
+    const char *s;
+    uint8_t *b;
+    vqView v;
     void *p;
-    int *pi;
-    const char *ps;
-    union vqCell_u *pc;
-    struct vqView_s *pv;
-    struct vqDispatch_s *pd;
-    void (*pf)(void*);
+    int *n;
     struct {
-        void *skip;
+        void *gap;
         union {
             int i;
             void *p;
         } y;
     } x;
-    char b1[sizeof(void*)*2]; /* for byte order flips */
-    int b4[sizeof(void*)/2]; /* for hash calculations */
 } vqCell;
 
 /* core view functions */
@@ -63,10 +57,10 @@ vqView (vq_init) (lua_State *L);
 lua_State *(vq_state) (vqView v);
 vqView (vq_new) (vqView m, int rows);
 vqView (vq_meta) (vqView v);
-int (vq_size) (vqView v);
+int (vq_rows) (vqView v);
 int (vq_isnil) (vqView v, int row, int col);
-vqCell (vq_get) (vqView v, int row, int col, vq_Type type, vqCell def);
-vqView (vq_set) (vqView v, int row, int col, vq_Type type, vqCell val);
+vqCell (vq_get) (vqView v, int row, int col, vqType type, vqCell def);
+vqView (vq_set) (vqView v, int row, int col, vqType type, vqCell val);
 vqView (vq_replace) (vqView v, int start, int count, vqView data);
 
 /* convenience wrappers */
@@ -103,3 +97,5 @@ void (vq_setMetaRow) (vqView v, int row, const char *, int, vqView);
     SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   
     [ MIT license: http://www.opensource.org/licenses/mit-license.php ] */
+
+#endif
