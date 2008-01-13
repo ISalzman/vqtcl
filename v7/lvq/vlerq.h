@@ -1,6 +1,6 @@
 /*  Vlerq public header.
     $Id$
-    This file is part of Vlerq, see lvq/vlerq.h for full copyright notice. */
+    This file is part of Vlerq, see text at end for full copyright notice. */
 
 #ifndef VLERQ_H
 #define VLERQ_H

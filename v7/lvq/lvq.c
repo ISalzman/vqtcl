@@ -12,11 +12,9 @@ static const struct luaL_reg lvqlib_f[] = {
 
 LUA_API int luaopen_lvq_core (lua_State *L) {
     luaL_register(L, "lvq", lvqlib_f);
-    
-    lua_pushliteral(L, VQ_COPYRIGHT);
-    lua_setfield(L, -2, "_COPYRIGHT");
     lua_pushliteral(L, "LuaVlerq " VQ_VERSION);
     lua_setfield(L, -2, "_VERSION");
-
+    lua_pushliteral(L, VQ_COPYRIGHT);
+    lua_setfield(L, -2, "_COPYRIGHT");
     return 1;
 }

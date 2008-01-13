@@ -2,6 +2,8 @@
     $Id$
     This file is part of Vlerq, see lvq/vlerq.h for full copyright notice. */
 
+#define VQ_UNUSED(x)    ((void)(x))	    /* to avoid warnings */
+
 /* treat a vector pointer v as an array with elements of type t */
 #define vCast(v,t)  ((t*)(v))
 
@@ -17,6 +19,7 @@
 #define vwMeta(v)   vHead(v,meta)
 #define vwOrig(v)   vHead(v,orig)
 #define vwRows(v)   vSize(v)
+#define vwCols(v)   vSize(vwMeta(v))
 
 /* a view is an array of column references, stored as cells */
 #define vwCol(v,i)  vCast(v,vqCell)[i]
@@ -32,13 +35,13 @@ typedef struct vqDispatch_s {
     char unit;
     void (*cleaner)(vqVec);
     vqType (*getter)(int,vqCell*);
-    void (*setter)(vqVec,int,int,const vqCell*);
+    void (*setter)(void*,int,int,const vqCell*);
     void (*replacer)(vqView,int,int,vqView);
 } vqDispatch;
 
 struct vqInfo_s {
     int size;
-    vqDispatch *disp;
+    const vqDispatch *disp;
 };
     
 struct vqView_s {
