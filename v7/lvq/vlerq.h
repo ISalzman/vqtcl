@@ -53,7 +53,7 @@ typedef union vqCell_u {
 
 /* core view functions */
 
-vqView (vq_init) (lua_State *L);
+void (vq_init) (lua_State *L);
 vqView (vq_new) (vqView m, int rows);
 int (vq_isnil) (vqView v, int row, int col);
 vqCell (vq_get) (vqView v, int row, int col, vqType type, vqCell def);

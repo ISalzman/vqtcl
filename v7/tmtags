@@ -71,6 +71,7 @@ AR	/Users/jcw/w/svn/v7/lua/src/Makefile	/^AR= ar rcu$/;"	macro	line:12
 ARRAY2D	/Users/jcw/w/svn/v7/lua/test/life.lua	/^function ARRAY2D(w,h)$/;"	function	line:16
 AUXMARK	/Users/jcw/w/svn/v7/lua/src/loadlib.c	/^#define AUXMARK	/;"	macro	line:588
 Arith	/Users/jcw/w/svn/v7/lua/src/lvm.c	/^static void Arith (lua_State *L, StkId ra, const TValue *rb,$/;"	function	line:315
+AsMetaVop	/Users/jcw/w/svn/v7/lvq/vqbase.c	/^static vqView AsMetaVop (lua_State *L, const char *desc) {$/;"	function	line:126
 BASIC_CI_SIZE	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^#define BASIC_CI_SIZE /;"	macro	line:32
 BASIC_STACK_SIZE	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^#define BASIC_STACK_SIZE /;"	macro	line:34
 BIN	/Users/jcw/w/svn/v7/lua/etc/Makefile	/^BIN= $(TOP)\/src$/;"	macro	line:6
@@ -100,6 +101,7 @@ CREATE_ABx	/Users/jcw/w/svn/v7/lua/src/lopcodes.h	/^#define CREATE_ABx(/;"	macro
 CallInfo	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^typedef struct CallInfo {$/;"	struct	line:48
 CallInfo	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^} CallInfo;$/;"	typedef	line:55
 CallS	/Users/jcw/w/svn/v7/lua/src/lapi.c	/^struct CallS {  \/* data to `f_call' *\/$/;"	struct	line:788
+CharAsType	/Users/jcw/w/svn/v7/lvq/vqbase.c	/^static int CharAsType (char c) {$/;"	function	line:22
 Closure	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^typedef union Closure {$/;"	union	line:309
 Closure	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^} Closure;$/;"	typedef	line:312
 ClosureHeader	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^  ClosureHeader;$/;"	member	line:296
@@ -114,8 +116,9 @@ CommonHeader	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^  CommonHeader;$/;"	member	
 CommonHeader	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^#define CommonHeader	/;"	macro	line:43
 CommonHeader	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  CommonHeader;$/;"	member	line:101
 ConsControl	/Users/jcw/w/svn/v7/lua/src/lparser.c	/^struct ConsControl {$/;"	struct	line:434
-DEPS	/Users/jcw/w/svn/v7/lvq/Makefile	/^DEPS = $T.c vlerq.h$/;"	macro	line:7
+DEPS	/Users/jcw/w/svn/v7/lvq/Makefile	/^DEPS = $T.c vlerq.h vqbase.h vqbase.c$/;"	macro	line:7
 DLMSG	/Users/jcw/w/svn/v7/lua/src/loadlib.c	/^#define DLMSG	/;"	macro	line:236
+DescLenToMeta	/Users/jcw/w/svn/v7/lvq/vqbase.c	/^static vqView DescLenToMeta (lua_State *L, const char *desc, int length) {$/;"	function	line:95
 DumpBlock	/Users/jcw/w/svn/v7/lua/src/ldump.c	/^static void DumpBlock(const void* b, size_t size, DumpState* D)$/;"	function	line:29
 DumpChar	/Users/jcw/w/svn/v7/lua/src/ldump.c	/^static void DumpChar(int y, DumpState* D)$/;"	function	line:39
 DumpCode	/Users/jcw/w/svn/v7/lua/src/ldump.c	/^#define DumpCode(/;"	macro	line:76
@@ -134,6 +137,7 @@ EOZ	/Users/jcw/w/svn/v7/lua/src/lzio.h	/^#define EOZ	/;"	macro	line:16
 ERRFUNC	/Users/jcw/w/svn/v7/lua/src/loadlib.c	/^#define ERRFUNC	/;"	macro	line:40
 ERRLIB	/Users/jcw/w/svn/v7/lua/src/loadlib.c	/^#define ERRLIB	/;"	macro	line:39
 EXTRA_STACK	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^#define EXTRA_STACK /;"	macro	line:29
+EmptyMetaView	/Users/jcw/w/svn/v7/lvq/vqbase.c	/^static vqView EmptyMetaView (lua_State *L) {$/;"	function	line:14
 F 	/Users/jcw/w/svn/v7/lua/test/factorial.lua	/^F = function (f)$/;"	function	line:16
 FINALIZEDBIT	/Users/jcw/w/svn/v7/lua/src/lgc.h	/^#define FINALIZEDBIT	/;"	macro	line:57
 FIND	/Users/jcw/w/svn/v7/lua/Makefile	/^FIND= find$/;"	macro	line:33
@@ -165,6 +169,7 @@ GETARG_Bx	/Users/jcw/w/svn/v7/lua/src/lopcodes.h	/^#define GETARG_Bx(/;"	macro	l
 GETARG_C	/Users/jcw/w/svn/v7/lua/src/lopcodes.h	/^#define GETARG_C(/;"	macro	line:92
 GETARG_sBx	/Users/jcw/w/svn/v7/lua/src/lopcodes.h	/^#define GETARG_sBx(/;"	macro	line:100
 GET_OPCODE	/Users/jcw/w/svn/v7/lua/src/lopcodes.h	/^#define GET_OPCODE(/;"	macro	line:80
+GetCell	/Users/jcw/w/svn/v7/lvq/vqbase.c	/^static vqType GetCell (int row, vqCell *cp) {$/;"	function	line:210
 IF	/Users/jcw/w/svn/v7/lua/src/lundump.c	/^#define IF(/;"	macro	line:31
 IF	/Users/jcw/w/svn/v7/lua/src/lundump.c	/^#define IF(/;"	macro	line:33
 INC	/Users/jcw/w/svn/v7/lua/etc/Makefile	/^INC= $(TOP)\/src$/;"	macro	line:5
@@ -415,6 +420,7 @@ LUA_VERSION	/Users/jcw/w/svn/v7/lua/src/lua.h	/^#define LUA_VERSION	/;"	macro	li
 LUA_VERSION_NUM	/Users/jcw/w/svn/v7/lua/src/lua.h	/^#define LUA_VERSION_NUM	/;"	macro	line:21
 LUA_WIN	/Users/jcw/w/svn/v7/lua/src/luaconf.h	/^#define LUA_WIN$/;"	macro	line:33
 LUA_YIELD	/Users/jcw/w/svn/v7/lua/src/lua.h	/^#define LUA_YIELD	/;"	macro	line:43
+LVQ_ARGS	/Users/jcw/w/svn/v7/lvq/lvq.c	/^#define LVQ_ARGS(/;"	macro	line:89
 L_ESC	/Users/jcw/w/svn/v7/lua/src/lstrlib.c	/^#define L_ESC	/;"	macro	line:181
 L_Umaxalign	/Users/jcw/w/svn/v7/lua/src/llimits.h	/^typedef LUAI_USER_ALIGNMENT_T L_Umaxalign;$/;"	typedef	line:47
 LexState	/Users/jcw/w/svn/v7/lua/src/llex.h	/^typedef struct LexState {$/;"	struct	line:55
@@ -487,6 +493,7 @@ NSTALL_TOP	/Users/jcw/w/svn/v7/lua/Makefile	/^	$(MAKE) install INSTALL_TOP=.. IN
 NUM_OPCODES	/Users/jcw/w/svn/v7/lua/src/lopcodes.h	/^#define NUM_OPCODES	/;"	macro	line:211
 NUM_RESERVED	/Users/jcw/w/svn/v7/lua/src/llex.h	/^#define NUM_RESERVED	/;"	macro	line:36
 NUM_TAGS	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^#define NUM_TAGS	/;"	macro	line:22
+NewDataVec	/Users/jcw/w/svn/v7/lvq/vqbase.c	/^static void NewDataVec (lua_State *L, vqType type, int rows, vqCell *cp) {$/;"	function	line:169
 Node	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^typedef struct Node {$/;"	struct	line:332
 Node	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^} Node;$/;"	typedef	line:335
 OBJS	/Users/jcw/w/svn/v7/lvq/Makefile	/^OBJS = $T.o$/;"	macro	line:8
@@ -575,6 +582,7 @@ POS_Bx	/Users/jcw/w/svn/v7/lua/src/lopcodes.h	/^#define POS_Bx	/;"	macro	line:48
 POS_C	/Users/jcw/w/svn/v7/lua/src/lopcodes.h	/^#define POS_C	/;"	macro	line:46
 POS_OP	/Users/jcw/w/svn/v7/lua/src/lopcodes.h	/^#define POS_OP	/;"	macro	line:44
 PROGNAME	/Users/jcw/w/svn/v7/lua/src/luac.c	/^#define PROGNAME	/;"	macro	line:26
+ParseDesc	/Users/jcw/w/svn/v7/lvq/vqbase.c	/^static vqView ParseDesc (vqView emv, char **desc, const char **nbuf, int *tbuf, vqView *sbuf) {$/;"	function	line:52
 Pfunc	/Users/jcw/w/svn/v7/lua/src/ldo.h	/^typedef void (*Pfunc) (lua_State *L, void *ud);$/;"	typedef	line:38
 PrintCode	/Users/jcw/w/svn/v7/lua/src/print.c	/^static void PrintCode(const Proto* f)$/;"	function	line:74
 PrintConstant	/Users/jcw/w/svn/v7/lua/src/print.c	/^static void PrintConstant(const Proto* f, int i)$/;"	function	line:51
@@ -588,6 +596,10 @@ PrintUpvalues	/Users/jcw/w/svn/v7/lua/src/print.c	/^static void PrintUpvalues(co
 Protect	/Users/jcw/w/svn/v7/lua/src/lvm.c	/^#define Protect(/;"	macro	line:359
 Proto	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^typedef struct Proto {$/;"	struct	line:231
 Proto	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^} Proto;$/;"	typedef	line:253
+PushNewVector	/Users/jcw/w/svn/v7/lvq/vqbase.c	/^static void *PushNewVector (lua_State *L, const vqDispatch *vtab, int bytes) {$/;"	function	line:142
+PushPool	/Users/jcw/w/svn/v7/lvq/vqbase.c	/^static void PushPool (lua_State *L) {$/;"	function	line:130
+PushStruct	/Users/jcw/w/svn/v7/lvq/lvq.c	/^static void PushStruct (vqView v) {$/;"	function	line:146
+PushView	/Users/jcw/w/svn/v7/lvq/vqbase.c	/^static void PushView (vqView v) {$/;"	function	line:134
 R	/Users/jcw/w/svn/v7/lua/Makefile	/^R= 5.1.2$/;"	macro	line:51
 RA	/Users/jcw/w/svn/v7/lua/src/lvm.c	/^#define RA(/;"	macro	line:345
 RADIANS_PER_DEGREE	/Users/jcw/w/svn/v7/lua/src/lmathlib.c	/^#define RADIANS_PER_DEGREE /;"	macro	line:22
@@ -693,6 +705,7 @@ Table	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^typedef struct Table {$/;"	struct	
 Table	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^} Table;$/;"	typedef	line:348
 Token	/Users/jcw/w/svn/v7/lua/src/llex.h	/^typedef struct Token {$/;"	struct	line:49
 Token	/Users/jcw/w/svn/v7/lua/src/llex.h	/^} Token;$/;"	typedef	line:52
+TypeAsString	/Users/jcw/w/svn/v7/lvq/vqbase.c	/^static const char* TypeAsString (int type, char *buf) {$/;"	function	line:40
 UNARY_PRIORITY	/Users/jcw/w/svn/v7/lua/src/lparser.c	/^#define UNARY_PRIORITY	/;"	macro	line:821
 UNUSED	/Users/jcw/w/svn/v7/lua/src/llimits.h	/^#define UNUSED(/;"	macro	line:70
 Udata	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^typedef union Udata {$/;"	union	line:215
@@ -715,28 +728,33 @@ VINDEXED	/Users/jcw/w/svn/v7/lua/src/lparser.h	/^  VINDEXED,	\/* info = table re
 VJMP	/Users/jcw/w/svn/v7/lua/src/lparser.h	/^  VJMP,		\/* info = instruction pc *\/$/;"	enumerator	line:30
 VK	/Users/jcw/w/svn/v7/lua/src/lparser.h	/^  VK,		\/* info = index of constant in `k' *\/$/;"	enumerator	line:24
 VKNUM	/Users/jcw/w/svn/v7/lua/src/lparser.h	/^  VKNUM,	\/* nval = numerical value *\/$/;"	enumerator	line:25
+VLERQ_H	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^#define VLERQ_H$/;"	macro	line:6
 VLOCAL	/Users/jcw/w/svn/v7/lua/src/lparser.h	/^  VLOCAL,	\/* info = local register *\/$/;"	enumerator	line:26
 VNIL	/Users/jcw/w/svn/v7/lua/src/lparser.h	/^  VNIL,$/;"	enumerator	line:21
 VNONRELOC	/Users/jcw/w/svn/v7/lua/src/lparser.h	/^  VNONRELOC,	\/* info = result register *\/$/;"	enumerator	line:32
 VOID	/Users/jcw/w/svn/v7/lua/src/print.c	/^#define VOID(/;"	macro	line:21
-VQ_COPYRIGHT	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^#define VQ_COPYRIGHT /;"	macro	line:9
-VQ_RELEASE	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^#define VQ_RELEASE /;"	macro	line:8
-VQ_TYPES	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^#define VQ_TYPES /;"	macro	line:26
-VQ_VERSION	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^#define VQ_VERSION /;"	macro	line:7
-VQ_bytes	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    VQ_bytes, $/;"	enumerator	line:22
-VQ_double	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    VQ_double,$/;"	enumerator	line:20
-VQ_float	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    VQ_float,$/;"	enumerator	line:19
-VQ_int	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    VQ_int,$/;"	enumerator	line:17
-VQ_long	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    VQ_long,$/;"	enumerator	line:18
-VQ_nil	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    VQ_nil, $/;"	enumerator	line:16
-VQ_string	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    VQ_string,$/;"	enumerator	line:21
-VQ_view	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    VQ_view$/;"	enumerator	line:23
+VQ_COPYRIGHT	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^#define VQ_COPYRIGHT /;"	macro	line:13
+VQ_NULLABLE	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^#define VQ_NULLABLE /;"	macro	line:6
+VQ_RELEASE	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^#define VQ_RELEASE /;"	macro	line:12
+VQ_TYPEMASK	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^#define VQ_TYPEMASK /;"	macro	line:7
+VQ_TYPES	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^#define VQ_TYPES /;"	macro	line:29
+VQ_UNUSED	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^#define VQ_UNUSED(/;"	macro	line:5
+VQ_VERSION	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^#define VQ_VERSION /;"	macro	line:11
+VQ_bytes	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    VQ_bytes, $/;"	enumerator	line:25
+VQ_double	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    VQ_double,$/;"	enumerator	line:23
+VQ_float	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    VQ_float,$/;"	enumerator	line:22
+VQ_int	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    VQ_int,$/;"	enumerator	line:20
+VQ_long	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    VQ_long,$/;"	enumerator	line:21
+VQ_nil	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    VQ_nil, $/;"	enumerator	line:19
+VQ_string	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    VQ_string,$/;"	enumerator	line:24
+VQ_view	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    VQ_view$/;"	enumerator	line:26
 VRELOCABLE	/Users/jcw/w/svn/v7/lua/src/lparser.h	/^  VRELOCABLE,	\/* info = instruction pc *\/$/;"	enumerator	line:31
 VTRUE	/Users/jcw/w/svn/v7/lua/src/lparser.h	/^  VTRUE,$/;"	enumerator	line:22
 VUPVAL	/Users/jcw/w/svn/v7/lua/src/lparser.h	/^  VUPVAL,       \/* info = index of upvalue in `upvalues' *\/$/;"	enumerator	line:27
 VVARARG	/Users/jcw/w/svn/v7/lua/src/lparser.h	/^  VVARARG	\/* info = instruction pc *\/$/;"	enumerator	line:34
 VVOID	/Users/jcw/w/svn/v7/lua/src/lparser.h	/^  VVOID,	\/* no value *\/$/;"	enumerator	line:20
 Value	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^} Value;$/;"	typedef	line:64
+ViewCleaner	/Users/jcw/w/svn/v7/lvq/vqbase.c	/^static void ViewCleaner (void *p) {$/;"	function	line:179
 WHITE0BIT	/Users/jcw/w/svn/v7/lua/src/lgc.h	/^#define WHITE0BIT	/;"	macro	line:54
 WHITE1BIT	/Users/jcw/w/svn/v7/lua/src/lgc.h	/^#define WHITE1BIT	/;"	macro	line:55
 WHITEBITS	/Users/jcw/w/svn/v7/lua/src/lgc.h	/^#define WHITEBITS	/;"	macro	line:62
@@ -755,7 +773,6 @@ Zio	/Users/jcw/w/svn/v7/lua/src/lzio.h	/^struct Zio {$/;"	struct	line:56
 _CELLS:draw	/Users/jcw/w/svn/v7/lua/test/life.lua	/^function _CELLS:draw()$/;"	function	line:55
 _CELLS:evolve	/Users/jcw/w/svn/v7/lua/test/life.lua	/^function _CELLS:evolve(next)$/;"	function	line:39
 _CELLS:spawn	/Users/jcw/w/svn/v7/lua/test/life.lua	/^function _CELLS:spawn(shape,left,top)$/;"	function	line:30
-a	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^        } a;$/;"	member	line:46
 abs_index	/Users/jcw/w/svn/v7/lua/src/lauxlib.c	/^#define abs_index(/;"	macro	line:32
 actvar	/Users/jcw/w/svn/v7/lua/src/lparser.h	/^  unsigned short actvar[LUAI_MAXVARS];  \/* declared-variable stack *\/$/;"	member	line:74
 add_event	/Users/jcw/w/svn/v7/lua/doc/manual.html	/^     function add_event (op1, op2)$/;"	function	line:1633
@@ -801,8 +818,7 @@ b	/Users/jcw/w/svn/v7/lua/etc/Makefile	/^	-$(BIN)\/lua -lstrict -e 'function f()
 b	/Users/jcw/w/svn/v7/lua/src/ldo.c	/^  luai_jmpbuf b;$/;"	member	line:46
 b	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^  int b;$/;"	member	line:63
 b	/Users/jcw/w/svn/v7/lua/src/lundump.c	/^ Mbuffer* b;$/;"	member	line:26
-b	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^            const uint8_t         *b;$/;"	member	line:40
-b	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^        } b;$/;"	member	line:51
+b	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    uint8_t *b;$/;"	member	line:41
 base	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  StkId base;  \/* base for this function *\/$/;"	member	line:49
 base	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  StkId base;  \/* base of current function *\/$/;"	member	line:104
 base_ci	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  CallInfo *base_ci;  \/* array of CallInfo's *\/$/;"	member	line:111
@@ -832,8 +848,6 @@ buffreplace	/Users/jcw/w/svn/v7/lua/src/llex.c	/^static void buffreplace (LexSta
 buffsize	/Users/jcw/w/svn/v7/lua/src/lzio.h	/^  size_t buffsize;$/;"	member	line:27
 bvalue	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^#define bvalue(/;"	macro	line:100
 c	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^  CClosure c;$/;"	member	line:310
-c	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^            void                 (*c)(void*);$/;"	member	line:43
-c	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    char     c[sizeof(void*)*2];    \/* for byte order flips *\/$/;"	member	line:55
 cache	/Users/jcw/w/svn/v7/lua/test/fib.lua	/^function cache(f)$/;"	function	line:14
 callTM	/Users/jcw/w/svn/v7/lua/src/lvm.c	/^static void callTM (lua_State *L, const TValue *f, const TValue *p1,$/;"	function	line:98
 callTMres	/Users/jcw/w/svn/v7/lua/src/lvm.c	/^static void callTMres (lua_State *L, StkId res, const TValue *f,$/;"	function	line:82
@@ -863,8 +877,10 @@ check_exp	/Users/jcw/w/svn/v7/lua/src/llimits.h	/^#define check_exp(/;"	macro	li
 check_exp	/Users/jcw/w/svn/v7/lua/src/llimits.h	/^#define check_exp(/;"	macro	line:63
 check_match	/Users/jcw/w/svn/v7/lua/src/lparser.c	/^static void check_match (LexState *ls, int what, int who, int where) {$/;"	function	line:104
 check_next	/Users/jcw/w/svn/v7/lua/src/llex.c	/^static int check_next (LexState *ls, const char *set) {$/;"	function	line:161
+check_view	/Users/jcw/w/svn/v7/lvq/lvq.c	/^static vqView check_view (lua_State *L, int t) {$/;"	function	line:10
 checkconsistency	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^#define checkconsistency(/;"	macro	line:108
 checkint	/Users/jcw/w/svn/v7/lua/src/lauxlib.c	/^static int checkint (lua_State *L, int topop) {$/;"	function	line:280
+checkitem	/Users/jcw/w/svn/v7/lvq/lvq.c	/^static vqType checkitem (lua_State *L, int t, char c, vqCell *cp) {$/;"	function	line:53
 checkjump	/Users/jcw/w/svn/v7/lua/src/ldebug.c	/^#define checkjump(/;"	macro	line:270
 checkjump	/Users/jcw/w/svn/v7/lua/src/ldebug.c	/^#undef checkjump$/;"	macro	line:462
 checkliveness	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^#define checkliveness(/;"	macro	line:111
@@ -880,6 +896,7 @@ ci	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  CallInfo *ci;  \/* call info for cur
 ci_func	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^#define ci_func(/;"	macro	line:60
 cl	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  union Closure cl;$/;"	member	line:139
 classend	/Users/jcw/w/svn/v7/lua/src/lstrlib.c	/^static const char *classend (MatchState *ms, const char *p) {$/;"	function	line:201
+cleaner	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^    void (*cleaner)(void*);$/;"	member	line:38
 cleartable	/Users/jcw/w/svn/v7/lua/src/lgc.c	/^static void cleartable (GCObject *l) {$/;"	function	line:351
 close_func	/Users/jcw/w/svn/v7/lua/src/lparser.c	/^static void close_func (LexState *ls) {$/;"	function	line:356
 close_state	/Users/jcw/w/svn/v7/lua/src/lstate.c	/^static void close_state (lua_State *L) {$/;"	function	line:105
@@ -916,7 +933,7 @@ currentline	/Users/jcw/w/svn/v7/lua/src/ldebug.c	/^static int currentline (lua_S
 currentline	/Users/jcw/w/svn/v7/lua/src/lua.h	/^  int currentline;	\/* (l) *\/$/;"	member	line:349
 currentpc	/Users/jcw/w/svn/v7/lua/src/ldebug.c	/^static int currentpc (lua_State *L, CallInfo *ci) {$/;"	function	line:36
 currentwhite	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  lu_byte currentwhite;$/;"	member	line:72
-d	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    double   d;$/;"	member	line:54
+d	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    double d;$/;"	member	line:39
 data	/Users/jcw/w/svn/v7/lua/src/ldump.c	/^ void* data;$/;"	member	line:21
 data	/Users/jcw/w/svn/v7/lua/src/lzio.h	/^  void* data;			\/* additional data *\/$/;"	member	line:60
 db_debug	/Users/jcw/w/svn/v7/lua/src/ldblib.c	/^static int db_debug (lua_State *L) {$/;"	function	line:301
@@ -939,6 +956,7 @@ delay	/Users/jcw/w/svn/v7/lua/test/life.lua	/^function delay() -- NOTE: SYSTEM-D
 discharge2anyreg	/Users/jcw/w/svn/v7/lua/src/lcode.c	/^static void discharge2anyreg (FuncState *fs, expdesc *e) {$/;"	function	line:382
 discharge2reg	/Users/jcw/w/svn/v7/lua/src/lcode.c	/^static void discharge2reg (FuncState *fs, expdesc *e, int reg) {$/;"	function	line:343
 dischargejpc	/Users/jcw/w/svn/v7/lua/src/lcode.c	/^static void dischargejpc (FuncState *fs) {$/;"	function	line:163
+disp	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^    const vqDispatch *disp;$/;"	member	line:46
 doargs	/Users/jcw/w/svn/v7/lua/src/luac.c	/^static int doargs(int argc, char* argv[])$/;"	function	line:70
 docall	/Users/jcw/w/svn/v7/lua/src/lua.c	/^static int docall (lua_State *L, int narg, int clear) {$/;"	function	line:94
 dofile	/Users/jcw/w/svn/v7/lua/src/lua.c	/^static int dofile (lua_State *L, const char *name) {$/;"	function	line:132
@@ -987,7 +1005,7 @@ f	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^  lua_CFunction f;$/;"	member	line:297
 f	/Users/jcw/w/svn/v7/lua/src/lparser.h	/^  Proto *f;  \/* current function header *\/$/;"	member	line:59
 f	/Users/jcw/w/svn/v7/lua/src/lparser.h	/^  int f;  \/* patch list of `exit when false' *\/$/;"	member	line:44
 f	/Users/jcw/w/svn/v7/lua/test/bisect.lua	/^function f(x)$/;"	function	line:22
-f	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^            float                  f;$/;"	member	line:38
+f	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    float f;$/;"	member	line:38
 f_Ccall	/Users/jcw/w/svn/v7/lua/src/lapi.c	/^static void f_Ccall (lua_State *L, void *ud) {$/;"	function	line:833
 f_call	/Users/jcw/w/svn/v7/lua/src/lapi.c	/^static void f_call (lua_State *L, void *ud) {$/;"	function	line:794
 f_flush	/Users/jcw/w/svn/v7/lua/src/liolib.c	/^static int f_flush (lua_State *L) {$/;"	function	line:456
@@ -1042,6 +1060,7 @@ g	/Users/jcw/w/svn/v7/lua/src/lstate.c	/^  global_State g;$/;"	member	line:37
 g_iofile	/Users/jcw/w/svn/v7/lua/src/liolib.c	/^static int g_iofile (lua_State *L, int f, const char *mode) {$/;"	function	line:184
 g_read	/Users/jcw/w/svn/v7/lua/src/liolib.c	/^static int g_read (lua_State *L, FILE *f, int first) {$/;"	function	line:315
 g_write	/Users/jcw/w/svn/v7/lua/src/liolib.c	/^static int g_write (lua_State *L, FILE *f, int arg) {$/;"	function	line:394
+gap	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^        void *gap;$/;"	member	line:46
 gc	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^  GCObject *gc;$/;"	member	line:60
 gc_event	/Users/jcw/w/svn/v7/lua/doc/manual.html	/^     function gc_event (udata)$/;"	function	line:2050
 gcdept	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  lu_mem gcdept;  \/* how much GC is `behind schedule' *\/$/;"	member	line:85
@@ -1094,6 +1113,7 @@ getobjname	/Users/jcw/w/svn/v7/lua/src/ldebug.c	/^static const char *getobjname 
 getsizes	/Users/jcw/w/svn/v7/lua/src/lauxlib.c	/^static void getsizes (lua_State *L) {$/;"	function	line:287
 getstr	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^#define getstr(/;"	macro	line:210
 gettable_event	/Users/jcw/w/svn/v7/lua/doc/manual.html	/^     function gettable_event (table, key)$/;"	function	line:1850
+getter	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^    vqType (*getter)(int,vqCell*);$/;"	member	line:39
 getthread	/Users/jcw/w/svn/v7/lua/src/ldblib.c	/^static lua_State *getthread (lua_State *L, int *arg) {$/;"	function	line:75
 getunopr	/Users/jcw/w/svn/v7/lua/src/lparser.c	/^static UnOpr getunopr (int op) {$/;"	function	line:778
 gfasttm	/Users/jcw/w/svn/v7/lua/src/ltm.h	/^#define gfasttm(/;"	macro	line:41
@@ -1115,7 +1135,6 @@ gt	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^#define gt(/;"	macro	line:22
 gval	/Users/jcw/w/svn/v7/lua/src/ltable.h	/^#define gval(/;"	macro	line:15
 h	/Users/jcw/w/svn/v7/lua/src/lparser.h	/^  Table *h;  \/* table to find (and reuse) elements in `k' *\/$/;"	member	line:60
 h	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  struct Table h;$/;"	member	line:140
-h	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^            struct vqDispatch_s   *h;$/;"	member	line:44
 handle_luainit	/Users/jcw/w/svn/v7/lua/src/lua.c	/^static int handle_luainit (lua_State *L) {$/;"	function	line:321
 handle_script	/Users/jcw/w/svn/v7/lua/src/lua.c	/^static int handle_script (lua_State *L, char **argv, int n) {$/;"	function	line:237
 hash	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^    unsigned int hash;$/;"	member	line:204
@@ -1134,8 +1153,8 @@ hookcount	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  int hookcount;$/;"	member	lin
 hookf	/Users/jcw/w/svn/v7/lua/src/ldblib.c	/^static void hookf (lua_State *L, lua_Debug *ar) {$/;"	function	line:206
 hookmask	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  lu_byte hookmask;$/;"	member	line:115
 hvalue	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^#define hvalue(/;"	macro	line:99
-i	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^            int                    i;$/;"	member	line:37
-i	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^            int               i;$/;"	member	line:48
+i	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^            int i;$/;"	member	line:48
+i	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    int i;$/;"	member	line:36
 iABC	/Users/jcw/w/svn/v7/lua/src/lopcodes.h	/^enum OpMode {iABC, iABx, iAsBx};  \/* basic instruction format *\/$/;"	enumerator	line:31
 iABx	/Users/jcw/w/svn/v7/lua/src/lopcodes.h	/^enum OpMode {iABC, iABx, iAsBx};  \/* basic instruction format *\/$/;"	enumerator	line:31
 iAsBx	/Users/jcw/w/svn/v7/lua/src/lopcodes.h	/^enum OpMode {iABC, iABx, iAsBx};  \/* basic instruction format *\/$/;"	enumerator	line:31
@@ -1152,6 +1171,7 @@ index2adr	/Users/jcw/w/svn/v7/lua/src/lapi.c	/^static TValue *index2adr (lua_Sta
 indexupvalue	/Users/jcw/w/svn/v7/lua/src/lparser.c	/^static int indexupvalue (FuncState *fs, TString *name, expdesc *v) {$/;"	function	line:183
 info	/Users/jcw/w/svn/v7/lua/src/lparser.h	/^    struct { int info, aux; } s;$/;"	member	line:40
 info	/Users/jcw/w/svn/v7/lua/src/lparser.h	/^  lu_byte info;$/;"	member	line:50
+info	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^    vqInfo info;$/;"	member	line:54
 info_tailcall	/Users/jcw/w/svn/v7/lua/src/ldebug.c	/^static void info_tailcall (lua_Debug *ar) {$/;"	function	line:167
 init	/Users/jcw/w/svn/v7/lua/src/lstrlib.c	/^    const char *init;$/;"	member	line:175
 init_exp	/Users/jcw/w/svn/v7/lua/src/lparser.c	/^static void init_exp (expdesc *e, expkind k, int i) {$/;"	function	line:126
@@ -1198,6 +1218,7 @@ kname	/Users/jcw/w/svn/v7/lua/src/ldebug.c	/^static const char *kname (Proto *p,
 l	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^    } l;$/;"	member	line:282
 l	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^  LClosure l;$/;"	member	line:311
 l	/Users/jcw/w/svn/v7/lua/src/lstate.c	/^  lua_State l;$/;"	member	line:36
+l	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    int64_t l;$/;"	member	line:37
 l_G	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  global_State *l_G;$/;"	member	line:105
 l_alloc	/Users/jcw/w/svn/v7/lua/src/lauxlib.c	/^static void *l_alloc (void *ud, void *ptr, size_t osize, size_t nsize) {$/;"	function	line:628
 l_d	/Users/jcw/w/svn/v7/lua/src/luaconf.h	/^union luai_Cast { double l_d; long l_l; };$/;"	member	line:569
@@ -1924,7 +1945,7 @@ lualibs	/Users/jcw/w/svn/v7/lua/src/linit.c	/^static const luaL_Reg lualibs[] = 
 luaopen_base	/Users/jcw/w/svn/v7/lua/src/lbaselib.c	/^LUALIB_API int luaopen_base (lua_State *L) {$/;"	function	line:638
 luaopen_debug	/Users/jcw/w/svn/v7/lua/src/ldblib.c	/^LUALIB_API int luaopen_debug (lua_State *L) {$/;"	function	line:393
 luaopen_io	/Users/jcw/w/svn/v7/lua/src/liolib.c	/^LUALIB_API int luaopen_io (lua_State *L) {$/;"	function	line:509
-luaopen_lvq_core	/Users/jcw/w/svn/v7/lvq/lvq.c	/^LUA_API int luaopen_lvq_core (lua_State *L) {$/;"	function	line:11
+luaopen_lvq_core	/Users/jcw/w/svn/v7/lvq/lvq.c	/^LUA_API int luaopen_lvq_core (lua_State *L) {$/;"	function	line:175
 luaopen_math	/Users/jcw/w/svn/v7/lua/src/lmathlib.c	/^LUALIB_API int luaopen_math (lua_State *L) {$/;"	function	line:251
 luaopen_os	/Users/jcw/w/svn/v7/lua/src/loslib.c	/^LUALIB_API int luaopen_os (lua_State *L) {$/;"	function	line:240
 luaopen_package	/Users/jcw/w/svn/v7/lua/src/loadlib.c	/^LUALIB_API int luaopen_package (lua_State *L) {$/;"	function	line:625
@@ -1935,7 +1956,8 @@ lundump_h	/Users/jcw/w/svn/v7/lua/src/lundump.h	/^#define lundump_h$/;"	macro	li
 lvl	/Users/jcw/w/svn/v7/lua/src/lauxlib.h	/^  int lvl;  \/* number of strings in the stack (level) *\/$/;"	member	line:131
 lvm_c	/Users/jcw/w/svn/v7/lua/src/lvm.c	/^#define lvm_c$/;"	macro	line:12
 lvm_h	/Users/jcw/w/svn/v7/lua/src/lvm.h	/^#define lvm_h$/;"	macro	line:8
-lvqlib_f	/Users/jcw/w/svn/v7/lvq/lvq.c	/^static const struct luaL_reg lvqlib_f[] = {$/;"	variable	line:7
+lvqlib_f	/Users/jcw/w/svn/v7/lvq/lvq.c	/^static const struct luaL_reg lvqlib_f[] = {$/;"	variable	line:171
+lvqlib_view_m	/Users/jcw/w/svn/v7/lvq/lvq.c	/^static const struct luaL_reg lvqlib_view_m[] = {$/;"	variable	line:163
 lzio_c	/Users/jcw/w/svn/v7/lua/src/lzio.c	/^#define lzio_c$/;"	macro	line:10
 lzio_h	/Users/jcw/w/svn/v7/lua/src/lzio.h	/^#define lzio_h$/;"	macro	line:9
 main	/Users/jcw/w/svn/v7/lua/etc/min.c	/^int main(void)$/;"	function	line:32
@@ -1990,18 +2012,20 @@ mathlib	/Users/jcw/w/svn/v7/lua/src/lmathlib.c	/^static const luaL_Reg mathlib[]
 max_expand	/Users/jcw/w/svn/v7/lua/src/lstrlib.c	/^static const char *max_expand (MatchState *ms, const char *s,$/;"	function	line:300
 maxn	/Users/jcw/w/svn/v7/lua/src/ltablib.c	/^static int maxn (lua_State *L) {$/;"	function	line:56
 maxstacksize	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^  lu_byte maxstacksize;$/;"	member	line:252
+meta	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^    vqView meta;$/;"	member	line:51
 metatable	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^    struct Table *metatable;$/;"	member	line:219
 metatable	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^  struct Table *metatable;$/;"	member	line:342
 min_expand	/Users/jcw/w/svn/v7/lua/src/lstrlib.c	/^static const char *min_expand (MatchState *ms, const char *s,$/;"	function	line:315
 mkfuncname	/Users/jcw/w/svn/v7/lua/src/loadlib.c	/^static const char *mkfuncname (lua_State *L, const char *modname) {$/;"	function	line:391
 modinit	/Users/jcw/w/svn/v7/lua/src/loadlib.c	/^static void modinit (lua_State *L, const char *modname) {$/;"	function	line:527
+mref	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^    int mref;$/;"	member	line:52
 mt	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  struct Table *mt[NUM_TAGS];  \/* metatables for basic types *\/$/;"	member	line:92
 mt.__index 	/Users/jcw/w/svn/v7/lua/etc/strict.lua	/^mt.__index = function (t, n)$/;"	function	line:33
 mt.__newindex 	/Users/jcw/w/svn/v7/lua/etc/strict.lua	/^mt.__newindex = function (t, n, v)$/;"	function	line:22
 n	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^  lua_Number n;$/;"	member	line:62
 n	/Users/jcw/w/svn/v7/lua/src/lzio.h	/^  size_t n;			\/* bytes still unread *\/$/;"	member	line:57
 n	/Users/jcw/w/svn/v7/lua/src/lzio.h	/^  size_t n;$/;"	member	line:26
-n	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^            int                   *n;$/;"	member	line:45
+n	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    int *n;$/;"	member	line:44
 nCcalls	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  unsigned short nCcalls;  \/* number of nested C calls *\/$/;"	member	line:114
 na	/Users/jcw/w/svn/v7/lua/src/lparser.c	/^  int na;  \/* total number of array elements *\/$/;"	member	line:438
 nactvar	/Users/jcw/w/svn/v7/lua/src/lparser.c	/^  lu_byte nactvar;  \/* # active locals outside the breakable structure *\/$/;"	member	line:43
@@ -2010,6 +2034,7 @@ name	/Users/jcw/w/svn/v7/lua/src/lauxlib.h	/^  const char *name;$/;"	member	line
 name	/Users/jcw/w/svn/v7/lua/src/ldo.c	/^  const char *name;$/;"	member	line:485
 name	/Users/jcw/w/svn/v7/lua/src/lua.h	/^  const char *name;	\/* (n) *\/$/;"	member	line:345
 name	/Users/jcw/w/svn/v7/lua/src/lundump.c	/^ const char* name;$/;"	member	line:27
+name	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^    const char *name;$/;"	member	line:35
 namewhat	/Users/jcw/w/svn/v7/lua/src/lua.h	/^  const char *namewhat;	\/* (n) `global', `local', `field', `method' *\/$/;"	member	line:346
 need_value	/Users/jcw/w/svn/v7/lua/src/lcode.c	/^static int need_value (FuncState *fs, int list) {$/;"	function	line:122
 new_localvar	/Users/jcw/w/svn/v7/lua/src/lparser.c	/^static void new_localvar (LexState *ls, TString *name, int n) {$/;"	function	line:160
@@ -2040,11 +2065,11 @@ nups	/Users/jcw/w/svn/v7/lua/src/lua.h	/^  int nups;		\/* (u) number of upvalues
 nuse	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  lu_int32 nuse;  \/* number of elements *\/$/;"	member	line:40
 nval	/Users/jcw/w/svn/v7/lua/src/lparser.h	/^    lua_Number nval;$/;"	member	line:41
 nvalue	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^#define nvalue(/;"	macro	line:93
-o	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    }        o;$/;"	member	line:52
 obj2gco	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^#define obj2gco(/;"	macro	line:161
 open_func	/Users/jcw/w/svn/v7/lua/src/lparser.c	/^static void open_func (LexState *ls, FuncState *fs) {$/;"	function	line:328
 openupval	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  GCObject *openupval;  \/* list of open upvalues in this stack *\/$/;"	member	line:122
 opmode	/Users/jcw/w/svn/v7/lua/src/lopcodes.c	/^#define opmode(/;"	macro	line:59
+orig	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^    vqView orig;$/;"	member	line:53
 os_clock	/Users/jcw/w/svn/v7/lua/src/loslib.c	/^static int os_clock (lua_State *L) {$/;"	function	line:74
 os_date	/Users/jcw/w/svn/v7/lua/src/loslib.c	/^static int os_date (lua_State *L) {$/;"	function	line:124
 os_difftime	/Users/jcw/w/svn/v7/lua/src/loslib.c	/^static int os_difftime (lua_State *L) {$/;"	function	line:195
@@ -2065,11 +2090,12 @@ p	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^  struct Proto *p;$/;"	member	line:304
 p	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^  void *p;$/;"	member	line:61
 p	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  struct Proto p;$/;"	member	line:141
 p	/Users/jcw/w/svn/v7/lua/src/lzio.h	/^  const char *p;		\/* current position in buffer *\/$/;"	member	line:58
-p	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^            void                  *p;$/;"	member	line:41
-p	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^            void             *p;$/;"	member	line:49
+p	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^            void *p;$/;"	member	line:49
+p	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    void *p;$/;"	member	line:43
 panic	/Users/jcw/w/svn/v7/lua/src/lauxlib.c	/^static int panic (lua_State *L) {$/;"	function	line:640
 panic	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  lua_CFunction panic;  \/* to be called in unprotected errors *\/$/;"	member	line:88
 parlist	/Users/jcw/w/svn/v7/lua/src/lparser.c	/^static void parlist (LexState *ls) {$/;"	function	line:543
+parseargs	/Users/jcw/w/svn/v7/lvq/lvq.c	/^static void parseargs(lua_State *L, vqCell *buf, const char *desc) {$/;"	function	line:83
 patchlistaux	/Users/jcw/w/svn/v7/lua/src/lcode.c	/^static void patchlistaux (FuncState *fs, int list, int vtarget, int reg,$/;"	function	line:150
 patchtestreg	/Users/jcw/w/svn/v7/lua/src/lcode.c	/^static int patchtestreg (FuncState *fs, int node, int reg) {$/;"	function	line:131
 pc	/Users/jcw/w/svn/v7/lua/src/lparser.h	/^  int pc;  \/* next position to code (equivalent to `ncode') *\/$/;"	member	line:65
@@ -2257,6 +2283,7 @@ pmain	/Users/jcw/w/svn/v7/lua/src/lua.c	/^static int pmain (lua_State *L) {$/;"	
 pmain	/Users/jcw/w/svn/v7/lua/src/luac.c	/^static int pmain(lua_State* L)$/;"	function	line:158
 posrelat	/Users/jcw/w/svn/v7/lua/src/lstrlib.c	/^static ptrdiff_t posrelat (ptrdiff_t pos, size_t len) {$/;"	function	line:36
 precheck	/Users/jcw/w/svn/v7/lua/src/ldebug.c	/^static int precheck (const Proto *pt) {$/;"	function	line:276
+prefix	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^    uint8_t prefix;$/;"	member	line:36
 prefixexp	/Users/jcw/w/svn/v7/lua/src/lparser.c	/^static void prefixexp (LexState *ls, expdesc *v) {$/;"	function	line:667
 preinit_state	/Users/jcw/w/svn/v7/lua/src/lstate.c	/^static void preinit_state (lua_State *L, global_State *g) {$/;"	function	line:84
 prev	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^      struct UpVal *prev;$/;"	member	line:280
@@ -2284,7 +2311,6 @@ pushnexttemplate	/Users/jcw/w/svn/v7/lua/src/loadlib.c	/^static const char *push
 pushresult	/Users/jcw/w/svn/v7/lua/src/liolib.c	/^static int pushresult (lua_State *L, int i, const char *filename) {$/;"	function	line:30
 pushstr	/Users/jcw/w/svn/v7/lua/src/lobject.c	/^static void pushstr (lua_State *L, const char *str) {$/;"	function	line:104
 pvalue	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^#define pvalue(/;"	macro	line:92
-q	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    int      q[sizeof(void*)\/2];    \/* for hash calculations *\/$/;"	member	line:56
 qsort	/Users/jcw/w/svn/v7/lua/test/sort.lua	/^function qsort(x,l,u,f)$/;"	function	line:5
 r	/Users/jcw/w/svn/v7/lua/doc/manual.html	/^     function r() return 1,2,3 end$/;"	function	line:1386
 r	/Users/jcw/w/svn/v7/lua/src/llex.h	/^  lua_Number r;$/;"	member	line:44
@@ -2310,6 +2336,7 @@ removeentry	/Users/jcw/w/svn/v7/lua/src/lgc.c	/^static void removeentry (Node *n
 removevalues	/Users/jcw/w/svn/v7/lua/src/lcode.c	/^static void removevalues (FuncState *fs, int list) {$/;"	function	line:144
 removevars	/Users/jcw/w/svn/v7/lua/src/lparser.c	/^static void removevars (LexState *ls, int tolevel) {$/;"	function	line:176
 repeatstat	/Users/jcw/w/svn/v7/lua/src/lparser.c	/^static void repeatstat (LexState *ls, int line) {$/;"	function	line:1008
+replacer	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^    void (*replacer)(vqView,int,int,vqView);$/;"	member	line:41
 report	/Users/jcw/w/svn/v7/lua/src/lua.c	/^static int report (lua_State *L, int status) {$/;"	function	line:65
 reserved	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^    lu_byte reserved;$/;"	member	line:203
 reset2bits	/Users/jcw/w/svn/v7/lua/src/lgc.h	/^#define reset2bits(/;"	macro	line:36
@@ -2330,7 +2357,7 @@ runargs	/Users/jcw/w/svn/v7/lua/src/lua.c	/^static int runargs (lua_State *L, ch
 runtime_check	/Users/jcw/w/svn/v7/lua/src/lvm.c	/^#define runtime_check(/;"	macro	line:343
 s	/Users/jcw/w/svn/v7/lua/src/lauxlib.c	/^  const char *s;$/;"	member	line:595
 s	/Users/jcw/w/svn/v7/lua/src/lparser.h	/^    struct { int info, aux; } s;$/;"	member	line:40
-s	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^            const char            *s;$/;"	member	line:39
+s	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    const char *s;$/;"	member	line:40
 save	/Users/jcw/w/svn/v7/lua/src/llex.c	/^static void save (LexState *ls, int c) {$/;"	function	line:51
 save_and_next	/Users/jcw/w/svn/v7/lua/src/llex.c	/^#define save_and_next(/;"	macro	line:48
 saveci	/Users/jcw/w/svn/v7/lua/src/ldo.h	/^#define saveci(/;"	macro	line:27
@@ -2377,6 +2404,7 @@ setsvalue2s	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^#define setsvalue2s	/;"	macr
 settable_event	/Users/jcw/w/svn/v7/lua/doc/manual.html	/^     function settable_event (table, key, value)$/;"	function	line:1876
 settabsi	/Users/jcw/w/svn/v7/lua/src/ldblib.c	/^static void settabsi (lua_State *L, const char *i, int v) {$/;"	function	line:69
 settabss	/Users/jcw/w/svn/v7/lua/src/ldblib.c	/^static void settabss (lua_State *L, const char *i, const char *v) {$/;"	function	line:63
+setter	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^    void (*setter)(void*,int,int,const vqCell*);$/;"	member	line:40
 setthreshold	/Users/jcw/w/svn/v7/lua/src/lgc.c	/^#define setthreshold(/;"	macro	line:59
 setthvalue	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^#define setthvalue(/;"	macro	line:138
 setttype	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^#define setttype(/;"	macro	line:186
@@ -2390,6 +2418,7 @@ singlevar	/Users/jcw/w/svn/v7/lua/src/lparser.c	/^static void singlevar (LexStat
 singlevaraux	/Users/jcw/w/svn/v7/lua/src/lparser.c	/^static int singlevaraux (FuncState *fs, TString *n, expdesc *var, int base) {$/;"	function	line:224
 size	/Users/jcw/w/svn/v7/lua/src/lauxlib.c	/^  size_t size;$/;"	member	line:596
 size	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  int size;$/;"	member	line:41
+size	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^    int size;$/;"	member	line:45
 sizeCclosure	/Users/jcw/w/svn/v7/lua/src/lfunc.h	/^#define sizeCclosure(/;"	macro	line:14
 sizeLclosure	/Users/jcw/w/svn/v7/lua/src/lfunc.h	/^#define sizeLclosure(/;"	macro	line:17
 size_ci	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  int size_ci;  \/* size of array `base_ci' *\/$/;"	member	line:113
@@ -2418,6 +2447,7 @@ stack_last	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  StkId stack_last;  \/* last 
 stacksize	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  int stacksize;$/;"	member	line:112
 start_capture	/Users/jcw/w/svn/v7/lua/src/lstrlib.c	/^static const char *start_capture (MatchState *ms, const char *s,$/;"	function	line:328
 startpc	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^  int startpc;  \/* first point where variable is active *\/$/;"	member	line:264
+state	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^    lua_State *state;$/;"	member	line:50
 state_size	/Users/jcw/w/svn/v7/lua/src/lstate.c	/^#define state_size(/;"	macro	line:27
 statement	/Users/jcw/w/svn/v7/lua/src/lparser.c	/^static int statement (LexState *ls) {$/;"	function	line:1269
 status	/Users/jcw/w/svn/v7/lua/src/ldo.c	/^  volatile int status;  \/* error code *\/$/;"	member	line:47
@@ -2522,6 +2552,7 @@ uchar	/Users/jcw/w/svn/v7/lua/src/lstrlib.c	/^#define uchar(/;"	macro	line:24
 ud	/Users/jcw/w/svn/v7/lua/src/lapi.c	/^  void *ud;$/;"	member	line:829
 ud	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  void *ud;         \/* auxiliary data to `frealloc' *\/$/;"	member	line:71
 unbound_search	/Users/jcw/w/svn/v7/lua/src/ltable.c	/^static int unbound_search (Table *t, unsigned int j) {$/;"	function	line:532
+unit	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^    char unit;$/;"	member	line:37
 unlinkupval	/Users/jcw/w/svn/v7/lua/src/lfunc.c	/^static void unlinkupval (UpVal *uv) {$/;"	function	line:82
 unm_event	/Users/jcw/w/svn/v7/lua/doc/manual.html	/^     function unm_event (op)$/;"	function	line:1689
 unmakemask	/Users/jcw/w/svn/v7/lua/src/ldblib.c	/^static char *unmakemask (int mask, char *smask) {$/;"	function	line:234
@@ -2540,16 +2571,42 @@ uvhead	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  UpVal uvhead;  \/* head of doubl
 v	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^  TValue *v;  \/* points to stack or to its own value *\/$/;"	member	line:276
 v	/Users/jcw/w/svn/v7/lua/src/lparser.c	/^  expdesc v;  \/* last list item read *\/$/;"	member	line:435
 v	/Users/jcw/w/svn/v7/lua/src/lparser.c	/^  expdesc v;  \/* variable (global, local, upvalue, or indexed) *\/$/;"	member	line:898
-v	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^            union vqCell_u        *v;$/;"	member	line:42
-v	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^            union vqCell_u   *v;$/;"	member	line:50
+v	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    vqView v;$/;"	member	line:42
+vCast	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^#define vCast(/;"	macro	line:10
+vDisp	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^#define vDisp(/;"	macro	line:17
+vHead	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^#define vHead(/;"	macro	line:13
+vSize	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^#define vSize(/;"	macro	line:16
 valiswhite	/Users/jcw/w/svn/v7/lua/src/lgc.h	/^#define valiswhite(/;"	macro	line:75
 value	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^    TValue value;  \/* the value (when closed) *\/$/;"	member	line:278
 varname	/Users/jcw/w/svn/v7/lua/src/lobject.h	/^  TString *varname;$/;"	member	line:263
-vqCell	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^} vqCell;$/;"	typedef	line:57
-vqCell_u	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^typedef union vqCell_u {$/;"	union	line:34
-vqView	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^typedef union vqView_s *vqView;$/;"	typedef	line:30
-vq_Type	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^} vq_Type;$/;"	typedef	line:24
-w	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    int64_t  w;$/;"	member	line:53
+view2string	/Users/jcw/w/svn/v7/lvq/lvq.c	/^static int view2string (lua_State *L) {$/;"	function	line:153
+view2struct	/Users/jcw/w/svn/v7/lvq/lvq.c	/^static void view2struct (luaL_Buffer *B, vqView meta) {$/;"	function	line:124
+view_gc	/Users/jcw/w/svn/v7/lvq/lvq.c	/^static int view_gc (lua_State *L) {$/;"	function	line:93
+view_index	/Users/jcw/w/svn/v7/lvq/lvq.c	/^static int view_index (lua_State *L) {$/;"	function	line:99
+view_len	/Users/jcw/w/svn/v7/lvq/lvq.c	/^static int view_len (lua_State *L) {$/;"	function	line:118
+vqCell	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^} vqCell;$/;"	typedef	line:52
+vqCell_u	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^typedef union vqCell_u {$/;"	union	line:35
+vqDispatch	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^} vqDispatch;$/;"	typedef	line:42
+vqDispatch_s	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^typedef struct vqDispatch_s {$/;"	struct	line:34
+vqInfo	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^typedef struct vqInfo_s vqInfo, *vqVec;$/;"	typedef	line:32
+vqInfo_s	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^struct vqInfo_s {$/;"	struct	line:44
+vqType	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^} vqType;$/;"	typedef	line:27
+vqVec	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^typedef struct vqInfo_s vqInfo, *vqVec;$/;"	typedef	line:32
+vqView	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^typedef struct vqView_s *vqView;$/;"	typedef	line:32
+vqView_s	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^struct vqView_s {$/;"	struct	line:49
+vq_get	/Users/jcw/w/svn/v7/lvq/vqbase.c	/^vqCell vq_get (vqView v, int row, int col, vqType type, vqCell def) {$/;"	function	line:225
+vq_init	/Users/jcw/w/svn/v7/lvq/vqbase.c	/^void vq_init (lua_State *L) {$/;"	function	line:156
+vq_isnil	/Users/jcw/w/svn/v7/lvq/vqbase.c	/^int vq_isnil (vqView v, int row, int col) {$/;"	function	line:217
+vq_new	/Users/jcw/w/svn/v7/lvq/vqbase.c	/^vqView vq_new (vqView meta, int rows) {$/;"	function	line:190
+vq_replace	/Users/jcw/w/svn/v7/lvq/vqbase.c	/^vqView vq_replace (vqView v, int start, int count, vqView data) {$/;"	function	line:241
+vq_set	/Users/jcw/w/svn/v7/lvq/vqbase.c	/^vqView vq_set (vqView v, int row, int col, vqType type, vqCell val) {$/;"	function	line:234
+vtab	/Users/jcw/w/svn/v7/lvq/vqbase.c	/^static vqDispatch vtab = { "view", sizeof(struct vqView_s), 0, ViewCleaner };$/;"	variable	line:188
+vwCol	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^#define vwCol(/;"	macro	line:27
+vwCols	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^#define vwCols(/;"	macro	line:24
+vwMeta	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^#define vwMeta(/;"	macro	line:21
+vwOrig	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^#define vwOrig(/;"	macro	line:22
+vwRows	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^#define vwRows(/;"	macro	line:23
+vwState	/Users/jcw/w/svn/v7/lvq/vqbase.h	/^#define vwState(/;"	macro	line:20
 weak	/Users/jcw/w/svn/v7/lua/src/lstate.h	/^  GCObject *weak;  \/* list of weak tables (to be cleared) *\/$/;"	member	line:79
 what	/Users/jcw/w/svn/v7/lua/src/lua.h	/^  const char *what;	\/* (S) `Lua', `C', `main', `tail' *\/$/;"	member	line:347
 what 	/Users/jcw/w/svn/v7/lua/etc/strict.lua	/^local function what ()$/;"	function	line:17
@@ -2558,6 +2615,8 @@ white2gray	/Users/jcw/w/svn/v7/lua/src/lgc.c	/^#define white2gray(/;"	macro	line
 writer	/Users/jcw/w/svn/v7/lua/src/ldump.c	/^ lua_Writer writer;$/;"	member	line:20
 writer	/Users/jcw/w/svn/v7/lua/src/lstrlib.c	/^static int writer (lua_State *L, const void* b, size_t size, void* B) {$/;"	function	line:139
 writer	/Users/jcw/w/svn/v7/lua/src/luac.c	/^static int writer(lua_State* L, const void* p, size_t size, void* u)$/;"	function	line:147
+x	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^    } x;$/;"	member	line:51
+y	/Users/jcw/w/svn/v7/lvq/vlerq.h	/^        } y;$/;"	member	line:50
 yindex	/Users/jcw/w/svn/v7/lua/src/lparser.c	/^static void yindex (LexState *ls, expdesc *v) {$/;"	function	line:418
 z	/Users/jcw/w/svn/v7/lua/src/ldo.c	/^  ZIO *z;$/;"	member	line:483
 z	/Users/jcw/w/svn/v7/lua/src/llex.h	/^  ZIO *z;  \/* input stream *\/$/;"	member	line:63

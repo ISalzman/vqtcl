@@ -3,6 +3,8 @@
     This file is part of Vlerq, see lvq/vlerq.h for full copyright notice. */
 
 #define VQ_UNUSED(x)    ((void)(x))	    /* to avoid warnings */
+#define VQ_NULLABLE     (1 << 4)
+#define VQ_TYPEMASK     (VQ_NULLABLE - 1)
 
 /* treat a vector pointer v as an array with elements of type t */
 #define vCast(v,t)  ((t*)(v))
@@ -33,7 +35,7 @@ typedef struct vqDispatch_s {
     const char *name;
     uint8_t prefix;
     char unit;
-    void (*cleaner)(vqVec);
+    void (*cleaner)(void*);
     vqType (*getter)(int,vqCell*);
     void (*setter)(void*,int,int,const vqCell*);
     void (*replacer)(vqView,int,int,vqView);

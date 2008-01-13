@@ -5,7 +5,127 @@
 #include "vlerq.h"
 #include "vqbase.h"
 
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
+
+static vqView check_view (lua_State *L, int t); /* forward */
+    
+static vqView EmptyMeta (lua_State *L) {
+    vqView v;
+    lua_getfield(L, LUA_REGISTRYINDEX, "lvq.emv"); /* t */
+    v = check_view(L, -1);
+    lua_pop(L, 1);
+    return v;
+}
+
+static int CharAsType (char c) {
+    const char *p = strchr(VQ_TYPES, c & ~0x20);
+    int type = p != 0 ? p - VQ_TYPES : VQ_nil;
+    if (c & 0x20)
+        type |= VQ_NULLABLE;
+    return type;
+}
+
+/*
+static int StringAsType (const char *str) {
+    int type = CharAsType(*str);
+    while (*++str != 0)
+        if ('a' <= *str && *str <= 'z')
+        type |= 1 << (*str - 'a' + 5);
+    return type;
+}
+*/
+
+static const char* TypeAsString (int type, char *buf) {
+    char c, *p = buf; /* buffer should have room for at least 28 bytes */
+    *p++ = VQ_TYPES[type&VQ_TYPEMASK];
+    if (type & VQ_NULLABLE)
+        p[-1] |= 0x20;
+    for (c = 'a'; c <= 'z'; ++c)
+        if (type & (1 << (c - 'a' + 5)))
+            *p++ = c;
+    *p = 0;
+    return buf;
+}
+
+static vqView ParseDesc (vqView emv, char **desc, const char **nbuf, int *tbuf, vqView *sbuf) {
+    char sep, *ptr = *desc;
+    const char  **names = nbuf;
+    int c, cols = 0, *types = tbuf;
+    vqView result, *subts = sbuf;
+    
+    for (;;) {
+        const char* s = ptr;
+        sbuf[cols] = emv;
+        tbuf[cols] = VQ_string;
+        
+        while (strchr(":,[]", *ptr) == 0)
+            ++ptr;
+        sep = *ptr;
+        *ptr = 0;
+
+        if (sep == '[') {
+            ++ptr;
+            sbuf[cols] = ParseDesc(emv, &ptr, nbuf+cols, tbuf+cols, sbuf+cols);
+            tbuf[cols] = VQ_view;
+            sep = *++ptr;
+        } else if (sep == ':') {
+            tbuf[cols] = CharAsType(*++ptr);
+            sep = *++ptr;
+        }
+        
+        nbuf[cols++] = s;
+        if (sep != ',')
+            break;
+            
+        ++ptr;
+    }
+    
+    *desc = ptr;
+
+    result = vq_new(vwMeta(emv), cols);
+
+    for (c = 0; c < cols; ++c)
+        vq_setMetaRow(result, c, names[c], types[c], subts[c]);
+    
+    return result;
+}
+
+static vqView DescLenToMeta (lua_State *L, const char *desc, int length) {
+    int i, bytes, limit = 1;
+    void *buffer;
+    const char **nbuf;
+    int *tbuf;
+    vqView *sbuf, meta;
+    char *dbuf;
+    vqView emv = EmptyMeta(L);
+    
+    if (length <= 0)
+        return emv;
+    
+    /* find a hard upper bound for the buffer requirements */
+    for (i = 0; i < length; ++i)
+        if (desc[i] == ',' || desc[i] == '[')
+            ++limit;
+    
+    bytes = limit * (2 * sizeof(void*) + sizeof(int)) + length + 1;
+    buffer = malloc(bytes);
+    nbuf = buffer;
+    sbuf = (void*) (nbuf + limit);
+    tbuf = (void*) (sbuf + limit);
+    dbuf = memcpy(tbuf + limit, desc, length);
+    dbuf[length] = ']';
+    
+    meta = ParseDesc(emv, &dbuf, nbuf, tbuf, sbuf);
+    
+    free(buffer);
+    return meta;
+}
+
+static vqView AsMetaVop (lua_State *L, const char *desc) {
+    return DescLenToMeta(L, desc, strlen(desc));
+}
 
 static void PushPool (lua_State *L) {
     lua_getfield(L, LUA_REGISTRYINDEX, "lvq.pool");
@@ -20,10 +140,9 @@ static void PushView (vqView v) {
 }
 
 static void *PushNewVector (lua_State *L, const vqDispatch *vtab, int bytes) {
-    char *data;
-    int off = vtab->prefix;
-
-    data = (char*) lua_newuserdata(L, bytes + off) + off; /* ud */
+    char *data = lua_newuserdata(L, bytes + vtab->prefix); /* ud */
+    data += vtab->prefix;
+    
     PushPool(L); /* ud t */
     lua_pushlightuserdata(L, data); /* ud t key */
     lua_pushvalue(L, -3); /* ud t key ud */
@@ -34,23 +153,17 @@ static void *PushNewVector (lua_State *L, const vqDispatch *vtab, int bytes) {
     return data;
 }
 
-static vqView EmptyMetaView (lua_State *L) {
-    lua_pushnil(L); /* ... */
-    lua_setfield(L, LUA_REGISTRYINDEX, "lvq.emv"); /* <none> */
-    return 0;
-}
-
-vqView vq_init (lua_State *L) {
+void vq_init (lua_State *L) {
     vqView v;
     
     lua_newtable(L); /* t */
     lua_pushstring(L, "v"); /* t s */
     lua_setfield(L, -2, "__mode"); /* t */
-    lua_setfield(L, LUA_REGISTRYINDEX, "lvq.pool"); /* <none> */
+    lua_setfield(L, LUA_REGISTRYINDEX, "lvq.pool"); /* <> */
 
-    v = EmptyMetaView(L);
+    v = 0; lua_pushnil(L); /* ... */
+    lua_setfield(L, LUA_REGISTRYINDEX, "lvq.emv"); /* <> */
     vwState(v) = L;
-    return v;
 }
 
 static void NewDataVec (lua_State *L, vqType type, int rows, vqCell *cp) {
@@ -63,8 +176,8 @@ static void NewDataVec (lua_State *L, vqType type, int rows, vqCell *cp) {
     cp->x.y.i = luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
-static void ViewCleaner (vqVec p) {
-    vqView v = (vqView) p;
+static void ViewCleaner (void *p) {
+    vqView v = p;
     lua_State *L = vwState(v);
     int c, cols = vwCols(v);
     for (c = 0; c < cols; ++c)
@@ -88,6 +201,9 @@ vqView vq_new (vqView meta, int rows) {
     for (c = 0; c < cols; ++c)
         NewDataVec(L, VQ_int, rows, &vwCol(v,c));
     
+    luaL_getmetatable(L, "lvq.view"); /* ud mt */
+    lua_setmetatable(L, -2); /* ud */
+
     return v;
 }
 
