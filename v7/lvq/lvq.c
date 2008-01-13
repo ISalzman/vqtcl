@@ -2,10 +2,11 @@
     $Id$
     This file is part of Vlerq, see lvq/vlerq.h for full copyright notice. */
 
-#include <assert.h>
 #include <lauxlib.h>
 
 #include "vqbase.c"
+
+#define checkrow(L,t)   ((vqCell*) luaL_checkudata(L, t, "lvq.row"))
 
 static vqView check_view (lua_State *L, int t) {
     vqView v;
@@ -31,7 +32,6 @@ static vqView check_view (lua_State *L, int t) {
     return v;
 }
 
-#if 0
 static int pushitem (lua_State *L, char c, vqCell *cp) {
     if (cp == 0)
         return 0;
@@ -52,7 +52,6 @@ static int pushitem (lua_State *L, char c, vqCell *cp) {
 
     return 1;
 }
-#endif
 
 static vqType checkitem (lua_State *L, int t, char c, vqCell *cp) {
     size_t n;
@@ -93,6 +92,63 @@ static void parseargs(lua_State *L, vqCell *buf, const char *desc) {
 #define LVQ_ARGS(state,args,desc) \
             vqCell args[sizeof(desc)-1]; \
             parseargs(state, args, desc)
+
+static int row_gc (lua_State *L) {
+    vqCell *pi = lua_touserdata(L, 1); assert(pi != NULL);
+    /* ... */
+    return 0;
+}
+
+static int rowcolcheck (lua_State *L, vqView *pv, int *pr) {
+    vqView v, meta;
+    int r, c, cols;
+    vqCell *item = checkrow(L, 1);
+    *pv = v = item->v;
+    *pr = r = item->x.y.i;
+    meta = vwMeta(v);
+    cols = vwRows(meta);
+    if (r < 0 || r >= vwRows(v))
+        return luaL_error(L, "row index %d out of range", r);
+    if (lua_isnumber(L, 2)) {
+        c = lua_tointeger(L, 2);
+        if (c < 0 || c >= cols)
+            return luaL_error(L, "column index %d out of range", c);
+    } else {
+        const char *s = luaL_checkstring(L, 2);
+        /* TODO: optimize this dumb linear search */
+        for (c = 0; c < cols; ++c)
+            if (strcmp(s, vq_getString(meta, c, 0, "")) == 0)
+                return c;
+        return luaL_error(L, "column '%s' not found", s);
+    }   
+    return c;
+}
+
+static int row_index (lua_State *L) {
+    vqView v;
+    int r, c = rowcolcheck(L, &v, &r);
+    vqCell cell = vwCol(v,c);
+    return pushitem(L, VQ_TYPES[GetCell(r, &cell)], &cell);
+}
+
+static int row_newindex (lua_State *L) {
+    vqView v;
+    vqCell item;
+    vqType type = VQ_nil;
+    int r, c = rowcolcheck(L, &v, &r);
+    if (!lua_isnil(L, 3)) {
+        type = vq_getInt(vwMeta(v), c, 1, VQ_nil) & VQ_TYPEMASK;
+        type = checkitem(L, 3, VQ_TYPES[type], &item);
+    }
+    vq_set(v, r, c, type, item);
+    return 0;
+}
+
+static int row2string (lua_State *L) {
+    vqCell item = *checkrow(L, 1);
+    lua_pushfstring(L, "row: %p %d", item.p, item.x.y.i);
+    return 1;
+}
 
 static int view_gc (lua_State *L) {
     vqView v = lua_touserdata(L, 1); assert(v != 0);
@@ -164,6 +220,14 @@ static int view2string (lua_State *L) {
     return 1;
 }
 
+static const struct luaL_reg lvqlib_row_m[] = {
+    {"__gc", row_gc},
+    {"__index", row_index},
+    {"__newindex", row_newindex},
+    {"__tostring", row2string},
+    {0, 0},
+};
+
 static const struct luaL_reg lvqlib_view_m[] = {
     {"__gc", view_gc},
     {"__index", view_index},
@@ -177,9 +241,10 @@ static const struct luaL_reg lvqlib_f[] = {
 };
 
 LUA_API int luaopen_lvq_core (lua_State *L) {
-    
     luaL_newmetatable(L, "Vlerq.view");
     luaL_register(L, 0, lvqlib_view_m);
+    
+    /* InitEmpty(L); */
     
     luaL_register(L, "lvq", lvqlib_f);
     lua_pushliteral(L, "LuaVlerq " VQ_VERSION);

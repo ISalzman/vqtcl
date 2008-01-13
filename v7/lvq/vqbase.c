@@ -5,6 +5,7 @@
 #include "vlerq.h"
 #include "vqbase.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -153,19 +154,6 @@ static void *PushNewVector (lua_State *L, const vqDispatch *vtab, int bytes) {
     return data;
 }
 
-void vq_init (lua_State *L) {
-    vqView v;
-    
-    lua_newtable(L); /* t */
-    lua_pushstring(L, "v"); /* t s */
-    lua_setfield(L, -2, "__mode"); /* t */
-    lua_setfield(L, LUA_REGISTRYINDEX, "lvq.pool"); /* <> */
-
-    v = 0; lua_pushnil(L); /* ... */
-    lua_setfield(L, LUA_REGISTRYINDEX, "lvq.emv"); /* <> */
-    vwState(v) = L;
-}
-
 static void NewDataVec (lua_State *L, vqType type, int rows, vqCell *cp) {
     if (rows == 0) {
         cp->p = 0;
@@ -193,6 +181,7 @@ vqView vq_new (vqView meta, int rows) {
     int c, cols = vwRows(meta);
     
     v = PushNewVector(L, &vtab, cols * sizeof(vqCell)); /* vw */
+    vwState(v) = L;
     vwRows(v) = rows;
     vwMeta(v) = meta;
     PushView(meta); /* vw ud */
@@ -205,6 +194,81 @@ vqView vq_new (vqView meta, int rows) {
     lua_setmetatable(L, -2); /* ud */
 
     return v;
+}
+
+int vq_getInt (vqView t, int row, int col, int def) {
+    vqCell cell;
+    cell.i = def;
+    cell = vq_get(t, row, col, VQ_int, cell);
+    return cell.i;
+}
+
+const char *vq_getString (vqView t, int row, int col, const char *def) {
+    vqCell cell;
+    cell.s = def;
+    cell = vq_get(t, row, col, VQ_string, cell);
+    return cell.s;
+}
+
+vqView vq_getView (vqView t, int row, int col, vqView def) {
+    vqCell cell;
+    cell.v = def;
+    cell = vq_get(t, row, col, VQ_view, cell);
+    return cell.v;
+}
+
+void vq_setEmpty (vqView t, int row, int col) {
+    vqCell cell;
+    vq_set(t, row, col, VQ_nil, cell);
+}
+
+void vq_setInt (vqView t, int row, int col, int val) {
+    vqCell cell;
+    cell.i = val;
+    vq_set(t, row, col, VQ_int, cell);
+}
+
+void vq_setString (vqView t, int row, int col, const char *val) {
+    vqCell cell;
+    cell.s = val;
+    vq_set(t, row, col, val != 0 ? VQ_string : VQ_nil, cell);
+}
+
+void vq_setView (vqView t, int row, int col, vqView val) {
+    vqCell cell;
+    cell.v = val;
+    vq_set(t, row, col, val != 0 ? VQ_view : VQ_nil, cell);
+}
+
+void vq_setMetaRow (vqView m, int row, const char *nam, int typ, vqView sub) {
+    vq_setString(m, row, 0, nam);
+    vq_setInt(m, row, 1, typ);
+    vq_setView(m, row, 2, sub != 0 ? sub : EmptyMeta(vwState(m)));
+}
+
+static void InitEmpty (lua_State *L) {
+    vqView meta, mm;
+    
+    lua_newtable(L); /* t */
+    lua_pushstring(L, "v"); /* t s */
+    lua_setfield(L, -2, "__mode"); /* t */
+    lua_setfield(L, LUA_REGISTRYINDEX, "lvq.pool"); /* <> */
+
+    mm = PushNewVector(L, &vtab, 3 * sizeof *mm); /* vw */
+    vwState(mm) = L;
+    vwRows(mm) = 3;
+    vwMeta(mm) = mm;
+    vHead(mm,mref) = luaL_ref(L, LUA_REGISTRYINDEX); /* <> */
+    NewDataVec(L, VQ_string, 3, &vwCol(mm,0));
+    NewDataVec(L, VQ_int, 3, &vwCol(mm,1));
+    NewDataVec(L, VQ_view, 3, &vwCol(mm,2));
+    
+    meta = vq_new(mm, 0); /* vw */
+    lua_setfield(L, LUA_REGISTRYINDEX, "lvq.emv"); /* <> */
+
+    vq_setMetaRow(mm, 0, "name", VQ_string, meta);
+    vq_setMetaRow(mm, 1, "type", VQ_int, meta);
+    vq_setMetaRow(mm, 2, "subv", VQ_view, meta);
 }
 
 static vqType GetCell (int row, vqCell *cp) {
@@ -234,11 +298,13 @@ vqCell vq_get (vqView v, int row, int col, vqType type, vqCell def) {
 vqView vq_set (vqView v, int row, int col, vqType type, vqCell val) {
     if (vDisp(v)->setter == 0)
         v = vwCol(v,col).v;
+    assert(vDisp(v)->setter != 0);
     vDisp(v)->setter(v, row, col, type != VQ_nil ? &val : 0);
     return v;
 }
 
 vqView vq_replace (vqView v, int start, int count, vqView data) {
+    assert(vDisp(v)->replacer != 0);
     vDisp(v)->replacer(v, start, count, data);
     return v;
 }
