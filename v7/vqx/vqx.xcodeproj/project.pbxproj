@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1125899A0D3A9E1600276222 /* luall.c in Sources */ = {isa = PBXBuildFile; fileRef = 112589990D3A9E1600276222 /* luall.c */; };
 		8DD76FAC0486AB0100D96B5E /* vqx.c in Sources */ = {isa = PBXBuildFile; fileRef = 08FB7796FE84155DC02AAC07 /* vqx.c */; settings = {ATTRIBUTES = (); }; };
 /* End PBXBuildFile section */
 
@@ -79,11 +78,9 @@
 		112589440D3A9D2000276222 /* lvm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lvm.h; sourceTree = "<group>"; };
 		112589450D3A9D2000276222 /* lzio.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lzio.c; sourceTree = "<group>"; };
 		112589460D3A9D2000276222 /* lzio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lzio.h; sourceTree = "<group>"; };
-		112589990D3A9E1600276222 /* luall.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = luall.c; sourceTree = "<group>"; };
-		11ACB8EE0D3AA6FA00200D9A /* lvq.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lvq.c; sourceTree = "<group>"; };
-		11ACB8F40D3AA6FA00200D9A /* vlerq.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vlerq.h; sourceTree = "<group>"; };
-		11ACB8F50D3AA6FA00200D9A /* vqbase.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vqbase.c; sourceTree = "<group>"; };
-		11ACB8F60D3AA6FA00200D9A /* vqbase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vqbase.h; sourceTree = "<group>"; };
+		11ACB8EE0D3AA6FA00200D9A /* lvq.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lvq.c; path = ../lvq/lvq.c; sourceTree = "<group>"; };
+		11ACB8F40D3AA6FA00200D9A /* vlerq.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vlerq.h; path = ../lvq/vlerq.h; sourceTree = "<group>"; };
+		11ACB8F60D3AA6FA00200D9A /* vqbase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vqbase.h; path = ../lvq/vqbase.h; sourceTree = "<group>"; };
 		8DD76FB20486AB0100D96B5E /* vqx */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = vqx; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -101,9 +98,7 @@
 		08FB7794FE84155DC02AAC07 /* vqx */ = {
 			isa = PBXGroup;
 			children = (
-				08FB7796FE84155DC02AAC07 /* vqx.c */,
-				112589990D3A9E1600276222 /* luall.c */,
-				11ACB8EC0D3AA6FA00200D9A /* lvq */,
+				115975DF0D3B78D000E303B3 /* src */,
 				112589100D3A9D2000276222 /* lua */,
 				8DD76FB20486AB0100D96B5E /* vqx */,
 			);
@@ -172,17 +167,16 @@
 			path = ../lua/src;
 			sourceTree = "<group>";
 		};
-		11ACB8EC0D3AA6FA00200D9A /* lvq */ = {
+		115975DF0D3B78D000E303B3 /* src */ = {
 			isa = PBXGroup;
 			children = (
 				11ACB8EE0D3AA6FA00200D9A /* lvq.c */,
 				11ACB8F40D3AA6FA00200D9A /* vlerq.h */,
-				11ACB8F50D3AA6FA00200D9A /* vqbase.c */,
 				11ACB8F60D3AA6FA00200D9A /* vqbase.h */,
+				08FB7796FE84155DC02AAC07 /* vqx.c */,
 			);
-			name = lvq;
-			path = ../lvq;
-			sourceTree = SOURCE_ROOT;
+			name = src;
+			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
@@ -228,7 +222,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				8DD76FAC0486AB0100D96B5E /* vqx.c in Sources */,
-				1125899A0D3A9E1600276222 /* luall.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -280,9 +273,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = (
-					ppc,
 					i386,
+					ppc,
+					ppc64,
+					x86_64,
 				);
+				DEAD_CODE_STRIPPING = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (

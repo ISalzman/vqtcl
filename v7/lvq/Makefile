@@ -9,7 +9,7 @@ OBJS = $T.o
 LUAS = $T.lua
 
 $(LIBNAME): $(OBJS)
-	$(CC) $(CFLAGS) $(LIB_OPTION) -o $(LIBNAME) $(OBJS)
+	$(CC) $(LIB_OPTION) -o $(LIBNAME) $(OBJS)
 
 $T.o: $(DEPS) Makefile $(CONFIG)
 
