@@ -1,7 +1,7 @@
 #define luaall_c
 
 /* this takes care of Windows, Mac OS X, and Linux builds */
-#ifndef __WIN32
+#ifndef _WIN32
 #define LUA_USE_POSIX 1
 #endif
 

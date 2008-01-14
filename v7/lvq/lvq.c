@@ -16,7 +16,7 @@ static vqView check_view (lua_State *L, int t); /* forward */
     
 static vqView EmptyMeta (lua_State *L) {
     vqView v;
-    lua_getfield(L, LUA_GLOBALSINDEX, "lvq_emv"); /* t */
+    lua_getfield(L, LUA_REGISTRYINDEX, "lvq.emv"); /* t */
     v = check_view(L, -1);
     lua_pop(L, 1);
     return v;
@@ -130,13 +130,9 @@ static vqView AsMetaVop (lua_State *L, const char *desc) {
     return DescLenToMeta(L, desc, strlen(desc));
 }
 
-static void PushPool (lua_State *L) {
-    lua_getfield(L, LUA_GLOBALSINDEX, "lvq_pool");
-}
-
 static int PushView (vqView v) {
     lua_State *L = vwState(v);
-    PushPool(L); /* t */
+    lua_getfield(L, LUA_REGISTRYINDEX, "lvq.pool"); /* t */
     lua_pushlightuserdata(L, v); /* t key */
     lua_rawget(L, -2); /* t ud */
     lua_remove(L, -2); /* ud */
@@ -148,7 +144,7 @@ static void *PushNewVector (lua_State *L, const vqDispatch *vtab, int bytes) {
     memset(data, 0, bytes + vtab->prefix);
     data += vtab->prefix;
     
-    PushPool(L); /* ud t */
+    lua_getfield(L, LUA_REGISTRYINDEX, "lvq.pool"); /* ud t */
     lua_pushlightuserdata(L, data); /* ud t key */
     lua_pushvalue(L, -3); /* ud t key ud */
     lua_rawset(L, -3); /* ud t */
@@ -426,11 +422,6 @@ void vq_setMetaRow (vqView m, int row, const char *nam, int typ, vqView sub) {
 static void InitEmpty (lua_State *L) {
     vqView meta, mm;
     
-    lua_newtable(L); /* t */
-    lua_pushstring(L, "v"); /* t s */
-    lua_setfield(L, -2, "__mode"); /* t */
-    lua_setfield(L, LUA_GLOBALSINDEX, "lvq_pool"); /* <> */
-
     mm = PushNewVector(L, &vtab, 3 * sizeof *mm); /* vw */
     luaL_getmetatable(L, "lvq.view"); /* vw mt */
     lua_setmetatable(L, -2); /* vw */
@@ -443,7 +434,7 @@ static void InitEmpty (lua_State *L) {
     NewDataVec(L, VQ_view, 3, &vwCol(mm,2));
     
     meta = vq_new(mm, 0); /* vw */
-    lua_setfield(L, LUA_GLOBALSINDEX, "lvq_emv"); /* <> */
+    lua_setfield(L, LUA_REGISTRYINDEX, "lvq.emv"); /* <> */
 
     vq_setMetaRow(mm, 0, "name", VQ_string, meta);
     vq_setMetaRow(mm, 1, "type", VQ_int, meta);
@@ -783,6 +774,11 @@ static const struct luaL_reg lvqlib_f[] = {
 };
 
 LUA_API int luaopen_lvq_core (lua_State *L) {
+    lua_newtable(L); /* t */
+    lua_pushstring(L, "v"); /* t s */
+    lua_setfield(L, -2, "__mode"); /* t */
+    lua_setfield(L, LUA_REGISTRYINDEX, "lvq.pool"); /* <> */
+
     luaL_newmetatable(L, "lvq.row");
     luaL_register(L, 0, lvqlib_row_m);
     

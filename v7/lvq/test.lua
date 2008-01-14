@@ -1,5 +1,5 @@
 -- uncomment next line to show progress instead of silently checking results
-assert = print
+--assert = print
 
 require 'lvq'
 assert(lvq._VERSION == "LuaVlerq 1.7", "version")
