@@ -328,7 +328,7 @@ static void NewDataVec (lua_State *L, vqType type, int rows, vqCell *cp) {
             case VQ_bytes:
                 vtab = &bvtab; bytes = rows * sizeof(vqCell); break;
             case VQ_view:
-                vtab = &tvtab; bytes = rows * sizeof(vqView); break;
+                vtab = &tvtab; bytes = rows * sizeof(vqCell); break;
             default: assert(0); return;
         }
         cp->v = PushNewVector(L, vtab, bytes);
