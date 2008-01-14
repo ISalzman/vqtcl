@@ -16,7 +16,7 @@ static vqView check_view (lua_State *L, int t); /* forward */
     
 static vqView EmptyMeta (lua_State *L) {
     vqView v;
-    lua_getfield(L, LUA_REGISTRYINDEX, "lvq.emv"); /* t */
+    lua_getfield(L, LUA_GLOBALSINDEX, "lvq_emv"); /* t */
     v = check_view(L, -1);
     lua_pop(L, 1);
     return v;
@@ -131,15 +131,16 @@ static vqView AsMetaVop (lua_State *L, const char *desc) {
 }
 
 static void PushPool (lua_State *L) {
-    lua_getfield(L, LUA_REGISTRYINDEX, "lvq.pool");
+    lua_getfield(L, LUA_GLOBALSINDEX, "lvq_pool");
 }
 
-static void PushView (vqView v) {
+static int PushView (vqView v) {
     lua_State *L = vwState(v);
     PushPool(L); /* t */
     lua_pushlightuserdata(L, v); /* t key */
     lua_rawget(L, -2); /* t ud */
     lua_remove(L, -2); /* ud */
+    return 1;
 }
 
 static void *PushNewVector (lua_State *L, const vqDispatch *vtab, int bytes) {
@@ -159,7 +160,6 @@ static void *PushNewVector (lua_State *L, const vqDispatch *vtab, int bytes) {
 
 static vqType NilVecGetter (int row, vqCell *cp) {
     const char *p = cp->p;
-    /* cp->i = (p[row/8] >> (row&7)) & 1; */
     return (p[row/8] >> (row&7)) & 1 ? VQ_int : VQ_nil;
 }
 static vqType IntVecGetter (int row, vqCell *cp) {
@@ -228,14 +228,15 @@ static void DoubleVecSetter (void *q, int row, int col, const vqCell *cp) {
     p[row] = cp != 0 ? cp->d : 0;
 }
 static void StringVecSetter (void *q, int row, int col, const vqCell *cp) {
-    const char **p = q, *x = p[row];
+    const char **p = q;
     VQ_UNUSED(col);
+    free((void*) p[row]);
     p[row] = cp != 0 ? strcpy(malloc(strlen(cp->s)+1), cp->s) : 0;
-    free((void*) x);
 }
 static void BytesVecSetter (void *q, int row, int col, const vqCell *cp) {
-    vqCell *p = q, x = p[row];
+    vqCell *p = q;
     VQ_UNUSED(col);
+    free(p[row].p);
     if (cp != 0) {
         p[row].p = memcpy(malloc(cp->x.y.i), cp->p, cp->x.y.i);
         p[row].x.y.i = cp->x.y.i;
@@ -243,15 +244,17 @@ static void BytesVecSetter (void *q, int row, int col, const vqCell *cp) {
         p[row].p = 0;
         p[row].x.y.i = 0;
     }
-    free(x.p);
 }
 static void ViewVecSetter (void *q, int row, int col, const vqCell *cp) {
-    lua_State *L = vwState(cp->v);
     vqCell *p = q;
     VQ_UNUSED(col);
-    luaL_unref(L, LUA_REGISTRYINDEX, p[row].x.y.i);
+/* FIXME: crashes
+    if (p[row].v != 0)
+        luaL_unref(vwState(p[row].v), LUA_REGISTRYINDEX, p[row].x.y.i);
+*/
     p[row].v = cp->v;
-    p[row].x.y.i = luaL_ref(L, LUA_REGISTRYINDEX);
+    if (cp->v != 0)
+        p[row].x.y.i = luaL_ref(vwState(cp->v), LUA_REGISTRYINDEX);
 }
 
 static void StringVecCleaner (void *q) {
@@ -426,9 +429,11 @@ static void InitEmpty (lua_State *L) {
     lua_newtable(L); /* t */
     lua_pushstring(L, "v"); /* t s */
     lua_setfield(L, -2, "__mode"); /* t */
-    lua_setfield(L, LUA_REGISTRYINDEX, "lvq.pool"); /* <> */
+    lua_setfield(L, LUA_GLOBALSINDEX, "lvq_pool"); /* <> */
 
     mm = PushNewVector(L, &vtab, 3 * sizeof *mm); /* vw */
+    luaL_getmetatable(L, "lvq.view"); /* vw mt */
+    lua_setmetatable(L, -2); /* vw */
     vwState(mm) = L;
     vwRows(mm) = 3;
     vwMeta(mm) = mm;
@@ -438,7 +443,7 @@ static void InitEmpty (lua_State *L) {
     NewDataVec(L, VQ_view, 3, &vwCol(mm,2));
     
     meta = vq_new(mm, 0); /* vw */
-    lua_setfield(L, LUA_REGISTRYINDEX, "lvq.emv"); /* <> */
+    lua_setfield(L, LUA_GLOBALSINDEX, "lvq_emv"); /* <> */
 
     vq_setMetaRow(mm, 0, "name", VQ_string, meta);
     vq_setMetaRow(mm, 1, "type", VQ_int, meta);
@@ -484,7 +489,7 @@ vqView vq_replace (vqView v, int start, int count, vqView data) {
     return v;
 }
 
-static vqCell *checkrow (lua_State *L, int t) {
+static vqRow *checkrow (lua_State *L, int t) {
     return luaL_checkudata(L, t, "lvq.row");
 }
 
@@ -546,7 +551,7 @@ static vqType checkitem (lua_State *L, int t, char c, vqCell *cp) {
     }
     
     type = CharAsType(c);
-    
+
     switch (c) {
         case 'N':   break;
         case 'I':   cp->i = luaL_checkinteger(L, t); break;
@@ -582,9 +587,9 @@ static int row_gc (lua_State *L) {
 static int rowcolcheck (lua_State *L, vqView *pv, int *pr) {
     vqView v, meta;
     int r, c, cols;
-    vqCell *item = checkrow(L, 1);
-    *pv = v = item->v;
-    *pr = r = item->x.y.i;
+    vqRow *rp = checkrow(L, 1);
+    *pv = v = rp->view;
+    *pr = r = rp->row;
     meta = vwMeta(v);
     cols = vwRows(meta);
     if (r < 0 || r >= vwRows(v))
@@ -613,38 +618,36 @@ static int row_index (lua_State *L) {
 
 static int row_newindex (lua_State *L) {
     vqView v;
-    vqCell item;
+    vqCell cell;
     vqType type = VQ_nil;
     int r, c = rowcolcheck(L, &v, &r);
     if (!lua_isnil(L, 3)) {
         type = vq_getInt(vwMeta(v), c, 1, VQ_nil) & VQ_TYPEMASK;
-        type = checkitem(L, 3, VQ_TYPES[type], &item);
+        type = checkitem(L, 3, VQ_TYPES[type], &cell);
     }
-    vq_set(v, r, c, type, item);
+    vq_set(v, r, c, type, cell);
     return 0;
-}
-
-static int row2string (lua_State *L) {
-    vqCell item = *checkrow(L, 1);
-    lua_pushfstring(L, "row: %p %d", item.p, item.x.y.i);
-    return 1;
 }
 
 static int view_gc (lua_State *L) {
     vqView v = lua_touserdata(L, 1); assert(v != 0);
+/* FIXME: crashes
     vDisp(v)->cleaner(v);
+*/
     return 0;
 }
 
 static int view_index (lua_State *L) {
     if (lua_isnumber(L, 2)) {
-        vqCell *cp;
+        vqRow *rp;
         LVQ_ARGS(L,A,"VI");
-/*
-        cp = newuserdata(L, sizeof *cp, "lvq.row");
-        cp->v = vq_retain(A[0].v);
-*/
-        cp->x.y.i = A[1].i;
+        rp = lua_newuserdata(L, sizeof *rp);
+        luaL_getmetatable(L, "lvq.row"); /* ud mt */
+        lua_setmetatable(L, -2); /* ud */
+        rp->view = A[0].v;
+        rp->row = A[1].i;
+        PushView(A[0].v);
+        rp->ref = luaL_ref(L, LUA_REGISTRYINDEX);
     } else {
         const char* s = luaL_checkstring(L, 2);
         lua_getglobal(L, "vops");
@@ -694,10 +697,61 @@ static int view2string (lua_State *L) {
     vqView v;
     LVQ_ARGS(L,A,"V");
     v = A[0].v;
-    lua_pushfstring(L, "view.%s #%d ", vDisp(v)->name, vwRows(v));
+    lua_pushfstring(L, "view: %s #%d ", vDisp(v)->name, vwRows(v));
     PushStruct(v);
     lua_concat(L, 2);
     return 1;
+}
+
+static int row2string (lua_State *L) {
+    vqRow *rp = checkrow(L, 1);
+    lua_pushfstring(L, "row: %d %s ", rp->row, vDisp(rp->view)->name);
+    PushStruct(rp->view);
+    lua_concat(L, 2);
+    return 1;
+}
+
+/* cast all vop arguments to the proper type, then call the real vop */
+static int vop_check (lua_State *L) {
+    int i;
+    const char *fmt = luaL_checkstring(L, lua_upvalueindex(1));
+    lua_pushvalue(L, lua_upvalueindex(2));
+    for (i = 0; fmt[i]; ++i)
+        if (fmt[i] == '-')
+            lua_pushvalue(L, i+1);
+        else {
+            vqCell cell;
+            vqType type = checkitem(L, i+1, fmt[i], &cell);
+            pushcell(L, VQ_TYPES[type], &cell);
+        }
+    lua_call(L, i, 1);
+    return 1;
+}
+
+static int vops_meta (lua_State *L) {
+    LVQ_ARGS(L,A,"V");
+    return PushView(vwMeta(A[0].v));
+}
+
+static int vops_view (lua_State *L) {
+    LVQ_ARGS(L,A,"Vv");
+    if (A[1].v != 0)
+        A->v = vq_new(A[1].v, vwRows(A[0].v));
+    return PushView(A->v);
+}
+
+static int lvq_emv (lua_State *L) {
+    return PushView(EmptyMeta(L));
+}
+
+/* define a vop as a C closure which first casts its args to the proper type */
+static int lvq_vopdef (lua_State *L) {
+    assert(lua_gettop(L) == 3);
+    lua_getglobal(L, "vops");           /* a1 a2 a3 vops */
+    lua_insert(L, 1);                   /* vops a1 a2 a3 */
+    lua_pushcclosure(L, vop_check, 2);  /* vops a1 f */
+    lua_settable(L, 1);                 /* vops */
+    return 0;
 }
 
 static const struct luaL_reg lvqlib_row_m[] = {
@@ -716,21 +770,40 @@ static const struct luaL_reg lvqlib_view_m[] = {
     {0, 0},
 };
 
+static const struct luaL_reg lvqlib_vops[] = {
+    {"meta", vops_meta},
+    {"view", vops_view},
+    {0, 0},
+};
+
 static const struct luaL_reg lvqlib_f[] = {
+    {"emv", lvq_emv},
+    {"vopdef", lvq_vopdef},
     {0, 0},
 };
 
 LUA_API int luaopen_lvq_core (lua_State *L) {
-    luaL_newmetatable(L, "Vlerq.view");
+    luaL_newmetatable(L, "lvq.row");
+    luaL_register(L, 0, lvqlib_row_m);
+    
+    luaL_newmetatable(L, "lvq.view");
     luaL_register(L, 0, lvqlib_view_m);
     
     InitEmpty(L);
     
+    lua_newtable(L);
+    /* register_vops(L, f_vdispatch); */
+    luaL_register(L, NULL, lvqlib_vops);
+    lua_setglobal(L, "vops");
+    
     luaL_register(L, "lvq", lvqlib_f);
-    lua_pushliteral(L, "LuaVlerq " VQ_VERSION);
-    lua_setfield(L, -2, "_VERSION");
+    
     lua_pushliteral(L, VQ_COPYRIGHT);
     lua_setfield(L, -2, "_COPYRIGHT");
+    lua_pushliteral(L, "lvq " VQ_RELEASE);
+    lua_setfield(L, -2, "_RELEASE");
+    lua_pushliteral(L, "LuaVlerq " VQ_VERSION);
+    lua_setfield(L, -2, "_VERSION");
 
     return 1;
 }

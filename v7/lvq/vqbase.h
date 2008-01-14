@@ -51,3 +51,9 @@ struct vqView_s {
     vqView orig;
     vqInfo info;
 };
+
+typedef struct vqRow_s {
+    vqView view;
+    int row;
+    int ref;
+} vqRow;
