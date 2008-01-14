@@ -579,8 +579,8 @@ static void parseargs(lua_State *L, vqCell *buf, const char *desc) {
             parseargs(state, args, desc)
 
 static int row_gc (lua_State *L) {
-    vqCell *pi = lua_touserdata(L, 1); assert(pi != NULL);
-    /* ... */
+    vqRow *rp = checkrow(L, 1);
+    luaL_unref(vwState(rp->view), LUA_REGISTRYINDEX, rp->ref);
     return 0;
 }
 
