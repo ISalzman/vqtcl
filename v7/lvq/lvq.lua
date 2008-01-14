@@ -5,6 +5,8 @@
 require "lvq.core"
 module (..., package.seeall)
 
+vopdef = lvq.vopdef
+
 -- produce a pretty-printed tabular string from a view
 vopdef ('dump', 'V', function (vw, maxrows)
   maxrows = math.min(maxrows or 20, #vw)
