@@ -26,11 +26,6 @@
 /* a view is an array of column references, stored as cells */
 #define vwCol(v,i)  vCast(v,vqCell)[i]
 
-/* Note: vqInfo must be defined as last field in all view and vector headers
-   (therefore all views and vectors have a size and dispatch pointer) */
-
-typedef struct vqInfo_s vqInfo, *vqVec;
-    
 typedef struct vqDispatch_s {
     const char *name;
     uint8_t prefix;
@@ -41,10 +36,13 @@ typedef struct vqDispatch_s {
     void (*replacer)(vqView,int,int,vqView);
 } vqDispatch;
 
-struct vqInfo_s {
+/* Note: vqInfo must be defined as last field in all view and vector headers
+   (therefore all views and vectors have a size and dispatch pointer) */
+
+typedef struct vqInfo_s {
     int size;
     const vqDispatch *disp;
-};
+} vqInfo, *vqVec;
     
 struct vqView_s {
     lua_State *state;

@@ -26,7 +26,7 @@ typedef enum {
     VQ_view
 } vqType;
 
-#define VQ_TYPES "NILFDSBV" /* canonical char code, when indexed by vqType */
+#define VQ_TYPES "NILFDSBV" /* canonical char code, indexed by vqType */
 
 /* a vqView is an opaque pointer at this level */
 typedef struct vqView_s *vqView;

@@ -4,7 +4,7 @@ CONFIG = ./config
 
 include $(CONFIG)
 
-DEPS = $T.c vlerq.h vqbase.h vqbase.c
+DEPS = $T.c vlerq.h vqbase.h
 OBJS = $T.o
 LUAS = $T.lua
 
