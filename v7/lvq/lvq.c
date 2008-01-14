@@ -244,10 +244,8 @@ static void BytesVecSetter (void *q, int row, int col, const vqCell *cp) {
 static void ViewVecSetter (void *q, int row, int col, const vqCell *cp) {
     vqCell *p = q;
     VQ_UNUSED(col);
-/* FIXME: crashes
     if (p[row].v != 0)
         luaL_unref(vwState(p[row].v), LUA_REGISTRYINDEX, p[row].x.y.i);
-*/
     p[row].v = cp->v;
     if (cp->v != 0)
         p[row].x.y.i = luaL_ref(vwState(cp->v), LUA_REGISTRYINDEX);
@@ -621,10 +619,9 @@ static int row_newindex (lua_State *L) {
 }
 
 static int view_gc (lua_State *L) {
-    vqView v = lua_touserdata(L, 1); assert(v != 0);
-/* FIXME: crashes
+    vqView v = check_view(L, 1);
+    assert(vDisp(v)->cleaner != 0);
     vDisp(v)->cleaner(v);
-*/
     return 0;
 }
 
