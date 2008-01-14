@@ -3,12 +3,20 @@
       This file is part of Vlerq, see lvq/vlerq.h for full copyright notice. ]]
 
 require "lvq.core"
-module (..., package.seeall)
 
+view = vops.view
 vopdef = lvq.vopdef
 
+module (..., package.seeall)
+
+-- table with render functions for all data types, N=0 S=5 B=6 V=7
+local renderers = { [0] = function (x) return '' end,
+                    [6] = function (x) return #x..'b' end,
+                    [7] = function (x) return '#'..#x end }
+setmetatable(renderers, { __index = function (x) return tostring end })
+
 -- produce a pretty-printed tabular string from a view
-vopdef ('dump', 'V', function (vw, maxrows)
+vopdef('dump', 'V', function (vw, maxrows)
   maxrows = math.min(maxrows or 20, #vw)
   -- set up column information
   local desc, funs, names, widths, meta = '', {}, {}, {}, vw:meta()
@@ -18,6 +26,7 @@ vopdef ('dump', 'V', function (vw, maxrows)
     desc = desc..'  %%'..(t == 5 and '-' or '+')..'%ds'
     funs[c] = renderers[t]
     names[c] = meta[c-1].name
+--print(meta,c,names[c])
     widths[c] = #names[c]
   end
   -- collect all data and calculate maximum column widths

@@ -52,6 +52,15 @@ static const char* TypeAsString (int type, char *buf) {
     return buf;
 }
 
+static int PushView (vqView v) {
+    lua_State *L = vwState(v);
+    lua_getfield(L, LUA_REGISTRYINDEX, "lvq.pool"); /* t */
+    lua_pushlightuserdata(L, v); /* t key */
+    lua_rawget(L, -2); /* t ud */
+    lua_remove(L, -2); /* ud */
+    return 1;
+}
+
 static vqView ParseDesc (vqView emv, char **desc, const char **nbuf, int *tbuf, vqView *sbuf) {
     char sep, *ptr = *desc;
     const char  **names = nbuf;
@@ -96,7 +105,7 @@ static vqView ParseDesc (vqView emv, char **desc, const char **nbuf, int *tbuf, 
 }
 
 static vqView DescLenToMeta (lua_State *L, const char *desc, int length) {
-    int i, bytes, limit = 1;
+    int i, t, bytes, limit = 1;
     void *buffer;
     const char **nbuf;
     int *tbuf;
@@ -104,8 +113,10 @@ static vqView DescLenToMeta (lua_State *L, const char *desc, int length) {
     char *dbuf;
     vqView emv = EmptyMeta(L);
     
-    if (length <= 0)
+    if (length <= 0) {
+        PushView(emv);
         return emv;
+    }
     
     /* find a hard upper bound for the buffer requirements */
     for (i = 0; i < length; ++i)
@@ -120,7 +131,10 @@ static vqView DescLenToMeta (lua_State *L, const char *desc, int length) {
     dbuf = memcpy(tbuf + limit, desc, length);
     dbuf[length] = ']';
     
+    /* each call of ParseDesc (recursively!) pushes an item on the lua stack */
+    t = lua_gettop(L);
     meta = ParseDesc(emv, &dbuf, nbuf, tbuf, sbuf);
+    lua_settop(L, t+1);
     
     free(buffer);
     return meta;
@@ -128,15 +142,6 @@ static vqView DescLenToMeta (lua_State *L, const char *desc, int length) {
 
 static vqView AsMetaVop (lua_State *L, const char *desc) {
     return DescLenToMeta(L, desc, strlen(desc));
-}
-
-static int PushView (vqView v) {
-    lua_State *L = vwState(v);
-    lua_getfield(L, LUA_REGISTRYINDEX, "lvq.pool"); /* t */
-    lua_pushlightuserdata(L, v); /* t key */
-    lua_rawget(L, -2); /* t ud */
-    lua_remove(L, -2); /* ud */
-    return 1;
 }
 
 static void *PushNewVector (lua_State *L, const vqDispatch *vtab, int bytes) {
@@ -189,8 +194,8 @@ static vqType BytesVecGetter (int row, vqCell *cp) {
     return VQ_bytes;
 }
 static vqType ViewVecGetter (int row, vqCell *cp) {
-    vqView *p = cp->p;
-    cp->v = p[row];
+    vqCell *p = cp->p;
+    cp->v = p[row].v;
     return VQ_view;
 }
 
@@ -247,8 +252,10 @@ static void ViewVecSetter (void *q, int row, int col, const vqCell *cp) {
     if (p[row].v != 0)
         luaL_unref(vwState(p[row].v), LUA_REGISTRYINDEX, p[row].x.y.i);
     p[row].v = cp->v;
-    if (cp->v != 0)
+    if (cp->v != 0) {
+        PushView(cp->v);
         p[row].x.y.i = luaL_ref(vwState(cp->v), LUA_REGISTRYINDEX);
+    }
 }
 
 static void StringVecCleaner (void *q) {
@@ -487,6 +494,7 @@ static vqView check_view (lua_State *L, int t) {
 
     switch (lua_type(L, t)) {
         case LUA_TNIL:      v = EmptyMeta(L);
+                            PushView(v);
                             break;
         case LUA_TBOOLEAN:  v = vq_new(EmptyMeta(L), lua_toboolean(L, t));
                             break;
@@ -527,7 +535,7 @@ static int pushcell (lua_State *L, char c, vqCell *cp) {
     return 1;
 }
 
-static vqType checkitem (lua_State *L, int t, char c, vqCell *cp) {
+static vqType check_cell (lua_State *L, int t, char c, vqCell *cp) {
     size_t n;
     vqType type;
 
@@ -560,7 +568,7 @@ static vqType checkitem (lua_State *L, int t, char c, vqCell *cp) {
 static void parseargs(lua_State *L, vqCell *buf, const char *desc) {
     int i;
     for (i = 0; *desc; ++i)
-        checkitem(L, i+1, *desc++, buf+i);
+        check_cell(L, i+1, *desc++, buf+i);
 }
 
 #define LVQ_ARGS(state,args,desc) \
@@ -602,7 +610,8 @@ static int row_index (lua_State *L) {
     vqView v;
     int r, c = rowcolcheck(L, &v, &r);
     vqCell cell = vwCol(v,c);
-    return pushcell(L, VQ_TYPES[GetCell(r, &cell)], &cell);
+    vqType type = GetCell(r, &cell);
+    return pushcell(L, VQ_TYPES[type], &cell);
 }
 
 static int row_newindex (lua_State *L) {
@@ -612,7 +621,7 @@ static int row_newindex (lua_State *L) {
     int r, c = rowcolcheck(L, &v, &r);
     if (!lua_isnil(L, 3)) {
         type = vq_getInt(vwMeta(v), c, 1, VQ_nil) & VQ_TYPEMASK;
-        type = checkitem(L, 3, VQ_TYPES[type], &cell);
+        type = check_cell(L, 3, VQ_TYPES[type], &cell);
     }
     vq_set(v, r, c, type, cell);
     return 0;
@@ -709,7 +718,7 @@ static int vop_check (lua_State *L) {
             lua_pushvalue(L, i+1);
         else {
             vqCell cell;
-            vqType type = checkitem(L, i+1, fmt[i], &cell);
+            vqType type = check_cell(L, i+1, fmt[i], &cell);
             pushcell(L, VQ_TYPES[type], &cell);
         }
     lua_call(L, i, 1);
