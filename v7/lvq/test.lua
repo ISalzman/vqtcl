@@ -48,7 +48,7 @@ assert(view(7):dump() == "  (7 rows, 0 columns)", "zero-column dump")
 --mm:p()
 
 -- create meta-view from string
-local m1 = view("A:S,B:I,C:F")
+local m1 = view("A:S,B:I,C:D")
 assert(#m1 == 3, "m1 row count")
 assert(tostring(m1) == "view: view #3 SI()", "m1 display")
 
@@ -57,7 +57,7 @@ assert(m1[1][0] == "B", "m1 name 1")
 assert(m1[2][0] == "C", "m1 name 2")
 assert(m1[0][1] == 5, "m1 type 0")
 assert(m1[1][1] == 1, "m1 type 1")
-assert(m1[2][1] == 3, "m1 type 2")
+assert(m1[2][1] == 4, "m1 type 2")
 assert(m1[0][2] == emv, "m1 subv 0")
 assert(m1[1][2] == emv, "m1 subv 1")
 assert(m1[2][2] == emv, "m1 subv 2")
@@ -67,18 +67,46 @@ assert(m1:dump() == [[
   ----  ----  ----
   A        5    #0
   B        1    #0
-  C        3    #0]], "m1 dump")
+  C        4    #0]], "m1 dump")
 
 -- create a fresh view
-local m2 = view(2,"A:S,B:I,C:F")
+local m2 = view(2,"A:S,B:I,C:D")
 assert(#m2 == 2, "m2 row count")
 
-assert(tostring(m2) == "view: view #2 SIF", "m2 display")
+assert(tostring(m2) == "view: view #2 SID", "m2 display")
 
 assert(m2:dump() == [[
   A  B  C
   -  -  -
      0  0
-     0  0]], "m2 dump")
+     0  0]], "m2 initial dump")
+
+-- set all cells in new view
+m2[0][0] = "abc"
+m2[0][1] = 12
+m2[0][2] = 34.56
+m2[1].A = "cba"
+m2[1].B = 21
+m2[1].C = 65.43
+
+assert(m2:dump() == [[
+  A    B   C    
+  ---  --  -----
+  abc  12  34.56
+  cba  21  65.43]], "m2 dump after sets")
 
 print "OK"
+
+-- table to view conversions
+assert(vops.dump{1,2,3} == [[
+  ?
+  -
+  1
+  2
+  3]], "simple as 1-col int view")
+assert(vops.dump{meta='A:I,B,C:D'; 1,'two',3.3,4,'five',6.6,7,'eight',9.9} == [[
+  A  B      C  
+  -  -----  ---
+  1  two    3.3
+  4  five   6.6
+  7  eight  9.9]], "table as 3-col view")

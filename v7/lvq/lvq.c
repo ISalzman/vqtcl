@@ -12,7 +12,9 @@
 #include <string.h>
 #include <unistd.h>
 
-static vqView check_view (lua_State *L, int t); /* forward */
+/* forward */
+static vqView check_view (lua_State *L, int t);
+static vqView table2view (lua_State *L, int t);
     
 static void *alloc_vec (const vqDispatch *vtab, int bytes) {
     char *result = (char*) calloc(1, bytes + vtab->prefix) + vtab->prefix;
@@ -495,9 +497,7 @@ static vqView check_view (lua_State *L, int t) {
         case LUA_TBOOLEAN:  return vq_new(empty_meta(L), lua_toboolean(L, t));
         case LUA_TNUMBER:   return vq_new(empty_meta(L), lua_tointeger(L, t));
         case LUA_TSTRING:   return desc2meta(L, lua_tostring(L, t), -1);
-/*
-        case LUA_TTABLE:    return TableToView(L, t);
-*/
+        case LUA_TTABLE:    return table2view(L, t);
     }
     return *(vqView*) luaL_checkudata(L, t, "lvq.view");
 }
@@ -561,6 +561,31 @@ static void parseargs(lua_State *L, vqCell *buf, const char *desc) {
 #define LVQ_ARGS(state,args,desc) \
             vqCell args[sizeof(desc)-1]; \
             parseargs(state, args, desc)
+
+static vqView table2view (lua_State *L, int t) {
+    vqCell cell;
+    vqView m, v;
+    int r, rows, c, cols;
+    lua_getfield(L, t, "meta");
+    m = lua_isnil(L, -1) ? desc2meta(L, "?:I", 3) : check_view(L, -1);
+    lua_pop(L, 1);
+    cols = vwRows(m);
+    rows = cols > 0 ? lua_objlen(L, t) / cols : 0;
+    v = vq_new(m, rows);
+    for (c = 0; c < cols; ++c) {
+        vqType type = vq_getInt(m, c, 1, VQ_nil) & VQ_TYPEMASK;
+        for (r = 0; r < rows; ++r) {
+            vqType ty = type;
+            lua_pushinteger(L, r * cols + c + 1);
+            lua_gettable(L, t);
+            ty = lua_isnil(L, -1) ? VQ_nil
+                                  : check_cell(L, -1, VQ_TYPES[type], &cell);
+            vq_set(v, r, c, ty, cell);
+            lua_pop(L, 1);
+        }
+    }
+    return v;
+}
 
 static int row_gc (lua_State *L) {
     vqCell *cp = check_row(L, 1);
