@@ -45,7 +45,7 @@ static void *tagged_udata (lua_State *L, size_t bytes, const char *tag) {
 static vqView empty_meta (lua_State *L) {
     vqView v;
     lua_getfield(L, LUA_REGISTRYINDEX, "lvq.emv"); /* t */
-    v = lua_touserdata(L, -1);
+    v = check_view(L, -1);
     lua_pop(L, 1);
     return v;
 }
@@ -87,9 +87,9 @@ static int push_view (vqView v) {
     lua_rawget(L, -2);
     /* create and store a new lvq.view object if there wasn't one */
     if (lua_isnil(L, -1)) {
-        lua_pop(L, 1);
         vqView *ud = tagged_udata(L, sizeof *ud, "lvq.view");
         *ud = vq_incref(v);
+        lua_remove(L, -2);
     }
     lua_remove(L, -2);
     return 1;
@@ -433,8 +433,8 @@ static void init_empty (lua_State *L) {
     vwCol(mm,2).v = new_datavec(VQ_view, 3);
     
     meta = vq_incref(vq_new(mm, 0));
-    lua_pushlightuserdata(L, meta); /* p */
-    lua_setfield(L, LUA_REGISTRYINDEX, "lvq.emv"); /* <> */
+    push_view(meta);
+    lua_setfield(L, LUA_REGISTRYINDEX, "lvq.emv");
 
     vq_setMetaRow(mm, 0, "name", VQ_string, meta);
     vq_setMetaRow(mm, 1, "type", VQ_int, meta);
