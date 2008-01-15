@@ -427,12 +427,12 @@ static void init_empty (lua_State *L) {
     mm = alloc_vec(&vtab, 3 * sizeof(vqCell));
     vwState(mm) = L;
     vwRows(mm) = 3;
-    vwMeta(mm) = vq_incref(mm);
+    vwMeta(mm) = mm;
     vwCol(mm,0).v = new_datavec(VQ_string, 3);
     vwCol(mm,1).v = new_datavec(VQ_int, 3);
     vwCol(mm,2).v = new_datavec(VQ_view, 3);
     
-    meta = vq_incref(vq_new(mm, 0));
+    meta = vq_new(mm, 0);
     push_view(meta);
     lua_setfield(L, LUA_REGISTRYINDEX, "lvq.emv");
 
