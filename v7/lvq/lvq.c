@@ -15,8 +15,7 @@
 static vqView check_view (lua_State *L, int t); /* forward */
     
 static void *alloc_vec (const vqDispatch *vtab, int bytes) {
-    int n = vtab->prefix;
-    char *result = (char*) calloc(1, bytes + n) + n;
+    char *result = (char*) calloc(1, bytes + vtab->prefix) + vtab->prefix;
     vDisp(result) = vtab;
     return result;
 }
@@ -60,7 +59,7 @@ static int char2type (char c) {
 }
 
 /*
-static int StringAsType (const char *str) {
+static int string2type (const char *str) {
     int type = char2type(*str);
     while (*++str != 0)
         if ('a' <= *str && *str <= 'z')
@@ -83,22 +82,16 @@ static const char* type2string (int type, char *buf) {
 
 static int push_view (vqView v) {
     lua_State *L = vwState(v);
-#if 0    
-    lua_getfield(L, LUA_REGISTRYINDEX, "lvq.pool"); /* ud t */
-    lua_pushlightuserdata(L, data); /* ud t key */
-    lua_pushvalue(L, -3); /* ud t key ud */
-    lua_rawset(L, -3); /* ud t */
-    lua_pop(L, 1); /* ud */
-#endif
-#if 0
-    lua_getfield(L, LUA_REGISTRYINDEX, "lvq.pool"); /* t */
-    lua_pushlightuserdata(L, v); /* t key */
-    lua_rawget(L, -2); /* t ud */
-    lua_remove(L, -2); /* ud */
-#else
-    vqView *ud = tagged_udata(L, sizeof *ud, "lvq.view"); /* ud */
-    *ud = vq_incref(v);
-#endif
+    lua_getfield(L, LUA_REGISTRYINDEX, "lvq.pool");
+    lua_pushlightuserdata(L, v);
+    lua_rawget(L, -2);
+    /* create and store a new lvq.view object if there wasn't one */
+    if (lua_isnil(L, -1)) {
+        lua_pop(L, 1);
+        vqView *ud = tagged_udata(L, sizeof *ud, "lvq.view");
+        *ud = vq_incref(v);
+    }
+    lua_remove(L, -2);
     return 1;
 }
 
