@@ -61,7 +61,6 @@ assert(m1[2][1] == 4, "m1 type 2")
 assert(m1[0][2] == emv, "m1 subv 0")
 assert(m1[1][2] == emv, "m1 subv 1")
 assert(m1[2][2] == emv, "m1 subv 2")
-
 assert(m1:dump() == [[
   name  type  subv
   ----  ----  ----
@@ -72,9 +71,7 @@ assert(m1:dump() == [[
 -- create a fresh view
 local m2 = view(2,"A:S,B:I,C:D")
 assert(#m2 == 2, "m2 row count")
-
 assert(tostring(m2) == "view: view #2 SID", "m2 display")
-
 assert(m2:dump() == [[
   A  B  C
   -  -  -
@@ -88,7 +85,6 @@ m2[0][2] = 34.56
 m2[1].A = "cba"
 m2[1].B = 21
 m2[1].C = 65.43
-
 assert(m2:dump() == [[
   A    B   C    
   ---  --  -----
@@ -101,7 +97,7 @@ assert(vops.dump{1,2,3} == [[
   -
   1
   2
-  3]], "simple as 1-col int view")
+  3]], "simple list as 1-col int view")
 assert(vops.dump{meta='A:I,B,C:D'; 1,'two',3.3,4,'five',6.6,7,'eight',9.9} == [[
   A  B      C  
   -  -----  ---
@@ -116,6 +112,6 @@ assert(vops.call(4, "A:I,B:I,C:I", function (r,c) return r*r+c end):dump() == [[
   0   1   2
   1   2   3
   4   5   6
-  9  10  11]])
+  9  10  11]], "callback view")
 
 print "OK"
