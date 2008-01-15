@@ -353,21 +353,23 @@ static void ViewCleaner (void *p) {
     vq_decref(vwMeta(v));
 }
 static vqDispatch vtab = { "view", sizeof(struct vqView_s), 0, ViewCleaner };
-vqView vq_new (vqView meta, int rows) {
-    vqView v;
-    lua_State *L = vwState(meta);
-    int c, nc = vwRows(meta);
-    
-    v = alloc_vec(&vtab, nc * sizeof(vqCell));
-    vwState(v) = L;
+static vqView alloc_view (const vqDispatch *vtabp, vqView meta, int rows, int extra) {
+    vqView v = alloc_vec(vtabp, vwRows(meta) * sizeof(vqCell));
+    assert(vtabp->prefix >= 3);
+    vwState(v) = vwState(meta);
     vwRows(v) = rows;
     vwMeta(v) = vq_incref(meta);
-
-    if (rows > 0)
+    return v;
+}
+vqView vq_new (vqView meta, int rows) {
+    vqView v = alloc_view(&vtab, meta, rows, 0);
+    if (rows > 0) {
+        int c, nc = vwRows(meta);
         for (c = 0; c < nc; ++c) {
             vqType type = vq_getInt(meta, c, 1, VQ_nil) & VQ_TYPEMASK;
             vwCol(v,c).v = new_datavec(type, rows);
         }
+    }
     
     return v;
 }
@@ -691,6 +693,55 @@ static int view2string (lua_State *L) {
     return 1;
 }
 
+static void IndirectCleaner (void *p) {
+    vqView v = p;
+    vq_decref(vwMeta(v));
+}
+static vqView IndirectView (const vqDispatch *vtabp, vqView meta, int rows, int extra) {
+    int c, nc = vwRows(meta);
+    vqView v = alloc_view(vtabp, meta, rows, extra);
+    for (c = 0; c < nc; ++c) {
+        vwCol(v,c).v = v;
+        vwCol(v,c).x.y.i = c;
+    }
+    return v;
+}
+
+static void CallCleaner (void *p) {
+    vqView v = p;
+    lua_unref(vwState(v), vwAuxI(v));
+    IndirectCleaner(p);
+}
+static vqType CallGetter (int row, vqCell *cp) {
+    vqType type;
+    vqView v = cp->v;
+    int col = cp->x.y.i;
+    lua_State *L = vwState(cp->v);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, vwAuxI(v));
+    lua_pushinteger(L, row);
+    lua_pushinteger(L, col);
+    lua_call(L, 2, 1);
+    if (lua_isnil(L, -1)) {
+        lua_pop(L, 1);
+        return VQ_nil;
+    }
+    type = vq_getInt(vwMeta(v), col, 1, VQ_nil) & VQ_TYPEMASK;
+    type = check_cell(L, -1, VQ_TYPES[type], cp);
+    lua_pop(L, 1);
+    return type;
+}
+static vqDispatch cvtab = {
+    "call", sizeof(struct vqView_s), 0, CallCleaner, CallGetter
+};
+static int vops_call (lua_State *L) {
+    vqView v;
+    LVQ_ARGS(L,A,"IVN");
+    v = IndirectView(&cvtab, A[1].v, A[0].i, 0);
+    assert(lua_gettop(L) == 3);
+    vwAuxP(v) = (void*) luaL_ref(L, LUA_REGISTRYINDEX);
+    return push_view(v);
+}
+
 static int vops_meta (lua_State *L) {
     LVQ_ARGS(L,A,"V");
     return push_view(vwMeta(A[0].v));
@@ -745,6 +796,7 @@ static const struct luaL_reg lvqlib_view_m[] = {
     {0, 0},
 };
 static const struct luaL_reg lvqlib_vops[] = {
+    {"call", vops_call},
     {"meta", vops_meta},
     {"view", vops_view},
     {0, 0},

@@ -109,4 +109,13 @@ assert(vops.dump{meta='A:I,B,C:D'; 1,'two',3.3,4,'five',6.6,7,'eight',9.9} == [[
   4  five   6.6
   7  eight  9.9]], "table as 3-col view")
 
+-- callback views
+assert(vops.call(4, "A:I,B:I,C:I", function (r,c) return r*r+c end):dump() == [[
+  A  B   C 
+  -  --  --
+  0   1   2
+  1   2   3
+  4   5   6
+  9  10  11]])
+
 print "OK"

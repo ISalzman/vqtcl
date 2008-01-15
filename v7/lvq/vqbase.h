@@ -19,10 +19,12 @@
 
 /* view-specific header fields */
 #define vwState(v)  vHead(v,state)
+#define vwAuxP(v)   vHead(v,auxp)
+#define vwAuxI(v)   ((int) vwAuxP(v))
 #define vwMeta(v)   vHead(v,meta)
-#define vwOrig(v)   vHead(v,orig)
 #define vwRows(v)   vSize(v)
 #define vwCols(v)   vSize(vwMeta(v))
+#define vwMore(v)   ((void*) (((vqCell*) v) + vwCols(v)))
 
 /* a view is an array of column references, stored as cells */
 #define vwCol(v,i)  vCast(v,vqCell)[i]
@@ -48,7 +50,7 @@ typedef struct vqInfo_s {
     
 struct vqView_s {
     lua_State *state;
+    void *auxp;
     vqView meta;
-    vqView orig;
     vqInfo info;
 };
