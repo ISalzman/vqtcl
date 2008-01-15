@@ -89,22 +89,25 @@ static int push_view (vqView v) {
     if (lua_isnil(L, -1)) {
         vqView *ud = tagged_udata(L, sizeof *ud, "lvq.view");
         *ud = vq_incref(v);
+        lua_pushlightuserdata(L, v);
+        lua_pushvalue(L, -2);
+        lua_rawset(L, -5);
         lua_remove(L, -2);
     }
     lua_remove(L, -2);
     return 1;
 }
 
-static vqView parse_desc (vqView emv, char **desc, const char **nbuf, int *tbuf, vqView *sbuf) {
+static vqView desc_parser (vqView emv, char **desc, const char **nbuf, int *tbuf, vqView *sbuf) {
     char sep, *ptr = *desc;
     const char  **names = nbuf;
-    int c, cols = 0, *types = tbuf;
-    vqView result, *subts = sbuf;
+    int c, nc = 0, *types = tbuf;
+    vqView result, *subvs = sbuf;
     
     for (;;) {
         const char* s = ptr;
-        sbuf[cols] = emv;
-        tbuf[cols] = VQ_string;
+        sbuf[nc] = emv;
+        tbuf[nc] = VQ_string;
         
         while (strchr(":,[]", *ptr) == 0)
             ++ptr;
@@ -113,15 +116,15 @@ static vqView parse_desc (vqView emv, char **desc, const char **nbuf, int *tbuf,
 
         if (sep == '[') {
             ++ptr;
-            sbuf[cols] = parse_desc(emv, &ptr, nbuf+cols, tbuf+cols, sbuf+cols);
-            tbuf[cols] = VQ_view;
+            sbuf[nc] = desc_parser(emv, &ptr, nbuf+nc, tbuf+nc, sbuf+nc);
+            tbuf[nc] = VQ_view;
             sep = *++ptr;
         } else if (sep == ':') {
-            tbuf[cols] = char2type(*++ptr);
+            tbuf[nc] = char2type(*++ptr);
             sep = *++ptr;
         }
         
-        nbuf[cols++] = s;
+        nbuf[nc++] = s;
         if (sep != ',')
             break;
             
@@ -130,10 +133,10 @@ static vqView parse_desc (vqView emv, char **desc, const char **nbuf, int *tbuf,
     
     *desc = ptr;
 
-    result = vq_new(vwMeta(emv), cols);
+    result = vq_new(vwMeta(emv), nc);
 
-    for (c = 0; c < cols; ++c)
-        vq_setMetaRow(result, c, names[c], types[c], subts[c]);
+    for (c = 0; c < nc; ++c)
+        vq_setMetaRow(result, c, names[c], types[c], subvs[c]);
     
     return result;
 }
@@ -161,12 +164,12 @@ static vqView desc2meta (lua_State *L, const char *desc, int length) {
     bytes = limit * (2 * sizeof(void*) + sizeof(int)) + length + 1;
     buffer = malloc(bytes);
     nbuf = buffer;
-    sbuf = (void*) (nbuf + limit);
-    tbuf = (void*) (sbuf + limit);
-    dbuf = memcpy(tbuf + limit, desc, length);
+    tbuf = (void*) (nbuf + limit);
+    sbuf = (void*) (tbuf + limit);
+    dbuf = memcpy(sbuf + limit, desc, length);
     dbuf[length] = ']';
     
-    meta = parse_desc(emv, &dbuf, nbuf, tbuf, sbuf);
+    meta = desc_parser(emv, &dbuf, nbuf, tbuf, sbuf);
     
     free(buffer);
     return meta;
@@ -347,8 +350,8 @@ static void *new_datavec (vqType type, int rows) {
 
 static void ViewCleaner (void *p) {
     vqView v = p;
-    int c, cols = vwCols(v);
-    for (c = 0; c < cols; ++c)
+    int c, nc = vwCols(v);
+    for (c = 0; c < nc; ++c)
         vq_decref(vwCol(v,c).v);
     vq_decref(vwMeta(v));
 }
@@ -358,16 +361,18 @@ static vqDispatch vtab = { "view", sizeof(struct vqView_s), 0, ViewCleaner };
 vqView vq_new (vqView meta, int rows) {
     vqView v;
     lua_State *L = vwState(meta);
-    int c, cols = vwRows(meta);
+    int c, nc = vwRows(meta);
     
-    v = alloc_vec(&vtab, cols * sizeof(vqCell));
+    v = alloc_vec(&vtab, nc * sizeof(vqCell));
     vwState(v) = L;
     vwRows(v) = rows;
     vwMeta(v) = vq_incref(meta);
 
     if (rows > 0)
-        for (c = 0; c < cols; ++c)
-            vwCol(v,c).v = new_datavec(VQ_int, rows);
+        for (c = 0; c < nc; ++c) {
+            vqType type = vq_getInt(meta, c, 1, VQ_nil) & VQ_TYPEMASK;
+            vwCol(v,c).v = new_datavec(type, rows);
+        }
     
     return v;
 }
@@ -565,22 +570,22 @@ static int row_gc (lua_State *L) {
 
 static int rowcolcheck (lua_State *L, vqView *pv, int *pr) {
     vqView v, meta;
-    int r, c, cols;
+    int r, c, nc;
     vqCell *cp = check_row(L, 1);
     *pv = v = cp->v;
     *pr = r = cp->x.y.i;
     meta = vwMeta(v);
-    cols = vwRows(meta);
+    nc = vwRows(meta);
     if (r < 0 || r >= vwRows(v))
         return luaL_error(L, "row index %d out of range", r);
     if (lua_isnumber(L, 2)) {
         c = lua_tointeger(L, 2);
-        if (c < 0 || c >= cols)
+        if (c < 0 || c >= nc)
             return luaL_error(L, "column index %d out of range", c);
     } else {
         const char *s = luaL_checkstring(L, 2);
         /* TODO: optimize this dumb linear search */
-        for (c = 0; c < cols; ++c)
+        for (c = 0; c < nc; ++c)
             if (strcmp(s, vq_getString(meta, c, 0, "")) == 0)
                 return c;
         return luaL_error(L, "column '%s' not found", s);
