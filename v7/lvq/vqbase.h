@@ -14,6 +14,7 @@
 
 /* header fields common to all views and vectors */
 #define vSize(v)    vHead(vCast(v,vqInfo),size)
+#define vRefs(v)    vHead(vCast(v,vqInfo),refs)
 #define vDisp(v)    vHead(vCast(v,vqInfo),disp)
 
 /* view-specific header fields */
@@ -41,19 +42,13 @@ typedef struct vqDispatch_s {
 
 typedef struct vqInfo_s {
     int size;
+    int refs;
     const vqDispatch *disp;
 } vqInfo, *vqVec;
     
 struct vqView_s {
     lua_State *state;
     vqView meta;
-    int mref;
     vqView orig;
     vqInfo info;
 };
-
-typedef struct vqRow_s {
-    vqView view;
-    int row;
-    int ref;
-} vqRow;

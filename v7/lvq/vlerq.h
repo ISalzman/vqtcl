@@ -51,6 +51,11 @@ typedef union vqCell_u {
     } x;
 } vqCell;
 
+/* memory management */
+
+void *(vq_incref) (void *v);
+void (vq_decref) (void *v);
+
 /* core view functions */
 
 vqView (vq_new) (vqView m, int rows);

@@ -5,7 +5,7 @@ require 'lvq'
 assert(lvq._VERSION == "LuaVlerq 1.7", "version")
 
 -- the empty meta view
-local emv = lvq.emv()
+local emv = view()
 assert(#emv == 0, "emv row count")
 assert(tostring(emv) == "view: view #0 SI()", "emv structure")
 
