@@ -95,8 +95,6 @@ assert(m2:dump() == [[
   abc  12  34.56
   cba  21  65.43]], "m2 dump after sets")
 
-print "OK"
-
 -- table to view conversions
 assert(vops.dump{1,2,3} == [[
   ?
@@ -110,3 +108,5 @@ assert(vops.dump{meta='A:I,B,C:D'; 1,'two',3.3,4,'five',6.6,7,'eight',9.9} == [[
   1  two    3.3
   4  five   6.6
   7  eight  9.9]], "table as 3-col view")
+
+print "OK"
