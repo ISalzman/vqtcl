@@ -20,7 +20,7 @@
 /* view-specific header fields */
 #define vwState(v)  vHead(v,state)
 #define vwAuxP(v)   vHead(v,auxp)
-#define vwAuxI(v)   ((int) vwAuxP(v))
+#define vwAuxI(v)   ((intptr_t) vwAuxP(v))
 #define vwMeta(v)   vHead(v,meta)
 #define vwRows(v)   vSize(v)
 #define vwCols(v)   vSize(vwMeta(v))

@@ -299,6 +299,6 @@ assert(view{1,2,3}:reverse():dump() == [[
   -
   3
   2
-  1]], "last vop less")
+  1]], "reverse vop")
 
 print "OK"
