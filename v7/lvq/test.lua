@@ -166,14 +166,14 @@ assert(view(3):step(2,-1):dump() == [[
   0]], "negative step")
 
 -- row mapping
-assert(view({3,4,5,6,7})[{2,4,0,2}]:dump() == [[
+assert(view({3,4,5,6,7}) [{2,4,0,2}]:dump() == [[
   ?
   -
   5
   7
   3
   5]], "table as row map")
-assert(view({3,4,5,6,7})[view(3):step(4,-2)]:dump() == [[
+assert(view({3,4,5,6,7}) [view(3):step(4,-2)]:dump() == [[
   ?
   -
   7
@@ -199,5 +199,27 @@ assert((mm/{1,0,1}):dump() == [[
      5  name     5
      1  type     1
      7  subv     7]], "table as column map")
+
+-- times vop
+assert(view({5,6}):times(3):dump() == [[
+  ?
+  -
+  5
+  6
+  5
+  6
+  5
+  6]], "times vop")
+
+-- spread vop
+assert(view({5,6}):spread(3):dump() == [[
+  ?
+  -
+  5
+  5
+  5
+  6
+  6
+  6]], "times vop")
 
 print "OK"

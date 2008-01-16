@@ -65,3 +65,13 @@ vopdef ('p', 'V', function (v, ...)
   print(v:dump(...))
   return v
 end)
+
+-- repeat all view rows n times
+vopdef ('times', 'VI', function (v, n)
+  return v [view(#v*n):step()]
+end)
+
+-- repeat each row of a view n times
+vopdef ('spread', 'VI', function (v, n)
+  return v [view(#v*n):step(0, 1, n)]
+end)
