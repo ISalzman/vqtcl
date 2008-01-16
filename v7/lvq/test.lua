@@ -166,18 +166,38 @@ assert(view(3):step(2,-1):dump() == [[
   0]], "negative step")
 
 -- row mapping
-assert(view({3,4,5,6,7})[{0,4,1}]:dump() == [[
+assert(view({3,4,5,6,7})[{2,4,0,2}]:dump() == [[
   ?
   -
-  3
+  5
   7
-  4]], "table as row map")
-assert(view({2,4,6,8})[view(4):step(3,-1)]:dump() == [[
+  3
+  5]], "table as row map")
+assert(view({3,4,5,6,7})[view(3):step(4,-2)]:dump() == [[
   ?
   -
-  8
-  6
-  4
-  2]], "step as row map")
+  7
+  5
+  3]], "step as row map")
+
+-- column mapping
+assert((mm/1):dump() == [[
+  type
+  ----
+     5
+     1
+     7]], "one col by index")
+assert((mm/'type'):dump() == [[
+  type
+  ----
+     5
+     1
+     7]], "one col by name")
+assert((mm/{1,0,1}):dump() == [[
+  type  name  type
+  ----  ----  ----
+     5  name     5
+     1  type     1
+     7  subv     7]], "table as column map")
 
 print "OK"

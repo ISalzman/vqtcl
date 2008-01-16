@@ -655,6 +655,45 @@ static vqView RowMapVop (vqView v, vqView map) {
     }
     return t;
 }
+static vqType ColMapGetter (int row, vqCell *cp) {
+    vqView v = cp->v;
+    int c = cp->x.y.i, nc;
+    vqCell *aux = vwAuxP(v);
+    vqCell map = aux[1];
+    if (map.v != NULL && getcell(c, &map) == VQ_int)
+        c = map.i;
+    v = aux[0].v;
+    nc = vwCols(v);
+    if (c >= nc && nc > 0)
+        c %= nc;
+    *cp = vwCol(v,c);
+    return getcell(row, cp);
+}
+static vqDispatch colmaptab = {
+    "colmap", sizeof(struct vqView_s), 0, RowColMapCleaner, ColMapGetter
+};
+static vqView ColMapVop (vqView v, vqView map) {
+    /* TODO: better - store col refs in a new view, avoids extra getter layer */
+    vqView t, m = vwMeta(map), mm = RowMapVop(vwMeta(v), map);
+    vqCell *aux;
+    t = IndirectView(&colmaptab, mm, vwRows(v), 2 * sizeof(vqCell));
+    aux = vwAuxP(t);
+    aux[0].v = vq_incref(v);
+    if (vwRows(m) > 0 && (vq_getInt(m, 0, 1, VQ_nil) & VQ_TYPEMASK) == VQ_int) {
+        aux[1] = vwCol(map,0);
+        vq_incref(aux[1].v);
+    }
+    return t;
+}
+
+static int colbyname (vqView meta, const char* s) {
+    int c, nc = vwRows(meta);
+    /* TODO: optimize this dumb linear search */
+    for (c = 0; c < nc; ++c)
+        if (strcmp(s, vq_getString(meta, c, 0, "")) == 0)
+            return c;
+    return luaL_error(vwState(meta), "column '%s' not found", s);
+}
 
 static int row_call (lua_State *L) {
     vqCell *cp = lua_touserdata(L, 1);
@@ -679,14 +718,8 @@ static int rowcolcheck (lua_State *L, vqView *pv, int *pr) {
         c = lua_tointeger(L, 2);
         if (c < 0 || c >= nc)
             return luaL_error(L, "column index %d out of range", c);
-    } else {
-        const char *s = luaL_checkstring(L, 2);
-        /* TODO: optimize this dumb linear search */
-        for (c = 0; c < nc; ++c)
-            if (strcmp(s, vq_getString(meta, c, 0, "")) == 0)
-                return c;
-        return luaL_error(L, "column '%s' not found", s);
-    }   
+    } else
+        return colbyname(meta, luaL_checkstring(L, 2));
     return c;
 }
 static int row_len (lua_State *L) {
@@ -721,6 +754,19 @@ static int row2string (lua_State *L) {
     return 1;
 }
 
+static int view_div (lua_State *L) {
+    int c;
+    vqView v = checkview(L, 1), w;
+    if (lua_isnumber(L, 2))
+        c = lua_tonumber(L, 2);
+    else if (lua_isstring(L, 2))
+        c = colbyname(vwMeta(v), lua_tostring(L, 2));
+    else
+        return push_view(ColMapVop(v, checkview(L, 2)));
+    w = vq_new(desc2meta(L, ":I", 2), 1);
+    vq_setInt(w, 0, 0, c);
+    return push_view(ColMapVop(v, w));
+}
 static int view_gc (lua_State *L) {
     vqView v = checkview(L, 1);
     vq_decref(v);
@@ -798,6 +844,7 @@ static const struct luaL_reg lvqlib_row_m[] = {
     {0, 0},
 };
 static const struct luaL_reg lvqlib_view_m[] = {
+    {"__div", view_div},
     {"__gc", view_gc},
     {"__index", view_index},
     {"__len", view_len},
