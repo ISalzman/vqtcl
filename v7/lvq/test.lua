@@ -158,5 +158,26 @@ assert(view(3):step(2,0):dump() == [[
   2
   2
   2]], "step zero")
+assert(view(3):step(2,-1):dump() == [[
+  ?
+  -
+  2
+  1
+  0]], "negative step")
+
+-- row mapping
+assert(view({3,4,5,6,7})[{0,4,1}]:dump() == [[
+  ?
+  -
+  3
+  7
+  4]], "table as row map")
+assert(view({2,4,6,8})[view(4):step(3,-1)]:dump() == [[
+  ?
+  -
+  8
+  6
+  4
+  2]], "step as row map")
 
 print "OK"

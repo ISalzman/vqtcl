@@ -599,6 +599,63 @@ static void push_struct (vqView v) {
     luaL_pushresult(&b);
 }
 
+static void IndirectCleaner (void *p) {
+    vqView v = p;
+    vq_decref(vwMeta(v));
+}
+static vqView IndirectView (const vqDispatch *vtabp, vqView meta, int rows, int extra) {
+    int c, nc = vwRows(meta);
+    vqView v = alloc_view(vtabp, meta, rows, extra);
+    for (c = 0; c < nc; ++c) {
+        vwCol(v,c).v = v;
+        vwCol(v,c).x.y.i = c;
+    }
+    return v;
+}
+
+static void RowColMapCleaner (void *p) {
+    vqView v = p, *aux = vwAuxP(v);
+    vq_decref(aux[0]);
+    vq_decref(aux[1]);
+    IndirectCleaner(v);
+}
+static vqType RowMapGetter (int row, vqCell *cp) {
+    int n;
+    vqView v = cp->v;
+    vqCell *aux = vwAuxP(v);
+    vqCell map = aux[1];
+    if (map.v != NULL && getcell(row, &map) == VQ_int) {
+        /* extra logic to support special maps with relative offsets < 0 */
+        if (map.i < 0) {
+            row += map.i;
+            map = aux[1];
+            getcell(row, &map);
+        }
+        row = map.i;
+    }
+    v = aux[0].v;
+    n = vwRows(v);
+    if (row >= n && n > 0)
+        row %= n;
+    *cp = vwCol(v,cp->x.y.i);
+    return getcell(row, cp);
+}
+static vqDispatch rowmaptab = {
+    "rowmap", sizeof(struct vqView_s), 0, RowColMapCleaner, RowMapGetter
+};
+static vqView RowMapVop (vqView v, vqView map) {
+    vqView t, m = vwMeta(map);
+    vqCell *aux;
+    t = IndirectView(&rowmaptab, vwMeta(v), vwRows(map), 2 * sizeof(vqCell));
+    aux = vwAuxP(t);
+    aux[0].v = vq_incref(v);
+    if (vwRows(m) > 0 && (vq_getInt(m, 0, 1, VQ_nil) & VQ_TYPEMASK) == VQ_int) {
+        aux[1] = vwCol(map,0);
+        vq_incref(aux[1].v);
+    }
+    return t;
+}
+
 static int row_call (lua_State *L) {
     vqCell *cp = lua_touserdata(L, 1);
     return push_view(cp->v);
@@ -676,12 +733,15 @@ static int view_index (lua_State *L) {
         cp = tagged_udata(L, sizeof *cp, "lvq.row");
         cp->v = vq_incref(A[0].v);
         cp->x.y.i = A[1].i;
-    } else {
+    } else if (lua_isstring(L, 2)) {
         const char* s = luaL_checkstring(L, 2);
         lua_getglobal(L, "vops");
         lua_getfield(L, -1, s);
         if (lua_isnil(L, -1))
             return luaL_error(L, "unknown view operator: %s", s);
+    } else {
+        LVQ_ARGS(L,A,"VV");
+        return push_view(RowMapVop(A[0].v, A[1].v));
     }
     return 1;
 }
@@ -698,20 +758,6 @@ static int view2string (lua_State *L) {
     push_struct(v);
     lua_concat(L, 2);
     return 1;
-}
-
-static void IndirectCleaner (void *p) {
-    vqView v = p;
-    vq_decref(vwMeta(v));
-}
-static vqView IndirectView (const vqDispatch *vtabp, vqView meta, int rows, int extra) {
-    int c, nc = vwRows(meta);
-    vqView v = alloc_view(vtabp, meta, rows, extra);
-    for (c = 0; c < nc; ++c) {
-        vwCol(v,c).v = v;
-        vwCol(v,c).x.y.i = c;
-    }
-    return v;
 }
 
 /* cast all vop arguments to the proper type, then call the real vop */
