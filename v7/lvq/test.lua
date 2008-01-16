@@ -166,7 +166,7 @@ assert(view(3):step(2,-1):dump() == [[
   0]], "negative step")
 
 -- row mapping
-assert(view({3,4,5,6,7}) [{2,4,0,2}]:dump() == [[
+assert(view{3,4,5,6,7} [{2,4,0,2}]:dump() == [[
   ?
   -
   5
@@ -201,7 +201,7 @@ assert((mm/{1,0,1}):dump() == [[
      7  subv     7]], "table as column map")
 
 -- times vop
-assert(view({5,6}):times(3):dump() == [[
+assert(view{5,6}:times(3):dump() == [[
   ?
   -
   5
@@ -212,7 +212,7 @@ assert(view({5,6}):times(3):dump() == [[
   6]], "times vop")
 
 -- spread vop
-assert(view({5,6}):spread(3):dump() == [[
+assert(view{5,6}:spread(3):dump() == [[
   ?
   -
   5
@@ -221,5 +221,50 @@ assert(view({5,6}):spread(3):dump() == [[
   6
   6
   6]], "times vop")
+
+-- plus vop
+assert((view{1,2,3}+view{9,8}):dump() == [[
+  ?
+  -
+  1
+  2
+  3
+  9
+  8]], "plus vop as +")
+assert(view{1,2,3}:plus({6,5},{8,9}):dump() == [[
+  ?
+  -
+  1
+  2
+  3
+  6
+  5
+  8
+  9]], "plus vop with 3 views")
+
+-- pair vop
+assert((view{1,2,3}..view{4,5,6}):dump() == [[
+  ?  ?
+  -  -
+  1  4
+  2  5
+  3  6]], "pair vop as ..")
+assert(view{1,2,3}:pair(mm,{4,5,6}):dump() == [[
+  ?  name  type  subv  ?
+  -  ----  ----  ----  -
+  1  name     5    #0  4
+  2  type     1    #0  5
+  3  subv     7    #0  6]], "pair vop with 3 views")
+
+-- product vop
+assert(view{1,2}:product({3,4,5}):dump() == [[
+  ?  ?
+  -  -
+  1  3
+  1  4
+  1  5
+  2  3
+  2  4
+  2  5]], "product vop")
 
 print "OK"

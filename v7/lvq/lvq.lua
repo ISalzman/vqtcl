@@ -9,6 +9,10 @@ vopdef = lvq.vopdef
 
 module (..., package.seeall)
 
+-- define some operators on views
+getmetatable(view()).__add = vops.plus
+getmetatable(view()).__concat = vops.pair
+
 -- table with render functions for all data types, N=0 S=5 B=6 V=7
 local renderers = { [0] = function (x) return '' end,
                     [6] = function (x) return #x..'b' end,
@@ -74,4 +78,9 @@ end)
 -- repeat each row of a view n times
 vopdef ('spread', 'VI', function (v, n)
   return v [view(#v*n):step(0, 1, n)]
+end)
+
+-- cross product
+vopdef ('product', 'VV', function (v, w)
+  return v:spread(#w) .. w:times(#v)
 end)

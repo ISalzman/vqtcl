@@ -2,6 +2,8 @@
     $Id$
     This file is part of Vlerq, see lvq/vlerq.h for full copyright notice. */
 
+static int vops_plus (lua_State *L); /* forward */
+    
 static void CallCleaner (void *p) {
     vqView v = p;
     lua_unref(vwState(v), vwAuxI(v));
@@ -42,6 +44,64 @@ static int vops_meta (lua_State *L) {
     return push_view(vwMeta(A[0].v));
 }
 
+static int vops_pair (lua_State *L) {
+    vqView v;
+    int i, j, c = 0, nc, n = lua_gettop(L);
+    assert(n > 0);
+    
+    lua_pushcfunction(L, vops_plus);
+    for (i = 0; i < n; ++i)
+        push_view(vwMeta(checkview(L, i+1)));
+    lua_call(L, n, 1);
+    
+    v = vq_new(checkview(L, -1), 0);
+    vwRows(v) = vwRows(checkview(L, 1));
+    
+    for (i = 0; i < n; ++i) {
+        vqView t = checkview(L, i+1);
+        nc = vwCols(t);
+        for (j= 0; j < nc; ++j) {
+            vwCol(v,c) = vwCol(t,j);
+            vq_incref(vwCol(v,c++).v);
+        }
+    }
+    
+    return push_view(v);
+}
+
+static void PlusCleaner (void *p) {
+    vqView v = p;
+    vqCell *aux;
+    for (aux = vwAuxP(v); aux->v != 0; ++aux)
+        vq_decref(aux->v);
+    IndirectCleaner(v);
+}
+static vqType PlusGetter (int row, vqCell *cp) {
+    vqCell *aux = vwAuxP(cp->v);
+    while (row >= aux->x.y.i)
+        row -= (aux++)->x.y.i;
+    *cp = vwCol(aux->v,cp->x.y.i);
+    return getcell(row, cp);
+}
+static vqDispatch plustab = {
+    "plus", sizeof(struct vqView_s), 0, PlusCleaner, PlusGetter
+};
+static int vops_plus (lua_State *L) {
+    vqView v;
+    vqCell *aux;
+    int i, n = lua_gettop(L);
+    assert(n > 0);
+    v = IndirectView(&plustab, vwMeta(checkview(L, 1)), 0,
+                                                    (n+1) * sizeof(vqCell));
+    aux = vwAuxP(v);
+    for (i = 0; i < n; ++i) {
+        aux[i].v = vq_incref(checkview(L, i+1));
+        aux[i].x.y.i = vwRows(aux[i].v);
+        vwRows(v) += aux[i].x.y.i;
+    }
+    return push_view(v);
+}
+
 static vqType StepGetter (int row, vqCell *cp) {
     int *aux = vwAuxP(cp->v);
     cp->i = aux[0] + aux[1] * (row / aux[2]);
@@ -75,6 +135,8 @@ static int vops_view (lua_State *L) {
 static const struct luaL_reg lvqlib_vops[] = {
     {"call", vops_call},
     {"meta", vops_meta},
+    {"pair", vops_pair},
+    {"plus", vops_plus},
     {"step", vops_step},
     {"view", vops_view},
     {0, 0},
