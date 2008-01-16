@@ -84,3 +84,18 @@ end)
 vopdef ('product', 'VV', function (v, w)
   return v:spread(#w) .. w:times(#v)
 end)
+
+-- first n rows
+vopdef ('first', 'VI', function (v, n)
+  return n < #v and view(n)..v or v
+end)
+
+-- last n rows
+vopdef ('last', 'VI', function (v, n)
+  return n < #v and v [view(n):step(#v-n)] or v
+end)
+
+-- reverse row order
+vopdef ('reverse', 'V', function (v)
+  return v [v:step(#v-1, -1)]
+end)

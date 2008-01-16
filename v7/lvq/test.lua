@@ -257,7 +257,7 @@ assert(view{1,2,3}:pair(mm,{4,5,6}):dump() == [[
   3  subv     7    #0  6]], "pair vop with 3 views")
 
 -- product vop
-assert(view{1,2}:product({3,4,5}):dump() == [[
+assert(view{1,2}:product{3,4,5}:dump() == [[
   ?  ?
   -  -
   1  3
@@ -266,5 +266,39 @@ assert(view{1,2}:product({3,4,5}):dump() == [[
   2  3
   2  4
   2  5]], "product vop")
+
+-- first vop
+assert(view{1,2,3}:first(2):dump() == [[
+  ?
+  -
+  1
+  2]], "first vop less")
+assert(view{1,2,3}:first(4):dump() == [[
+  ?
+  -
+  1
+  2
+  3]], "first vop too many")
+
+-- last vop
+assert(view{1,2,3}:last(2):dump() == [[
+  ?
+  -
+  2
+  3]], "last vop less")
+assert(view{1,2,3}:last(4):dump() == [[
+  ?
+  -
+  1
+  2
+  3]], "last vop too many")
+
+-- reverse vop
+assert(view{1,2,3}:reverse():dump() == [[
+  ?
+  -
+  3
+  2
+  1]], "last vop less")
 
 print "OK"
