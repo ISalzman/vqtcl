@@ -26,6 +26,7 @@ vopdef('dump', 'V', function (vw, maxrows)
     desc = desc..'  %%'..(t == 5 and '-' or '+')..'%ds'
     funs[c] = renderers[t]
     names[c] = meta[c-1].name
+    if names[c] == '' then names[c] = '?' end
 --print(meta,c,names[c])
     widths[c] = #names[c]
   end

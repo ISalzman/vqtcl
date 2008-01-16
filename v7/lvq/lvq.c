@@ -5,7 +5,7 @@
 #include <lauxlib.h>
 
 #include "vlerq.h"
-#include "vqbase.h"
+#include "defs.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -354,7 +354,7 @@ static void ViewCleaner (void *p) {
 }
 static vqDispatch vtab = { "view", sizeof(struct vqView_s), 0, ViewCleaner };
 static vqView alloc_view (const vqDispatch *vtabp, vqView meta, int rows, int extra) {
-    vqView v = alloc_vec(vtabp, vwRows(meta) * sizeof(vqCell));
+    vqView v = alloc_vec(vtabp, vwRows(meta) * sizeof(vqCell) + extra);
     assert(vtabp->prefix >= 3);
     vwState(v) = vwState(meta);
     vwRows(v) = rows;
@@ -601,6 +601,10 @@ static void push_struct (vqView v) {
     luaL_pushresult(&b);
 }
 
+static int row_call (lua_State *L) {
+    vqCell *cp = lua_touserdata(L, 1);
+    return push_view(cp->v);
+}
 static int row_gc (lua_State *L) {
     vqCell *cp = checkrow(L, 1);
     vq_decref(cp->v);
@@ -629,6 +633,11 @@ static int rowcolcheck (lua_State *L, vqView *pv, int *pr) {
         return luaL_error(L, "column '%s' not found", s);
     }   
     return c;
+}
+static int row_len (lua_State *L) {
+    vqCell *cp = lua_touserdata(L, 1);
+    lua_pushinteger(L, cp->x.y.i);
+    return 1;
 }
 static int row_index (lua_State *L) {
     vqView v;
@@ -707,54 +716,6 @@ static vqView IndirectView (const vqDispatch *vtabp, vqView meta, int rows, int 
     return v;
 }
 
-static void CallCleaner (void *p) {
-    vqView v = p;
-    lua_unref(vwState(v), vwAuxI(v));
-    IndirectCleaner(p);
-}
-static vqType CallGetter (int row, vqCell *cp) {
-    vqType type;
-    vqView v = cp->v;
-    int col = cp->x.y.i;
-    lua_State *L = vwState(cp->v);
-    lua_rawgeti(L, LUA_REGISTRYINDEX, vwAuxI(v));
-    lua_pushinteger(L, row);
-    lua_pushinteger(L, col);
-    lua_call(L, 2, 1);
-    if (lua_isnil(L, -1)) {
-        lua_pop(L, 1);
-        return VQ_nil;
-    }
-    type = vq_getInt(vwMeta(v), col, 1, VQ_nil) & VQ_TYPEMASK;
-    type = check_cell(L, -1, VQ_TYPES[type], cp);
-    lua_pop(L, 1);
-    return type;
-}
-static vqDispatch cvtab = {
-    "call", sizeof(struct vqView_s), 0, CallCleaner, CallGetter
-};
-static int vops_call (lua_State *L) {
-    vqView v;
-    LVQ_ARGS(L,A,"IVN");
-    v = IndirectView(&cvtab, A[1].v, A[0].i, 0);
-    assert(lua_gettop(L) == 3);
-    vwAuxP(v) = (void*) luaL_ref(L, LUA_REGISTRYINDEX);
-    return push_view(v);
-}
-
-static int vops_meta (lua_State *L) {
-    LVQ_ARGS(L,A,"V");
-    return push_view(vwMeta(A[0].v));
-}
-static int vops_view (lua_State *L) {
-    LVQ_ARGS(L,A,"vv");
-    if (A[0].v == 0)
-        A[0].v = empty_meta(L);
-    if (A[1].v != 0)
-        A->v = vq_new(A[1].v, vwRows(A[0].v));
-    return push_view(A->v);
-}
-
 /* cast all vop arguments to the proper type, then call the real vop */
 static int vop_check (lua_State *L) {
     int i;
@@ -781,9 +742,13 @@ static int lvq_vopdef (lua_State *L) {
     return 0;
 }
 
+#include "vops.c"
+
 static const struct luaL_reg lvqlib_row_m[] = {
+    {"__call", row_call},
     {"__gc", row_gc},
     {"__index", row_index},
+    {"__len", row_len},
     {"__newindex", row_newindex},
     {"__tostring", row2string},
     {0, 0},
@@ -793,12 +758,6 @@ static const struct luaL_reg lvqlib_view_m[] = {
     {"__index", view_index},
     {"__len", view_len},
     {"__tostring", view2string},
-    {0, 0},
-};
-static const struct luaL_reg lvqlib_vops[] = {
-    {"call", vops_call},
-    {"meta", vops_meta},
-    {"view", vops_view},
     {0, 0},
 };
 static const struct luaL_reg lvqlib_f[] = {
