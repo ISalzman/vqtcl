@@ -92,13 +92,13 @@ assert(m2:dump() == [[
   cba  21  65.43]], "m2 dump after sets")
 
 -- table to view conversions
-assert(vops.dump{1,2,3} == [[
+assert(view{1,2,3}:dump() == [[
   ?
   -
   1
   2
   3]], "simple list as 1-col int view")
-assert(vops.dump{meta='A:I,B,C:D'; 1,'two',3.3,4,'five',6.6,7,'eight',9.9} == [[
+assert(view{meta='A:I,B,C:D'; 1,'two',3.3,4,'five',6.6,7,'eight',9.9}:dump()==[[
   A  B      C  
   -  -----  ---
   1  two    3.3
@@ -106,14 +106,14 @@ assert(vops.dump{meta='A:I,B,C:D'; 1,'two',3.3,4,'five',6.6,7,'eight',9.9} == [[
   7  eight  9.9]], "table as 3-col view")
 
 -- callback views
-assert(vops.call(4, "A:I", function (r) return r*r*r end):dump() == [[
+assert(view(4):call("A:I", function (r) return r*r*r end):dump() == [[
   A 
   --
    0
    1
    8
   27]], "1-col callback view")
-assert(vops.call(4, "A:I,B:I,C:I", function (r,c) return r*r+c end):dump() == [[
+assert(view(4):call("A:I,B:I,C:I", function (r,c) return r*r+c end):dump() == [[
   A  B   C 
   -  --  --
   0   1   2
@@ -124,5 +124,39 @@ assert(vops.call(4, "A:I,B:I,C:I", function (r,c) return r*r+c end):dump() == [[
 -- row introspection
 assert(#m1[1] == 1, "row index")
 assert(tostring(m2[1]()) == "view: view #2 SID", "row view")
+
+-- step views
+assert(view(3):step():dump() == [[
+  ?
+  -
+  0
+  1
+  2]], "step iota")
+assert(view(3):step(4):dump() == [[
+  ?
+  -
+  4
+  5
+  6]], "step with start")
+assert(view(3):step(2,3):dump() == [[
+  ?
+  -
+  2
+  5
+  8]], "step with step")
+assert(view(5):step(1,4,2):dump() == [[
+  ?
+  -
+  1
+  1
+  5
+  5
+  9]], "step with rate")
+assert(view(3):step(2,0):dump() == [[
+  ?
+  -
+  2
+  2
+  2]], "step zero")
 
 print "OK"

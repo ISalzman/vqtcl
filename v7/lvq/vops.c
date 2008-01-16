@@ -30,8 +30,8 @@ static vqDispatch cvtab = {
 };
 static int vops_call (lua_State *L) {
     vqView v;
-    LVQ_ARGS(L,A,"IVN");
-    v = IndirectView(&cvtab, A[1].v, A[0].i, 0);
+    LVQ_ARGS(L,A,"VVN");
+    v = IndirectView(&cvtab, A[1].v, vwRows(A[0].v), 0);
     assert(lua_gettop(L) == 3);
     vwAuxP(v) = (void*) luaL_ref(L, LUA_REGISTRYINDEX);
     return push_view(v);
@@ -40,6 +40,27 @@ static int vops_call (lua_State *L) {
 static int vops_meta (lua_State *L) {
     LVQ_ARGS(L,A,"V");
     return push_view(vwMeta(A[0].v));
+}
+
+static vqType StepGetter (int row, vqCell *cp) {
+    int *aux = vwAuxP(cp->v);
+    cp->i = aux[0] + aux[1] * (row / aux[2]);
+    return VQ_int;
+}
+static vqDispatch steptab = {
+    "step", sizeof(struct vqView_s), 0, IndirectCleaner, StepGetter
+};
+static int vops_step (lua_State *L) {
+    int rows, *aux;
+    vqView v;
+    LVQ_ARGS(L,A,"Viii");
+    rows = vwRows(A[0].v);
+    v = IndirectView(&steptab, desc2meta(L, ":I", 2), rows, 3 * sizeof(int));
+    aux = vwAuxP(v);
+    aux[0] = A[1].i; /* start */
+    aux[1] = lua_isnoneornil(L, 3) ? 1 : A[2].i; /* step */
+    aux[2] = A[3].i > 0 ? A[3].i : 1; /* rate */
+    return push_view(v);
 }
 
 static int vops_view (lua_State *L) {
@@ -54,6 +75,7 @@ static int vops_view (lua_State *L) {
 static const struct luaL_reg lvqlib_vops[] = {
     {"call", vops_call},
     {"meta", vops_meta},
+    {"step", vops_step},
     {"view", vops_view},
     {0, 0},
 };

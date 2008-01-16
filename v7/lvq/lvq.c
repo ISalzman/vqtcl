@@ -357,6 +357,7 @@ static vqView alloc_view (const vqDispatch *vtabp, vqView meta, int rows, int ex
     vqView v = alloc_vec(vtabp, vwRows(meta) * sizeof(vqCell) + extra);
     assert(vtabp->prefix >= 3);
     vwState(v) = vwState(meta);
+    vwAuxP(v) = (vqCell*) v + vwRows(meta);
     vwRows(v) = rows;
     vwMeta(v) = vq_incref(meta);
     return v;
@@ -509,9 +510,6 @@ static int pushcell (lua_State *L, char c, vqCell *cp) {
 }
 
 static vqType check_cell (lua_State *L, int t, char c, vqCell *cp) {
-    size_t n;
-    vqType type;
-
     if ('a' <= c && c <= 'z') {
         if (lua_isnoneornil(L, t)) {
             cp->p = cp->x.y.p = 0;
@@ -519,9 +517,6 @@ static vqType check_cell (lua_State *L, int t, char c, vqCell *cp) {
         }
         c += 'A'-'a';
     }
-    
-    type = char2type(c);
-
     switch (c) {
         case 'N':   break;
         case 'I':   cp->i = luaL_checkinteger(L, t); break;
@@ -529,13 +524,16 @@ static vqType check_cell (lua_State *L, int t, char c, vqCell *cp) {
         case 'F':   cp->f = (float) luaL_checknumber(L, t); break;
         case 'D':   cp->d = luaL_checknumber(L, t); break;
         case 'S':   /* fall through */
-        case 'B':   cp->s = luaL_checklstring(L, t, &n);
-                    cp->x.y.i = n; break;
+        case 'B': {
+            size_t n;
+            cp->s = luaL_checklstring(L, t, &n);
+            cp->x.y.i = n;
+            break;
+        }
         case 'V':   cp->v = checkview(L, t); break;
         default:    assert(0);
     }
-
-    return type;
+    return char2type(c);
 }
 
 static void parseargs(lua_State *L, vqCell *buf, const char *desc) {
@@ -553,7 +551,7 @@ static vqView table2view (lua_State *L, int t) {
     vqView m, v;
     int r, rows, c, cols;
     lua_getfield(L, t, "meta");
-    m = lua_isnil(L, -1) ? desc2meta(L, "?:I", 3) : checkview(L, -1);
+    m = lua_isnil(L, -1) ? desc2meta(L, ":I", 2) : checkview(L, -1);
     lua_pop(L, 1);
     cols = vwRows(m);
     rows = cols > 0 ? lua_objlen(L, t) / cols : 0;
