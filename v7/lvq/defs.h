@@ -15,6 +15,7 @@
 /* header fields common to all views and vectors */
 #define vSize(v)    vHead(vCast(v,vqInfo),size)
 #define vRefs(v)    vHead(vCast(v,vqInfo),refs)
+#define vExtra(v)   vHead(vCast(v,vqInfo),extra)
 #define vDisp(v)    vHead(vCast(v,vqInfo),disp)
 
 /* view-specific header fields */
@@ -45,6 +46,7 @@ typedef struct vqDispatch_s {
 typedef struct vqInfo_s {
     int size;
     int refs;
+    int extra;
     const vqDispatch *disp;
 } vqInfo, *vqVec;
     
@@ -54,3 +56,11 @@ struct vqView_s {
     vqView meta;
     vqInfo info;
 };
+
+void* (VecInsert) (vqVec *vecp, int off, int cnt);
+void* (VecDelete) (vqVec *vecp, int off, int cnt);
+
+void* (RangeFlip) (vqVec *vecp, int off, int count);
+int (RangeLocate) (vqVec v, int off, int *offp);
+void (RangeInsert) (vqVec *vecp, int off, int count, int mode);
+void (RangeDelete) (vqVec *vecp, int off, int count);

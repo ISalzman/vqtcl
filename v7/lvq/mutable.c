@@ -2,9 +2,6 @@
     $Id$
     This file is part of Vlerq, see lvq/vlerq.h for full copyright notice. */
 
-#include "vlerq.h"
-#include "defs.h"
-
 #define vInsv(vecptr)   ((vecptr)[-4].o.a.v)
 #define vDelv(vecptr)   ((vecptr)[-4].o.b.v)
 #define vOref(vecptr)   ((vecptr)[-5].o.a.p)
@@ -12,7 +9,7 @@
 
 /* --------------------------------------------------- RANGE OPERATIONS ----- */
 
-static int RangeSpan (Vector v, int offset, int count, int *startp, int miss) {
+static int RangeSpan (vqVec v, int offset, int count, int *startp, int miss) {
     int rs, ps = RangeLocate(v, offset, &rs);
     int re, pe = RangeLocate(v, offset + count, &re);
     if ((ps ^ miss) & 1)
@@ -23,7 +20,7 @@ static int RangeSpan (Vector v, int offset, int count, int *startp, int miss) {
     return re - rs;
 }
 
-static int RangeExpand (Vector v, int off) {
+static int RangeExpand (vqVec v, int off) {
     int i;
     const int *ivec = (const int*) v;
     for (i = 0; i < vCount(v) && ivec[i] <= off; i += 2)
@@ -35,7 +32,7 @@ static int RangeExpand (Vector v, int off) {
 
 static vq_Type MutVecGetter (int row, vq_Cell *item) {
     int col = item->o.b.i, aux = row;
-    Vector v = item->o.a.v, *vecp = (Vector*) vData(v) + 3 * col;
+    vqVec v = item->o.a.v, *vecp = (vqVec*) vData(v) + 3 * col;
     if (vecp[0] != 0 && RangeLocate(vecp[0], row, &aux) & 1) { /* translucent */
         if (vInsv(v) != 0 && (RangeLocate(vInsv(v), row, &row) & 1) == 0)
             return VQ_nil;
@@ -57,8 +54,8 @@ static vq_Type MutVecGetter (int row, vq_Cell *item) {
     return VQ_nil;
 }
 
-static void InitMutVec (Vector v, int col) {
-    Vector *vecp = (Vector*) vData(v) + 3 * col;
+static void InitMutVec (vqVec v, int col) {
+    vqVec *vecp = (vqVec*) vData(v) + 3 * col;
     if (vecp[0] == 0) {
         /* TODO: try to avoid allocating all vectors right away */
         vq_Type type = vq_getInt(vMeta(v), col, 1, VQ_nil) & VQ_TYPEMASK;
@@ -77,9 +74,9 @@ static void InitMutVec (Vector v, int col) {
     }
 }
 
-static void MutVecSetter (Vector v, int row, int col, const vq_Cell *item) {
+static void MutVecSetter (vqVec v, int row, int col, const vq_Cell *item) {
     int fill, miss;
-    Vector *vecp = (Vector*) vData(v) + 3 * col;
+    vqVec *vecp = (vqVec*) vData(v) + 3 * col;
     InitMutVec(v, col);
     if (row >= vCount(v))
         vCount(v) = row + 1;
@@ -119,7 +116,7 @@ static void MutVecReplacer (vq_View t, int offset, int delrows, vq_View data) {
     vCount(t) += insrows;
     for (c = 0; c < cols; ++c) {
         vq_Type coltype = vq_getInt(vMeta(t), c, 1, VQ_nil) & VQ_TYPEMASK;
-        Vector *vecp = (Vector*) vData(t) + 3 * c;
+        vqVec *vecp = (vqVec*) vData(t) + 3 * c;
         InitMutVec(t, c);
         if (delrows > 0) {
             int pos, len = RangeSpan(vecp[0], offset, delrows, &pos, 0);
@@ -152,8 +149,8 @@ static void MutVecReplacer (vq_View t, int offset, int delrows, vq_View data) {
         RangeInsert(&vInsv(t), offset, insrows, 1);
 }
 
-static void MutVecCleaner (Vector v) {
-    Vector *data = (Vector*) vData(v);
+static void MutVecCleaner (vqVec v) {
+    vqVec *data = (vqVec*) vData(v);
     int i = 3 * vCount(vMeta(v));
     while (--i >= 0)
         vq_release(data[i]);
@@ -180,7 +177,7 @@ vq_View MutableVop (vq_View t) {
     Object_p o = 0; /* TODO: cleanup */
     int i, cols = vCount(meta);
     vq_View w = IndirectView(meta, &muvtab, vCount(t),
-                                3 * vCount(meta) * sizeof(Vector));
+                                3 * vCount(meta) * sizeof(vqVec));
     vOrig(w) = vq_retain(t);
     vOref(w) = o; /* ObjRetain(o); FIXME: need to hold on to object somehow */
     /* override to use original columns until a set or replace is done */

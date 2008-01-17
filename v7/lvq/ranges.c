@@ -2,60 +2,57 @@
     $Id$
     This file is part of Vlerq, see lvq/vlerq.h for full copyright notice. */
 
-#include "vlerq.h"
-#include "defs.h"
-
-void *VecInsert (Vector *vecp, int off, int cnt) {
-    Vector v = *vecp, v2;
-    int unit = vType(v)->unit, limit = vLimit(v);
+void *VecInsert (vqVec *vecp, int off, int cnt) {
+    vqVec v = *vecp, v2;
+    int unit = vDisp(v)->unit, limit = vExtra(v);
     char *cvec = (char*) v, *cvec2;
     assert(cnt > 0);
     assert(unit > 0);
     assert(vRefs(v) == 1);
-    assert(off <= vCount(v));
-    if (vCount(v) + cnt <= limit) {
-        memmove(cvec+(off+cnt)*unit, cvec+off*unit, (vCount(v)-off)*unit);
+    assert(off <= vSize(v));
+    if (vSize(v) + cnt <= limit) {
+        memmove(cvec+(off+cnt)*unit, cvec+off*unit, (vSize(v)-off)*unit);
         memset(cvec+off*unit, 0, cnt*unit);
     } else {
         limit += limit/2;
-        if (limit < vCount(v) + cnt)
-            limit = vCount(v) + cnt;
-        v2 = vq_retain(AllocVector(vType(v), limit * unit));
+        if (limit < vSize(v) + cnt)
+            limit = vSize(v) + cnt;
+        v2 = vq_incref(alloc_vec(vDisp(v), limit * unit));
         cvec2 = (char*) v2;
-        vCount(v2) = vCount(v);
-        vLimit(v2) = limit;
+        vSize(v2) = vSize(v);
+        vExtra(v2) = limit;
         memcpy(v2, v, off * unit);
-        memcpy(cvec2+(off+cnt)*unit, cvec+off*unit, (vCount(v)-off)*unit);
-        vCount(v) = 0; /* prevent cleanup of copied elements */
-        vq_release(v);
+        memcpy(cvec2+(off+cnt)*unit, cvec+off*unit, (vSize(v)-off)*unit);
+        vSize(v) = 0; /* prevent cleanup of copied elements */
+        vq_decref(v);
         *vecp = v = v2;
     }
-    vCount(v) += cnt;
+    vSize(v) += cnt;
     return v;
 }
 
-void *VecDelete (Vector *vecp, int off, int cnt) {
+void *VecDelete (vqVec *vecp, int off, int cnt) {
     /* TODO: shrink when less than half full and > 10 elements */
-    Vector v = *vecp;
-    int unit = vType(v)->unit;
+    vqVec v = *vecp;
+    int unit = vDisp(v)->unit;
     char *cvec = (char*) v;
     assert(cnt > 0);
     assert(unit > 0);
     assert(vRefs(v) == 1);
-    assert(off + cnt <= vCount(v));
-    memmove(cvec+off*unit, cvec+(off+cnt)*unit, (vCount(v)-(off+cnt))*unit);
-    vCount(v) -= cnt;
+    assert(off + cnt <= vSize(v));
+    memmove(cvec+off*unit, cvec+(off+cnt)*unit, (vSize(v)-(off+cnt))*unit);
+    vSize(v) -= cnt;
     return v;
 } 
 
-void *RangeFlip (Vector *vecp, int off, int count) {
+void *RangeFlip (vqVec *vecp, int off, int count) {
     int pos, end, *iptr;
     if (*vecp == 0) {
-        *vecp = vq_retain(AllocDataVec(VQ_int, 4));
-        vCount(*vecp) = 0;
+        *vecp = vq_incref(new_datavec(VQ_int, 4));
+        vSize(*vecp) = 0;
     }
     if (count > 0) {
-        end = vCount(*vecp);
+        end = vSize(*vecp);
         for (pos = 0, iptr = (int*) *vecp; pos < end; ++pos, ++iptr)
             if (off <= *iptr)
                 break;
@@ -74,10 +71,10 @@ void *RangeFlip (Vector *vecp, int off, int count) {
     return *vecp;
 }
 
-int RangeLocate (Vector v, int off, int *offp) {
+int RangeLocate (vqVec v, int off, int *offp) {
     int i, last = 0, fill = 0;
     const int *ivec = (const int*) v;
-    for (i = 0; i < vCount(v) && off >= ivec[i]; ++i) {
+    for (i = 0; i < vSize(v) && off >= ivec[i]; ++i) {
         last = ivec[i];
         if (i & 1)
             fill += last - ivec[i-1];
@@ -89,24 +86,24 @@ int RangeLocate (Vector v, int off, int *offp) {
     return i;
 }
 
-void RangeInsert (Vector *vecp, int off, int count, int mode) {
-    Vector v = *vecp;
+void RangeInsert (vqVec *vecp, int off, int count, int mode) {
+    vqVec v = *vecp;
     int x, pos = RangeLocate(v, off, &x), miss = pos & 1, *ivec = (int*) v;
     assert(count > 0);
-    while (++pos < vCount(v))
+    while (++pos < vSize(v))
         ivec[pos] += count;
     if (mode == miss)
         RangeFlip(vecp, off, count);
 } 
 
-void RangeDelete (Vector *vecp, int off, int count) {
+void RangeDelete (vqVec *vecp, int off, int count) {
     int pos, pos2;
     int *ivec = (int*) *vecp;
     assert(count > 0);
     /* very tricky code because more than one range may have to be deleted */
-    for (pos = 0; pos < vCount(*vecp); ++pos)
+    for (pos = 0; pos < vSize(*vecp); ++pos)
         if (ivec[pos] >= off) {
-            for (pos2 = pos; pos2 < vCount(*vecp); ++pos2)
+            for (pos2 = pos; pos2 < vSize(*vecp); ++pos2)
                 if (ivec[pos2] > off + count)
                     break;
             if (pos & 1) {
@@ -126,8 +123,56 @@ void RangeDelete (Vector *vecp, int off, int count) {
             }
             if (pos < pos2)
                 ivec = VecDelete(vecp, pos, pos2-pos);
-            while (pos < vCount(*vecp))
+            while (pos < vSize(*vecp))
                 ivec[pos++] -= count;
             break;
         }
 }
+
+static int r_flip (lua_State *L) {
+    vqCell *cp;
+    LVQ_ARGS(L,A,"VII");
+    cp = &vwCol(A[0].v,0);
+    RangeFlip((vqVec*) &cp->p, A[1].i, A[2].i);
+    vwRows(A[0].v) = vSize(cp->p);
+    lua_pop(L, 2);
+    return 1;
+}
+
+static int r_locate (lua_State *L) {
+    vqCell *cp;
+    int off;
+    LVQ_ARGS(L,A,"VI");
+    cp = &vwCol(A[0].v,0);
+    lua_pushinteger(L, RangeLocate(cp->p, A[1].i, &off));
+    lua_pushinteger(L, off);
+    return 2;
+}
+
+static int r_insert (lua_State *L) {
+    vqCell *cp;
+    LVQ_ARGS(L,A,"VIII");
+    cp = &vwCol(A[0].v,0);
+    RangeInsert((vqVec*) &cp->p, A[1].i, A[2].i, A[3].i);
+    vwRows(A[0].v) = vSize(cp->p);
+    lua_pop(L, 3);
+    return 1;
+}
+
+static int r_delete (lua_State *L) {
+    vqCell *cp;
+    LVQ_ARGS(L,A,"VII");
+    cp = &vwCol(A[0].v,0);
+    RangeDelete((vqVec*) &cp->p, A[1].i, A[2].i);
+    vwRows(A[0].v) = vSize(cp->p);
+    lua_pop(L, 2);
+    return 1;
+}
+
+static const struct luaL_reg lvqlib_ranges[] = {
+    {"r_flip", r_flip},
+    {"r_locate", r_locate},
+    {"r_insert", r_insert},
+    {"r_delete", r_delete},
+    {0, 0},
+};

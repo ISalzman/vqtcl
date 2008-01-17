@@ -82,7 +82,11 @@ assert(m2:dump() == [[
 vopdef ('s', 'V', function (v)
   local m = v:meta()
   local x = {}
-  for c = 1,#m do table.insert(x, m[c-1].name) end
+  for c = 1,#m do
+    local z = m[c-1].name
+    if z == '' then z = '?' end
+    table.insert(x, z)
+  end
   local y = { table.concat(x, ' ') }
   for r = 1,#v do
     x = {}
@@ -108,13 +112,9 @@ m2[1].C = 65.43
 assert(m2:s() == "A B C; abc 12 34.56; cba 21 65.43", "m2 dump after sets")
 
 -- table to view conversions
-assert(view{1,2,3}:s() == "; 1; 2; 3", "simple list as 1-col int view")
-assert(view{meta='A:I,B,C:D'; 1,'two',3.3,4,'five',6.6,7,'eight',9.9}:dump()==[[
-  A  B      C  
-  -  -----  ---
-  1  two    3.3
-  4  five   6.6
-  7  eight  9.9]], "table as 3-col view")
+assert(view{1,2,3}:s() == "?; 1; 2; 3", "simple list as 1-col int view")
+assert(view{meta='A:I,B,C:D'; 1,'two',3.3,4,'five',6.6,7,'eight',9.9}:s() ==
+        "A B C; 1 two 3.3; 4 five 6.6; 7 eight 9.9", "table as 3-col view")
 
 -- callback views
 assert(view(4):call("A:I", function (r) return r*r*r end):s() ==
@@ -127,16 +127,16 @@ assert(#m1[1] == 1, "row index")
 assert(tostring(m2[1]()) == "view: view #2 SID", "row view")
 
 -- step views
-assert(view(3):step():s() == "; 0; 1; 2", "step iota")
-assert(view(3):step(4):s() == "; 4; 5; 6", "step with start")
-assert(view(3):step(2,3):s() == "; 2; 5; 8", "step with step")
-assert(view(5):step(1,4,2):s() == "; 1; 1; 5; 5; 9", "step with rate")
-assert(view(3):step(2,0):s() == "; 2; 2; 2", "step zero")
-assert(view(3):step(2,-1):s() == "; 2; 1; 0", "negative step")
+assert(view(3):step():s() == "?; 0; 1; 2", "step iota")
+assert(view(3):step(4):s() == "?; 4; 5; 6", "step with start")
+assert(view(3):step(2,3):s() == "?; 2; 5; 8", "step with step")
+assert(view(5):step(1,4,2):s() == "?; 1; 1; 5; 5; 9", "step with rate")
+assert(view(3):step(2,0):s() == "?; 2; 2; 2", "step zero")
+assert(view(3):step(2,-1):s() == "?; 2; 1; 0", "negative step")
 
 -- row mapping
-assert(view{3,4,5,6,7} [{2,4,0,2}]:s() == "; 5; 7; 3; 5", "table as row map")
-assert(view({3,4,5,6,7}) [view(3):step(4,-2)]:s() == "; 7; 5; 3",
+assert(view{3,4,5,6,7} [{2,4,0,2}]:s() == "?; 5; 7; 3; 5", "table as row map")
+assert(view({3,4,5,6,7}) [view(3):step(4,-2)]:s() == "?; 7; 5; 3",
         "step as row map")
 
 -- column mapping
@@ -146,35 +146,41 @@ assert((mm/{1,0,1}):s() == "type name type; 5 name 5; 1 type 1; 7 subv 7",
         "table as column map")
 
 -- times vop
-assert(view{5,6}:times(3):s() == "; 5; 6; 5; 6; 5; 6", "times vop")
+assert(view{5,6}:times(3):s() == "?; 5; 6; 5; 6; 5; 6", "times vop")
 
 -- spread vop
-assert(view{5,6}:spread(3):s() == "; 5; 5; 5; 6; 6; 6", "times vop")
+assert(view{5,6}:spread(3):s() == "?; 5; 5; 5; 6; 6; 6", "times vop")
 
 -- plus vop
-assert((view{1,2,3}+view{9,8}):s() == "; 1; 2; 3; 9; 8", "plus vop as +")
-assert(view{1,2,3}:plus({6,5},{8,9}):s() ==
-        "; 1; 2; 3; 6; 5; 8; 9", "plus vop with 3 views")
+assert((view{1,2,3}+view{9,8}):s() == "?; 1; 2; 3; 9; 8", "plus vop as +")
+assert(view{1,2,3}:plus({6,5},{8,9}):s() == "?; 1; 2; 3; 6; 5; 8; 9",
+        "plus vop with 3 views")
 
 -- pair vop
-assert((view{1,2,3}..view{4,5,6}):s() == " ; 1 4; 2 5; 3 6", "pair vop as ..")
+assert((view{1,2,3}..view{4,5,6}):s() == "? ?; 1 4; 2 5; 3 6", "pair vop as ..")
 assert(view{1,2,3}:pair(mm,{4,5,6}):s() ==
-        " name type subv ; 1 name 5 #0 4; 2 type 1 #0 5; 3 subv 7 #0 6",
+        "? name type subv ?; 1 name 5 #0 4; 2 type 1 #0 5; 3 subv 7 #0 6",
         "pair vop with 3 views")
 
 -- product vop
-assert(view{1,2}:product{3,4,5}:s() == " ; 1 3; 1 4; 1 5; 2 3; 2 4; 2 5",
+assert(view{1,2}:product{3,4,5}:s() == "? ?; 1 3; 1 4; 1 5; 2 3; 2 4; 2 5",
         "product vop")
 
 -- first vop
-assert(view{1,2,3}:first(2):s() == "; 1; 2", "first vop less")
-assert(view{1,2,3}:first(4):s() == "; 1; 2; 3", "first vop too many")
+assert(view{1,2,3}:first(2):s() == "?; 1; 2", "first vop less")
+assert(view{1,2,3}:first(4):s() == "?; 1; 2; 3", "first vop too many")
 
 -- last vop
-assert(view{1,2,3}:last(2):s() == "; 2; 3", "last vop less")
-assert(view{1,2,3}:last(4):s() == "; 1; 2; 3", "last vop too many")
+assert(view{1,2,3}:last(2):s() == "?; 2; 3", "last vop less")
+assert(view{1,2,3}:last(4):s() == "?; 1; 2; 3", "last vop too many")
 
 -- reverse vop
-assert(view{1,2,3}:reverse():s() == "; 3; 2; 1", "reverse vop")
+assert(view{1,2,3}:reverse():s() == "?; 3; 2; 1", "reverse vop")
+
+-- minimal range operation tests
+assert(view{1,8}:r_flip(3,2):s() == "?; 1; 3; 5; 8")
+assert(table.concat({view{1,2}:r_locate(1)}, '.') == "0.0")
+assert(view{1,3}:r_insert(0,2,1):s() == "?; 0; 2; 3; 5")
+assert(view{1,3,5,6}:r_delete(0,2):s() == "?; 0; 1; 3; 4")
 
 print "OK"
