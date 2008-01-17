@@ -2,10 +2,16 @@
     $Id$
     This file is part of Vlerq, see lvq/vlerq.h for full copyright notice. */
 
-#define vInsv(vecptr)   ((vecptr)[-4].o.a.v)
-#define vDelv(vecptr)   ((vecptr)[-4].o.b.v)
-#define vOref(vecptr)   ((vecptr)[-5].o.a.p)
-#define vPerm(vecptr)   ((vecptr)[-5].o.b.p)
+typedef struct MutVec_s {
+    vqVec insv, delv;
+    vqView orig;
+    int *perm;
+} *MutVec;
+                    
+#define vInsv(v)   ((MutVec) vwAuxP(v))->insv
+#define vDelv(v)   ((MutVec) vwAuxP(v))->delv
+#define vOrig(v)   ((MutVec) vwAuxP(v))->orig
+#define vPerm(v)   ((MutVec) vwAuxP(v))->perm
 
 /* --------------------------------------------------- RANGE OPERATIONS ----- */
 
@@ -23,63 +29,65 @@ static int RangeSpan (vqVec v, int offset, int count, int *startp, int miss) {
 static int RangeExpand (vqVec v, int off) {
     int i;
     const int *ivec = (const int*) v;
-    for (i = 0; i < vCount(v) && ivec[i] <= off; i += 2)
+    for (i = 0; i < vSize(v) && ivec[i] <= off; i += 2)
         off += ivec[i+1] - ivec[i];
     return off;
 }
 
 /* ------------------------------------------------------ MUTABLE TABLE ----- */
 
-static vq_Type MutVecGetter (int row, vq_Cell *item) {
-    int col = item->o.b.i, aux = row;
-    vqVec v = item->o.a.v, *vecp = (vqVec*) vData(v) + 3 * col;
+static vqType MutVecGetter (int row, vqCell *cp) {
+    int col = cp->x.y.i, aux = row;
+    vqView v = cp->v;
+    vqVec *vecp = (vqVec*) vwMore(v) + 3 * col;
     if (vecp[0] != 0 && RangeLocate(vecp[0], row, &aux) & 1) { /* translucent */
         if (vInsv(v) != 0 && (RangeLocate(vInsv(v), row, &row) & 1) == 0)
             return VQ_nil;
         if (vDelv(v) != 0)
             row = RangeExpand(vDelv(v), row);
         /* avoid t[col] dereference of vq_new-type views, which have no rows */
-        if (row < vCount(vOrig(v))) {
-            *item = vOrig(v)[col];
-            if (item->o.a.v != 0)
-                return GetItem(row, item);
+        if (row < vwRows(vOrig(v))) {
+            *cp = vwCol(vOrig(v),col);
+            if (cp->v != 0)
+                return getcell(row, cp);
         }
     } else { /* opaque */
         if ((vecp[1] == 0 || (RangeLocate(vecp[1], aux, &aux) & 1) == 0)) {
-            item->o.a.v = vecp[2];
-            if (item->o.a.v != 0)
-                return GetItem(aux, item);
+            cp->p = vecp[2];
+            if (cp->p != 0)
+                return getcell(aux, cp);
         }
     }
     return VQ_nil;
 }
 
-static void InitMutVec (vqVec v, int col) {
-    vqVec *vecp = (vqVec*) vData(v) + 3 * col;
+static void InitMutVec (vqView v, int col) {
+    vqVec *vecp = (vqVec*) vwMore(v) + 3 * col;
     if (vecp[0] == 0) {
         /* TODO: try to avoid allocating all vectors right away */
-        vq_Type type = vq_getInt(vMeta(v), col, 1, VQ_nil) & VQ_TYPEMASK;
-        vecp[0] = vq_retain(AllocDataVec(VQ_int, 2));
-        vecp[1] = vq_retain(AllocDataVec(VQ_int, 2));
-        vecp[2] = vq_retain(AllocDataVec(type, 2));
-        vCount(vecp[0]) = 0;
-        vCount(vecp[1]) = 0;
-        vCount(vecp[2]) = 0;
+        vqType type = vq_getInt(vwMeta(v), col, 1, VQ_nil) & VQ_TYPEMASK;
+        vecp[0] = vq_incref(new_datavec(VQ_int, 2));
+        vecp[1] = vq_incref(new_datavec(VQ_int, 2));
+        vecp[2] = vq_incref(new_datavec(type, 2));
+        vSize(vecp[0]) = 0;
+        vSize(vecp[1]) = 0;
+        vSize(vecp[2]) = 0;
     }
     /* sneaky: make sure getter always goes through mutvec from now on */
-    if (v[col].o.a.v != v) {
-        vq_release(v[col].o.a.v);
-        v[col].o.a.v = v;
-        v[col].o.b.i = col;
+    if (vwCol(v,col).v != v) {
+        vq_decref(vwCol(v,col).v);
+        vwCol(v,col).v = v;
+        vwCol(v,col).x.y.i = col;
     }
 }
 
-static void MutVecSetter (vqVec v, int row, int col, const vq_Cell *item) {
+static void MutVecSetter (void *p, int row, int col, const vqCell *cp) {
+    vqView v = p;
     int fill, miss;
-    vqVec *vecp = (vqVec*) vData(v) + 3 * col;
+    vqVec *vecp = (vqVec*) vwMore(v) + 3 * col;
     InitMutVec(v, col);
-    if (row >= vCount(v))
-        vCount(v) = row + 1;
+    if (row >= vwRows(v))
+        vwRows(v) = row + 1;
     if (RangeLocate(vecp[0], row, &fill) & 1) {
         RangeFlip(vecp, row, 1);
         miss = RangeLocate(vecp[0], row, &row) & 1;
@@ -88,35 +96,35 @@ static void MutVecSetter (vqVec v, int row, int col, const vq_Cell *item) {
     } else
         row = fill;
     miss = RangeLocate(vecp[1], row, &fill) & 1;
-    if (item != 0) { /* set */
+    if (cp != 0) { /* set */
         if (miss) { /* add new value */
             RangeFlip(vecp+1, row, 1);
             RangeLocate(vecp[1], row, &fill);
             VecInsert(vecp+2, fill, 1);
         }
-        vType(vecp[2])->setter(vecp[2], fill, col, item);
+        vDisp(vecp[2])->setter(vecp[2], fill, col, cp);
     } else { /* unset */
         if (!miss) { /* remove existing value */
-            vType(vecp[2])->setter(vecp[2], fill, col, 0);
+            vDisp(vecp[2])->setter(vecp[2], fill, col, 0);
             VecDelete(vecp+2, fill, 1);
             RangeFlip(vecp+1, row, 1);
         }
     }
 }
 
-static void MutVecReplacer (vq_View t, int offset, int delrows, vq_View data) {
-    int c, r, cols = vCount(vMeta(t)), insrows = vCount(data);
-    assert(offset >= 0 && delrows >= 0 && offset + delrows <= vCount(t));
+static void MutVecReplacer (vqView t, int offset, int delrows, vqView data) {
+    int c, r, cols = vwRows(vwMeta(t)), insrows = vwRows(data);
+    assert(offset >= 0 && delrows >= 0 && offset + delrows <= vwRows(t));
     if (vInsv(t) == 0) {
-        vInsv(t) = vq_retain(AllocDataVec(VQ_int, 2));
-        vDelv(t) = vq_retain(AllocDataVec(VQ_int, 2));
-        vCount(vInsv(t)) = 0;
-        vCount(vDelv(t)) = 0;
+        vInsv(t) = vq_incref(new_datavec(VQ_int, 2));
+        vDelv(t) = vq_incref(new_datavec(VQ_int, 2));
+        vSize(vInsv(t)) = 0;
+        vSize(vDelv(t)) = 0;
     }
-    vCount(t) += insrows;
+    vwRows(t) += insrows;
     for (c = 0; c < cols; ++c) {
-        vq_Type coltype = vq_getInt(vMeta(t), c, 1, VQ_nil) & VQ_TYPEMASK;
-        vqVec *vecp = (vqVec*) vData(t) + 3 * c;
+        vqType coltype = vq_getInt(vwMeta(t), c, 1, VQ_nil) & VQ_TYPEMASK;
+        vqVec *vecp = (vqVec*) vwMore(t) + 3 * c;
         InitMutVec(t, c);
         if (delrows > 0) {
             int pos, len = RangeSpan(vecp[0], offset, delrows, &pos, 0);
@@ -130,15 +138,15 @@ static void MutVecReplacer (vq_View t, int offset, int delrows, vq_View data) {
         }
         if (insrows > 0) {
             RangeInsert(vecp, offset, insrows, 0); /* new translucent range */
-            if (c < vCount(vMeta(data)))
+            if (c < vwRows(vwMeta(data)))
                 for (r = 0; r < insrows; ++r) {
-                    vq_Cell item = data[c];
-                    if (GetItem(r, &item) == coltype)
-                        MutVecSetter(t, offset + r, c, &item);
+                    vqCell cell = vwCol(data,c);
+                    if (getcell(r, &cell) == coltype)
+                        MutVecSetter(t, offset + r, c, &cell);
                 }
         }
     }
-    vCount(t) -= delrows;
+    vwRows(t) -= delrows;
     if (delrows > 0) {
         int pos, len = RangeSpan(vInsv(t), offset, delrows, &pos, 1);
         if (len > 0)
@@ -149,41 +157,58 @@ static void MutVecReplacer (vq_View t, int offset, int delrows, vq_View data) {
         RangeInsert(&vInsv(t), offset, insrows, 1);
 }
 
-static void MutVecCleaner (vqVec v) {
-    vqVec *data = (vqVec*) vData(v);
-    int i = 3 * vCount(vMeta(v));
+static void MutVecCleaner (void *p) {
+    vqView v = p;
+    vqVec *data = (vqVec*) vwMore(v);
+    int i = 3 * vwRows(vwMeta(v));
     while (--i >= 0)
-        vq_release(data[i]);
-    vq_release(vDelv(v));
-    vq_release(vInsv(v));
-    vq_release(vOrig(v));
-    vq_release(vMeta(v));
-    vq_release(vPerm(v));
+        vq_decref(data[i]);
+    vq_decref(vDelv(v));
+    vq_decref(vInsv(v));
+    vq_decref(vOrig(v));
+    vq_decref(vwMeta(v));
+    vq_decref(vPerm(v));
     /* ObjRelease(vOref(v)); FIXME: need to release object somehow */
-    FreeVector(v);
 }
 
-static Dispatch muvtab = {
-    "mutable", 5, sizeof(void*), 0,
+static vqDispatch muvtab = {
+    "mutable", sizeof(struct vqView_s), sizeof(void*),
         MutVecCleaner, MutVecGetter, MutVecSetter, MutVecReplacer
 };
 
-int IsMutable (vq_View t) {
-    return vType(t) == &muvtab;
+int IsMutable (vqView t) {
+    return vDisp(t) == &muvtab;
 }
 
-vq_View MutableVop (vq_View t) {
-    vq_View meta = vMeta(t);
-    Object_p o = 0; /* TODO: cleanup */
-    int i, cols = vCount(meta);
-    vq_View w = IndirectView(meta, &muvtab, vCount(t),
-                                3 * vCount(meta) * sizeof(vqVec));
-    vOrig(w) = vq_retain(t);
-    vOref(w) = o; /* ObjRetain(o); FIXME: need to hold on to object somehow */
+vqView MutWrapVop (vqView t) {
+    vqView meta = vwMeta(t);
+    int i, cols = vwRows(meta), ptrbytes = 3 * vwRows(meta) * sizeof(vqVec);
+    vqView w = IndirectView(&muvtab, meta, vwRows(t),
+                                ptrbytes + sizeof(struct MutVec_s));
+    vwAuxP(w) = (char*) vwMore(w) + ptrbytes;
+    vOrig(w) = vq_incref(t);
+    /* vOref(w) = ObjRetain(o); FIXME: need to hold on to object somehow */
     /* override to use original columns until a set or replace is done */
     for (i = 0; i < cols; ++i) {
-        w[i] = t[i];
-        vq_retain(w[i].o.a.v);
+        vwCol(w,i) = vwCol(t,i);
+        vq_incref(vwCol(w,i).v);
     }
     return w;
 }
+
+static int m_ismutable (lua_State *L) {
+    LVQ_ARGS(L,A,"V");
+    lua_pushboolean(L, IsMutable(A[0].v));
+    return 1;
+}
+
+static int m_mutwrap (lua_State *L) {
+    LVQ_ARGS(L,A,"V");
+    return push_view(MutWrapVop(A[0].v));
+}
+
+static const struct luaL_reg lvqlib_mutable[] = {
+    {"ismutable", m_ismutable},
+    {"mutwrap", m_mutwrap},
+    {0, 0},
+};

@@ -138,7 +138,6 @@ static int r_flip (lua_State *L) {
     lua_pop(L, 2);
     return 1;
 }
-
 static int r_locate (lua_State *L) {
     vqCell *cp;
     int off;
@@ -148,7 +147,6 @@ static int r_locate (lua_State *L) {
     lua_pushinteger(L, off);
     return 2;
 }
-
 static int r_insert (lua_State *L) {
     vqCell *cp;
     LVQ_ARGS(L,A,"VIII");
@@ -158,7 +156,6 @@ static int r_insert (lua_State *L) {
     lua_pop(L, 3);
     return 1;
 }
-
 static int r_delete (lua_State *L) {
     vqCell *cp;
     LVQ_ARGS(L,A,"VII");

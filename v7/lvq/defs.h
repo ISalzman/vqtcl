@@ -64,3 +64,6 @@ void* (RangeFlip) (vqVec *vecp, int off, int count);
 int (RangeLocate) (vqVec v, int off, int *offp);
 void (RangeInsert) (vqVec *vecp, int off, int count, int mode);
 void (RangeDelete) (vqVec *vecp, int off, int count);
+
+int (IsMutable) (vqView t);
+vqView (MutWrapVop) (vqView t);

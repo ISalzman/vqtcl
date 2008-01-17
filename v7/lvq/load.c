@@ -2,9 +2,6 @@
     $Id$
     This file is part of Vlerq, see lvq/vlerq.h for full copyright notice. */
 
-#include "vlerq.h"
-#include "defs.h"
-
 /* forward */
 static vqView MapSubview (vqMap map, intptr_t offset, vqView meta);
 

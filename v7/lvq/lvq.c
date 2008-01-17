@@ -834,6 +834,7 @@ static int lvq_vopdef (lua_State *L) {
 
 #include "vops.c"
 #include "ranges.c"
+#include "mutable.c"
 
 static const struct luaL_reg lvqlib_row_m[] = {
     {"__call", row_call},
@@ -875,6 +876,7 @@ LUA_API int luaopen_lvq_core (lua_State *L) {
     /* register_vops(L, f_vdispatch); */
     luaL_register(L, NULL, lvqlib_vops);
     luaL_register(L, NULL, lvqlib_ranges);
+    luaL_register(L, NULL, lvqlib_mutable);
     lua_setglobal(L, "vops");
     
     luaL_register(L, "lvq", lvqlib_f);
