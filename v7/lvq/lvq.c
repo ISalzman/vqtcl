@@ -581,6 +581,8 @@ static void struct_helper (luaL_Buffer *B, vqView meta) {
             if (m != 0) {
                 if (m == meta)
                     luaL_addchar(B, '^');
+                else if (vwRows(m) == 0)
+                    luaL_addchar(B, 'V');
                 else {
                     luaL_addchar(B, '(');
                     struct_helper(B, m);

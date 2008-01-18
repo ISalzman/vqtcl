@@ -7,12 +7,12 @@ assert(lvq._VERSION == "LuaVlerq 1.7", "version")
 -- the empty meta view
 local emv = view()
 assert(#emv == 0, "emv row count")
-assert(tostring(emv) == "view: view #0 SI()", "emv structure")
+assert(tostring(emv) == "view: view #0 SIV", "emv structure")
 
 -- the meta-meta view
 local mm = emv:meta()
 assert(#mm == 3, "mm row count")
-assert(tostring(mm) == "view: view #3 SI()", "mm structure")
+assert(tostring(mm) == "view: view #3 SIV", "mm structure")
 
 assert(mm[0][0] == "name", "mm name 0")
 assert(mm[1][0] == "type", "mm name 1")
@@ -25,7 +25,7 @@ assert(mm[1][2] == emv, "mm subv 1")
 assert(mm[2][2] == emv, "mm subv 2")
 
 -- row access
-assert(tostring(mm[2]) == "row: 2 view SI()", "row display")
+assert(tostring(mm[2]) == "row: 2 view SIV", "row display")
 assert(mm[0][0] == "name", "column access by index")
 assert(mm[1].name == "type", "columns access by name")
 
@@ -50,7 +50,7 @@ assert(view(7):dump() == "  (7 rows, 0 columns)", "zero-column dump")
 -- create meta-view from string
 local m1 = view("A:S,B:I,C:D")
 assert(#m1 == 3, "m1 row count")
-assert(tostring(m1) == "view: view #3 SI()", "m1 display")
+assert(tostring(m1) == "view: view #3 SIV", "m1 display")
 
 assert(m1[0][0] == "A", "m1 name 0")
 assert(m1[1][0] == "B", "m1 name 1")
@@ -185,6 +185,12 @@ assert(view{1,3,5,6}:r_delete(0,2):s() == "?; 0; 1; 3; 4", "r_delete")
 assert(not view(3):ismutable(), "ismutable")
 assert(view(3):mutwrap():ismutable(), "mutwrap")
 assert(mm:s() == mm:mutwrap():s(), "mutwrap identity")
+
+-- rows iterator
+local o = {}
+for r in mm:rows() do table.insert(o, tostring(r)) end
+assert(table.concat(o, ", ") ==
+        "row: 0 view SIV, row: 1 view SIV, row: 2 view SIV", "rows iterator")
 
 -- html rendering
 --print(mm:html())
