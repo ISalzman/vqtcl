@@ -835,7 +835,7 @@ static int lvq_vopdef (lua_State *L) {
 }
 
 #include "vops.c"
-#include "ranges.c"
+#include "nulls.c"
 #include "mutable.c"
 
 static const struct luaL_reg lvqlib_row_m[] = {

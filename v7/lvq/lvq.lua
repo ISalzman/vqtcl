@@ -15,7 +15,7 @@ getmetatable(view()).__concat = vops.pair
 
 -- html special char escaping, see "html" vopdef
 local escaped = { ['<']='&lt;', ['>']='&gt;', ["&"]='&amp;' }
-local function htmlesc(text)
+local function htmlize(text)
   return text:gsub('[<>&]', escaped)
 end
 
@@ -100,7 +100,7 @@ vopdef ('html', 'V', function (v)
       local val, t, z = r[#m], m.type
       if t == 6 then z = #val..'b'
         elseif t == 7 then z = val:html() else
-          z = htmlesc(tostring(val))
+          z = htmlize(tostring(val))
       end
       local a = ((t == 5 or t == 7) and "") or " align='right'"
       add("<td%s>%s</td>", a, z)

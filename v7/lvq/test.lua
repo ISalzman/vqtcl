@@ -178,7 +178,7 @@ assert(view{1,2,3}:reverse():s() == "?; 3; 2; 1", "reverse vop")
 -- minimal range operations tests
 assert(view{1,8}:r_flip(3,2):s() == "?; 1; 3; 5; 8", "r_flip")
 assert(table.concat({view{1,2}:r_locate(1)}, '.') == "0.0", "r_locate")
-assert(view{1,3}:r_insert(0,2,1):s() == "?; 0; 2; 3; 5","r_insert")
+assert(view{1,3}:r_insert(0,2,1):s() == "?; 0; 2; 3; 5", "r_insert")
 assert(view{1,3,5,6}:r_delete(0,2):s() == "?; 0; 1; 3; 4", "r_delete")
 
 -- minimal mutable operations tests
