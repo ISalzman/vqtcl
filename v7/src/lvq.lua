@@ -37,7 +37,6 @@ vopdef ('dump', 'V', function (vw, maxrows)
     funs[c] = renderers[t]
     names[c] = meta[c-1].name
     if names[c] == '' then names[c] = '?' end
---print(meta,c,names[c])
     widths[c] = #names[c]
   end
   -- collect all data and calculate maximum column widths

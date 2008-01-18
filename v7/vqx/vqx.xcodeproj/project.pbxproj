@@ -78,10 +78,10 @@
 		112589440D3A9D2000276222 /* lvm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lvm.h; sourceTree = "<group>"; };
 		112589450D3A9D2000276222 /* lzio.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lzio.c; sourceTree = "<group>"; };
 		112589460D3A9D2000276222 /* lzio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lzio.h; sourceTree = "<group>"; };
-		113CF0D60D3E267400256EDE /* vops.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = vops.c; path = ../lvq/vops.c; sourceTree = SOURCE_ROOT; };
-		11ACB8EE0D3AA6FA00200D9A /* lvq.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lvq.c; path = ../lvq/lvq.c; sourceTree = "<group>"; };
-		11ACB8F40D3AA6FA00200D9A /* vlerq.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vlerq.h; path = ../lvq/vlerq.h; sourceTree = "<group>"; };
-		11ACB8F60D3AA6FA00200D9A /* defs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = defs.h; path = ../lvq/defs.h; sourceTree = "<group>"; };
+		117210580D40F84E0036E240 /* defs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = defs.h; path = ../src/defs.h; sourceTree = SOURCE_ROOT; };
+		117210590D40F84E0036E240 /* lvq.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lvq.c; path = ../src/lvq.c; sourceTree = SOURCE_ROOT; };
+		1172105A0D40F84E0036E240 /* vlerq.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vlerq.h; path = ../src/vlerq.h; sourceTree = SOURCE_ROOT; };
+		1172105B0D40F84E0036E240 /* vops.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = vops.c; path = ../src/vops.c; sourceTree = SOURCE_ROOT; };
 		8DD76FB20486AB0100D96B5E /* vqx */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = vqx; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -171,10 +171,10 @@
 		115975DF0D3B78D000E303B3 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				11ACB8F60D3AA6FA00200D9A /* defs.h */,
-				11ACB8EE0D3AA6FA00200D9A /* lvq.c */,
-				11ACB8F40D3AA6FA00200D9A /* vlerq.h */,
-				113CF0D60D3E267400256EDE /* vops.c */,
+				117210580D40F84E0036E240 /* defs.h */,
+				117210590D40F84E0036E240 /* lvq.c */,
+				1172105A0D40F84E0036E240 /* vlerq.h */,
+				1172105B0D40F84E0036E240 /* vops.c */,
 				08FB7796FE84155DC02AAC07 /* vqx.c */,
 			);
 			name = src;
@@ -264,7 +264,7 @@
 				GCC_WARN_PEDANTIC = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					../lvq,
+					../src,
 					../lua/src,
 				);
 				PREBINDING = NO;
@@ -287,7 +287,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					../lvq,
+					../src,
 					../lua/src,
 				);
 				PREBINDING = NO;
