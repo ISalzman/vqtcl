@@ -84,23 +84,21 @@ vopdef ('s', 'V', function (v)
   local x = {}
   for c = 1,#m do
     local z = m[c-1].name
-    if z == '' then z = '?' end
-    table.insert(x, z)
+    x[c] = (z == '' and '?') or z
   end
   local y = { table.concat(x, ' ') }
   for r = 1,#v do
     x = {}
     for c = 1,#m do
       local z = v[r-1][c-1] or ''
-      if type(z) == type(v) then z = '#'..#z end
-      table.insert(x, tostring(z))
+      x[c] = (type(z) == type(v) and '#'..#z) or tostring(z)
     end
-    table.insert(y, table.concat(x, ' '))
+    y[r+1] = table.concat(x, ' ')
   end
   return table.concat(y, '; ')
 end)
 
-assert(m2:s() == 'A B C;  0 0;  0 0')
+assert(m2:s() == 'A B C;  0 0;  0 0', "m2 as string")
 
 -- set all cells in new view
 m2[0][0] = "abc"
@@ -187,5 +185,9 @@ assert(view{1,3,5,6}:r_delete(0,2):s() == "?; 0; 1; 3; 4", "r_delete")
 assert(not view(3):ismutable(), "ismutable")
 assert(view(3):mutwrap():ismutable(), "mutwrap")
 assert(mm:s() == mm:mutwrap():s(), "mutwrap identity")
+
+-- html rendering
+--print(mm:html())
+assert((mm:html():match("<table>.*</table>")), "html rendering")
 
 print "OK"
