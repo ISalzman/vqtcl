@@ -5,7 +5,7 @@ source [file join [file dir [info script]] initests.tcl]
 
 cd tvq
 
-test 0 {tcl test} {
+test 0 "tcl test" {
     exec make
     set out [exec make test]\n
     regsub -line {^Tests began at .*$} $out {Tests began at [...]} out

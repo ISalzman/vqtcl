@@ -82,6 +82,7 @@ assert(v0:dump() == [[
     333
    4444
   55555]])
+
 v1=vops.open('../etc/alltypes.db')
 assert(clean(v1) == 'view: 0x[...] #1 (IIIIIIILFDSB)')
 
@@ -217,3 +218,9 @@ assert(v1:dump() == [[
     333    333    333
    4444   4444   4444
   55555  55555  55555]])
+
+v2=vops.open('../etc/lkit-le.db')
+assert(clean(v2) == 'view: 0x[...] #1 (SI(SIIB))')
+
+--v3=v2:at(0,0)
+--print(v3:dump())

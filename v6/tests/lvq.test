@@ -5,7 +5,7 @@ source [file join [file dir [info script]] initests.tcl]
 
 cd lvq
 
-test 0 {lua test} {
+test 0 "lua test" {
     exec make install
     exec test.lua
 } {}

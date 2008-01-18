@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>lua/src/ldo.h</string>
+	<string>lua/src/loadlib.c</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -239,6 +239,20 @@
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
 		</dict>
+		<key>lua/src/linit.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>22</integer>
+				<key>line</key>
+				<integer>34</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
 		<key>lua/src/llimits.h</key>
 		<dict>
 			<key>caret</key>
@@ -280,6 +294,36 @@
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
+		</dict>
+		<key>lua/src/loadlib.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>11</integer>
+				<key>line</key>
+				<integer>326</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>416</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>4</integer>
+				<key>line</key>
+				<integer>326</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>11</integer>
+				<key>line</key>
+				<integer>326</integer>
+			</dict>
 		</dict>
 		<key>lua/src/lobject.c</key>
 		<dict>
@@ -522,29 +566,29 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>30</integer>
+				<integer>20</integer>
 				<key>line</key>
-				<integer>370</integer>
+				<integer>180</integer>
 			</dict>
 			<key>columnSelection</key>
 			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>330</integer>
+			<integer>140</integer>
 			<key>selectFrom</key>
 			<dict>
 				<key>column</key>
-				<integer>24</integer>
+				<integer>12</integer>
 				<key>line</key>
-				<integer>370</integer>
+				<integer>180</integer>
 			</dict>
 			<key>selectTo</key>
 			<dict>
 				<key>column</key>
-				<integer>30</integer>
+				<integer>20</integer>
 				<key>line</key>
-				<integer>370</integer>
+				<integer>180</integer>
 			</dict>
 		</dict>
 		<key>lua/src/lualib.h</key>
@@ -632,6 +676,8 @@
 		<string>lua/src/ltablib.c</string>
 		<string>lua/etc/min.c</string>
 		<string>lua/src/luaconf.h</string>
+		<string>lua/src/linit.c</string>
+		<string>lua/src/loadlib.c</string>
 		<string>lua/src/ldebug.c</string>
 		<string>lua/src/ltable.c</string>
 		<string>lua/src/ltm.c</string>
@@ -641,6 +687,6 @@
 	<key>showFileHierarchyDrawer</key>
 	<true/>
 	<key>windowFrame</key>
-	<string>{{60, 145}, {560, 1028}}</string>
+	<string>{{11, 0}, {560, 1028}}</string>
 </dict>
 </plist>
