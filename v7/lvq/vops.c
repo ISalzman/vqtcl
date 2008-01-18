@@ -35,7 +35,7 @@ static int vops_call (lua_State *L) {
     LVQ_ARGS(L,A,"VVN");
     v = IndirectView(&cvtab, A[1].v, vwRows(A[0].v), 0);
     assert(lua_gettop(L) == 3);
-    vwAuxP(v) = (void*) luaL_ref(L, LUA_REGISTRYINDEX);
+    vwAuxP(v) = (void*) (intptr_t) luaL_ref(L, LUA_REGISTRYINDEX);
     return push_view(v);
 }
 

@@ -206,7 +206,7 @@ static int* PackedIntVec (const int *data, int rows, intptr_t *outsize) {
     return result;
 }
 
-static int EmitFixCol (EmitInfo *eip, vqCell column, vq_Type type) {
+static int EmitFixCol (EmitInfo *eip, vqCell column, vqType type) {
     int r, rows = vwRows(column.v), *tempvec;
     void *buffer;
     intptr_t bufsize;
@@ -305,7 +305,7 @@ static void EmitSubCol (EmitInfo *eip, vqCell column, int describe, int rows) {
     InitBuffer(eip->colbuf);
     for (r = 0; r < rows; ++r) {
         vqCell cell = column;
-        vq_Type type = getcell(r, &cell);
+        vqType type = getcell(r, &cell);
         assert(type == VQ_view); VQ_UNUSED(type);
         EmitView(eip, cell.v, describe);
     }
@@ -320,7 +320,7 @@ static void EmitCols (EmitInfo *eip, vqView view) {
         int c;
         vqView subv, meta = vwMeta(view);
         for (c = 0; c < vwRows(meta); ++c) {                          
-            vq_Type type = vq_getInt(meta, c, 1, VQ_nil);
+            vqType type = vq_getInt(meta, c, 1, VQ_nil);
             switch (type) {
                 case VQ_int:
                 case VQ_long:
@@ -454,7 +454,7 @@ intptr_t ViewSave (vqView view, void *aux, SaveInitFun initfun, SaveDataFun data
 /* -------------------------------------------------- OPERATOR WRAPPERS ----- */
 
 /*
-vq_Type Meta2DescCmd_T (vqCell a[]) {
+vqType Meta2DescCmd_T (vqCell a[]) {
     Buffer buffer;
     InitBuffer(&buffer);
     MetaAsDesc(vwMeta(a[0].v), &buffer);

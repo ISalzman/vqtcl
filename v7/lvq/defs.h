@@ -6,6 +6,20 @@
 #define VQ_NULLABLE     (1 << 4)
 #define VQ_TYPEMASK     (VQ_NULLABLE - 1)
 
+/* portability */
+
+#if defined(__WIN32)
+#define VQ_WIN32
+#endif
+
+#if defined(__sparc__) || defined(__sgi__)
+#define VQ_MUSTALIGN
+#endif
+
+#if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
+#define VQ_BIGENDIAN
+#endif
+
 /* treat a vector pointer v as an array with elements of type t */
 #define vCast(v,t)  ((t*)(v))
 
