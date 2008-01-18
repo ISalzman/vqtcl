@@ -1,2 +1,2 @@
 test clean:
-	cd lvq && make $@
+	cd src && make $@

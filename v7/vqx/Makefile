@@ -1,6 +1,6 @@
-INC = -I../lvq -I../lua/src
+INC = -I../src -I../lua/src
 
-vqx: vqx.c ../lvq/*.[ch]
+vqx: vqx.c ../src/*.[ch]
 	$(CC) -o $@ $(INC) -DNDEBUG -Os vqx.c -lm && strip $@
 
 debug:

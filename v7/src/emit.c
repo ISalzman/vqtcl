@@ -1,6 +1,6 @@
 /*  Save Metakit-format views to memory or file.
     $Id$
-    This file is part of Vlerq, see lvq/vlerq.h for full copyright notice. */
+    This file is part of Vlerq, see src/vlerq.h for full copyright notice. */
 
 typedef struct EmitItem {
     intptr_t size;

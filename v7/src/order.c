@@ -1,6 +1,6 @@
 /*  Implementation of sorting functions.
     $Id$
-    This file is part of Vlerq, see lvq/vlerq.h for full copyright notice. */
+    This file is part of Vlerq, see src/vlerq.h for full copyright notice. */
 
 static int ItemsEqual (ItemTypes type, Item a, Item b) {
     switch (type) {

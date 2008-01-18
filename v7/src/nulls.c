@@ -1,6 +1,6 @@
 /*  Support for ranges and missing values.
     $Id$
-    This file is part of Vlerq, see lvq/vlerq.h for full copyright notice. */
+    This file is part of Vlerq, see src/vlerq.h for full copyright notice. */
 
 void *VecInsert (vqVec *vecp, int off, int cnt) {
     vqVec v = *vecp, v2;

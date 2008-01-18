@@ -1,6 +1,6 @@
 /*  Lua extension binding.
     $Id$
-    This file is part of Vlerq, see lvq/vlerq.h for full copyright notice. */
+    This file is part of Vlerq, see src/vlerq.h for full copyright notice. */
 
 #include <lauxlib.h>
 

@@ -1,6 +1,6 @@
 /*  Implementation of bitwise operations.
     $Id$
-    This file is part of Vlerq, see lvq/vlerq.h for full copyright notice. */
+    This file is part of Vlerq, see src/vlerq.h for full copyright notice. */
 
 int TestBit (Seq_p bitmap, int row) {
     if (bitmap != NULL && row < bitmap->count) {

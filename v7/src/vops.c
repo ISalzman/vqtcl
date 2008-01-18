@@ -1,6 +1,6 @@
 /*  View operators.
     $Id$
-    This file is part of Vlerq, see lvq/vlerq.h for full copyright notice. */
+    This file is part of Vlerq, see src/vlerq.h for full copyright notice. */
 
 static int vops_plus (lua_State *L); /* forward */
     

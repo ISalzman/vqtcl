@@ -1,6 +1,6 @@
 /*  Load views from a Metakit-format memory map.
     $Id$
-    This file is part of Vlerq, see lvq/vlerq.h for full copyright notice. */
+    This file is part of Vlerq, see src/vlerq.h for full copyright notice. */
 
 /* forward */
 static vqView MapSubview (vqMap map, intptr_t offset, vqView meta);

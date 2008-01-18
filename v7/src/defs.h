@@ -1,6 +1,6 @@
 /*  Vlerq base definitions.
     $Id$
-    This file is part of Vlerq, see lvq/vlerq.h for full copyright notice. */
+    This file is part of Vlerq, see src/vlerq.h for full copyright notice. */
 
 #define VQ_UNUSED(x)    ((void)(x))	    /* to avoid warnings */
 #define VQ_NULLABLE     (1 << 4)
