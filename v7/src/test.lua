@@ -196,4 +196,12 @@ assert(table.concat(o, ", ") ==
 --print(mm:html())
 assert((mm:html():match("<table>.*</table>")), "html rendering")
 
+-- mapped files and strings
+assert(tostring(lvq.map("abcde", 1, 3)) == "bcd", "map substring")
+local m = lvq.map("../etc/simple.db")
+assert(type(m) == "userdata", "map is userdata")
+assert(#m == 61, "size of mapped file")
+assert(#tostring(m) == 61, "size of mapped file as string")
+assert(tostring(lvq.map(m, 34, 8)) == "v[abc:I]", "substring in map")
+
 print "OK"

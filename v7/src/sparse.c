@@ -1,226 +1,175 @@
-/*  Implementation of bitwise operations.
+/*  Support for ranges and missing values.
     $Id$
     This file is part of Vlerq, see src/vlerq.h for full copyright notice. */
 
-int TestBit (Seq_p bitmap, int row) {
-    if (bitmap != NULL && row < bitmap->count) {
-        const Byte_t *bits = bitmap->data[0].p;
-        return (bits[row>>3] >> (row&7)) & 1;
+void *VecInsert (vqVec *vecp, int off, int cnt) {
+    vqVec v = *vecp, v2;
+    int unit = vDisp(v)->unit, limit = vExtra(v);
+    char *cvec = (char*) v, *cvec2;
+    assert(cnt > 0);
+    assert(unit > 0);
+    assert(vRefs(v) == 1);
+    assert(off <= vSize(v));
+    if (vSize(v) + cnt <= limit) {
+        memmove(cvec+(off+cnt)*unit, cvec+off*unit, (vSize(v)-off)*unit);
+        memset(cvec+off*unit, 0, cnt*unit);
+    } else {
+        limit += limit/2;
+        if (limit < vSize(v) + cnt)
+            limit = vSize(v) + cnt;
+        v2 = vq_incref(alloc_vec(vDisp(v), limit * unit));
+        cvec2 = (char*) v2;
+        vSize(v2) = vSize(v);
+        vExtra(v2) = limit;
+        memcpy(v2, v, off * unit);
+        memcpy(cvec2+(off+cnt)*unit, cvec+off*unit, (vSize(v)-off)*unit);
+        vSize(v) = 0; /* prevent cleanup of copied elements */
+        vq_decref(v);
+        *vecp = v = v2;
     }
-    return 0;
+    vSize(v) += cnt;
+    return v;
 }
 
-int SetBit (Seq_p *pbitmap, int row) {
-    Byte_t *bits;
-    Seq_p bitmap = *pbitmap;
-    
-    if (bitmap == NULL)
-        *pbitmap = bitmap = IncRefCount(NewBitVec(row+1));
+void *VecDelete (vqVec *vecp, int off, int cnt) {
+    /* TODO: shrink when less than half full and > 10 elements */
+    vqVec v = *vecp;
+    int unit = vDisp(v)->unit;
+    char *cvec = (char*) v;
+    assert(cnt > 0);
+    assert(unit > 0);
+    assert(vRefs(v) == 1);
+    assert(off + cnt <= vSize(v));
+    memmove(cvec+off*unit, cvec+(off+cnt)*unit, (vSize(v)-(off+cnt))*unit);
+    vSize(v) -= cnt;
+    return v;
+} 
 
-    if (TestBit(bitmap, row))
-        return 0;
-    
-    if (row >= bitmap->count) {
-        int bytes = bitmap->data[1].i;
-        if (row >= 8 * bytes) {
-            Seq_p newbitmap = IncRefCount(NewBitVec(12 * bytes));
-            memcpy(newbitmap->data[0].p, LoseRef(bitmap)->data[0].p, bytes);
-            *pbitmap = bitmap = newbitmap;
-        }
-        bitmap->count = row + 1;
+void *RangeFlip (vqVec *vecp, int off, int count) {
+    int pos, end, *iptr;
+    if (*vecp == 0) {
+        *vecp = vq_incref(new_datavec(VQ_int, 4));
+        vSize(*vecp) = 0;
     }
-
-    bits = bitmap->data[0].p;
-    bits[row>>3] |= 1 << (row&7);
-    
-    return 8 * bitmap->data[1].i;
-}
-
-void ClearBit (Seq_p bitmap, int row) {
-    if (TestBit(bitmap, row)) {
-        Byte_t *bits = bitmap->data[0].p;
-        bits[row>>3] &= ~ (1 << (row&7));
-    }
-}
-
-void SetBitRange (Seq_p bits, int from, int count) {
-    while (--count >= 0)
-        SetBit(&bits, from++);
-}
-
-Seq_p MinBitCount (Seq_p *pbitmap, int count) {
-    if (*pbitmap == NULL || (*pbitmap)->count < count) {
-        SetBit(pbitmap, count);
-        ClearBit(*pbitmap, count);
-        --(*pbitmap)->count;
-    }
-    return *pbitmap;
-}
-
-int NextBits (Seq_p bits, int *fromp, int *countp) {
-    int curr = *fromp + *countp;
-    
-    while (curr < bits->count && !TestBit(bits, curr))
-        ++curr;
-        
-    *fromp = curr;
-    
-    while (curr < bits->count && TestBit(bits, curr))
-        ++curr;
-        
-    *countp = curr - *fromp;
-    return *countp;
-}
-
-int TopBit (int v) {
-#define Vn(x) (v < (1<<x))
-    return Vn(16) ? Vn( 8) ? Vn( 4) ? Vn( 2) ? Vn( 1) ? v-1 : 1
-                                             : Vn( 3) ?  2 :  3
-                                    : Vn( 6) ? Vn( 5) ?  4 :  5
-                                             : Vn( 7) ?  6 :  7
-                           : Vn(12) ? Vn(10) ? Vn( 9) ?  8 :  9
-                                             : Vn(11) ? 10 : 11
-                                    : Vn(14) ? Vn(13) ? 12 : 13
-                                             : Vn(15) ? 14 : 15
-                  : Vn(24) ? Vn(20) ? Vn(18) ? Vn(17) ? 16 : 17
-                                             : Vn(19) ? 18 : 19
-                                    : Vn(22) ? Vn(21) ? 20 : 21
-                                             : Vn(23) ? 22 : 23
-                           : Vn(28) ? Vn(26) ? Vn(25) ? 24 : 25
-                                             : Vn(27) ? 26 : 27
-                                    : Vn(30) ? Vn(29) ? 28 : 29
-                                             : Vn(31) ? 30 : 31;
-#undef Vn
-}
-
-static void EmitBits(char *bytes, int val, int *ppos) {
-    char *curr = bytes + (*ppos >> 3);
-    int bit = 8 - (*ppos & 7);
-    int top = TopBit(val), n = top + 1;
-    
-    Assert(val > 0);
-    
-    while (top >= bit) {
-        ++curr;
-        top -= bit;
-        bit = 8;
-    }
-    
-    bit -= top;
-    
-    while (n >= bit) {
-        *curr++ |= (char) (val >> (n-bit));
-        val &= (1 << (n-bit)) - 1;
-        n -= bit;
-        bit = 8;
-    }
-    
-    *curr |= (char) (val << (bit - n));
-    *ppos = ((curr - bytes) << 3) + (8 - bit) + n;
-}
-
-char *Bits2elias (const char *bytes, int count, int *outbits) {
-    int i, last, bits = 0;
-    char *out;
-    
-    if (count <= 0) {
-        *outbits = 0;
-        return NULL;
-    }
-    
-    out = calloc(1, (count+count/2)/8+1);
-    last = *bytes & 1;
-    *out = last << 7;
-    *outbits = 1;
-    for (i = 0; i < count; ++i) {
-        if (((bytes[i>>3] >> (i&7)) & 1) == last)
-            ++bits;
-        else {
-            EmitBits(out, bits, outbits);
-            bits = 1;
-            last ^= 1;
-        }
-    }
-
-    if (bits)
-        EmitBits(out, bits, outbits);
-    
-    return out;
-}
-
-int NextElias (const char *bytes, int count, int *inbits) {
-    int val = 0;
-    const char *in;
-    
-    if (*inbits == 0)
-        *inbits = 1;
-    
-    in = bytes + (*inbits >> 3);
-    if (in < bytes + count) {
-        int i = 0, bit = 8 - (*inbits & 7);
-        
-        for (;;) {
-            ++i;
-            if (*in & (1 << (bit-1)))
-                break;
-            if (--bit <= 0) {
-                if (++in >= bytes + count)
-                    return 0;
-                bit = 8;
-            }
-        }
-        
-        while (i >= bit) {
-            val <<= bit;
-            val |= (*in++ & ((1 << bit) - 1));
-            i -= bit;
-            bit = 8;
-        }
-        
-        val <<= i;
-        val |= (*in >> (bit - i)) & ((1 << i) - 1);
-        *inbits = ((in - bytes) << 3) + (8 - bit) + i;
-    }
-    
-    return val;
-}
-
-int CountBits (Seq_p seq) {
-    int result = 0, from = 0, count = 0;
-
-    if (seq != NULL)
-        while (NextBits(seq, &from, &count))
-            result += count;
-
-    return result;
-}
-
-ItemTypes BitRunsCmd_i (Item_p a) {
-    int i, outsize, count = a->c.seq->count, pos = 0;
-    char *data;
-    struct Buffer buffer;
-    Seq_p temp;
-
-    temp = NewBitVec(count);
-    
-    for (i = 0; i < count; ++i) {
-        if (GetColItem(i, a->c, IT_int).i)
-            SetBit(&temp, i);
-    }
-
-    data = Bits2elias(temp->data[0].p, count, &outsize);
-
-    count = (outsize + 7) / 8;
-    InitBuffer(&buffer);
-    
     if (count > 0) {
-        ADD_INT_TO_BUF(buffer, (*data & 0x80) != 0);
-        while ((i = NextElias(data, count, &pos)) != 0)
-            ADD_INT_TO_BUF(buffer, i);
+        end = vSize(*vecp);
+        for (pos = 0, iptr = (int*) *vecp; pos < end; ++pos, ++iptr)
+            if (off <= *iptr)
+                break;
+        if (pos < end && iptr[0] == off) {
+            iptr[0] = off + count; /* extend at end */
+            if (pos+1 < end && iptr[0] == iptr[1])
+                VecDelete(vecp, pos, 2); /* merge with next */
+        } else if (pos < end && iptr[0] == off + count) {
+            iptr[0] = off; /* extend at start */
+        } else {
+            iptr = VecInsert(vecp, pos, 2); /* insert new range */
+            iptr[pos] = off;
+            iptr[pos+1] = off + count;
+        }
     }
-    
-    free(data);
-    
-    a->c = SeqAsCol(BufferAsIntVec(&buffer));
-    return IT_column;
+    return *vecp;
 }
+
+int RangeLocate (vqVec v, int off, int *offp) {
+    int i, last = 0, fill = 0;
+    const int *ivec = (const int*) v;
+    for (i = 0; i < vSize(v) && off >= ivec[i]; ++i) {
+        last = ivec[i];
+        if (i & 1)
+            fill += last - ivec[i-1];
+    }
+    if (--i & 1)
+        fill = last - fill;
+    *offp = fill + off - last;
+    assert(*offp >= 0);
+    return i;
+}
+
+void RangeInsert (vqVec *vecp, int off, int count, int mode) {
+    vqVec v = *vecp;
+    int x, pos = RangeLocate(v, off, &x), miss = pos & 1, *ivec = (int*) v;
+    assert(count > 0);
+    while (++pos < vSize(v))
+        ivec[pos] += count;
+    if (mode == miss)
+        RangeFlip(vecp, off, count);
+} 
+
+void RangeDelete (vqVec *vecp, int off, int count) {
+    int pos, pos2;
+    int *ivec = (int*) *vecp;
+    assert(count > 0);
+    /* very tricky code because more than one range may have to be deleted */
+    for (pos = 0; pos < vSize(*vecp); ++pos)
+        if (ivec[pos] >= off) {
+            for (pos2 = pos; pos2 < vSize(*vecp); ++pos2)
+                if (ivec[pos2] > off + count)
+                    break;
+            if (pos & 1) {
+                /* if both offsets are odd and the same, insert extra range */
+                if (pos == pos2) {
+                    pos2 += 2;
+                    ivec = VecInsert(vecp, pos, 2);
+                }
+                ivec[pos] = off;
+            }
+            if (pos2 & 1)
+                ivec[pos2-1] = off + count;
+            /* if not both offsets are odd, then extend both to even offsets */
+            if (!(pos & pos2 & 1)) {
+                pos += pos & 1;
+                pos2 -= pos2 & 1;
+            }
+            if (pos < pos2)
+                ivec = VecDelete(vecp, pos, pos2-pos);
+            while (pos < vSize(*vecp))
+                ivec[pos++] -= count;
+            break;
+        }
+}
+
+static int r_flip (lua_State *L) {
+    vqCell *cp;
+    LVQ_ARGS(L,A,"VII");
+    cp = &vwCol(A[0].v,0);
+    RangeFlip((vqVec*) &cp->p, A[1].i, A[2].i);
+    vwRows(A[0].v) = vSize(cp->p);
+    lua_pop(L, 2);
+    return 1;
+}
+static int r_locate (lua_State *L) {
+    vqCell *cp;
+    int off;
+    LVQ_ARGS(L,A,"VI");
+    cp = &vwCol(A[0].v,0);
+    lua_pushinteger(L, RangeLocate(cp->p, A[1].i, &off));
+    lua_pushinteger(L, off);
+    return 2;
+}
+static int r_insert (lua_State *L) {
+    vqCell *cp;
+    LVQ_ARGS(L,A,"VIII");
+    cp = &vwCol(A[0].v,0);
+    RangeInsert((vqVec*) &cp->p, A[1].i, A[2].i, A[3].i);
+    vwRows(A[0].v) = vSize(cp->p);
+    lua_pop(L, 3);
+    return 1;
+}
+static int r_delete (lua_State *L) {
+    vqCell *cp;
+    LVQ_ARGS(L,A,"VII");
+    cp = &vwCol(A[0].v,0);
+    RangeDelete((vqVec*) &cp->p, A[1].i, A[2].i);
+    vwRows(A[0].v) = vSize(cp->p);
+    lua_pop(L, 2);
+    return 1;
+}
+
+static const struct luaL_reg lvqlib_ranges[] = {
+    {"r_flip", r_flip},
+    {"r_locate", r_locate},
+    {"r_insert", r_insert},
+    {"r_delete", r_delete},
+    {0, 0},
+};

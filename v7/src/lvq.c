@@ -626,7 +626,7 @@ static vqType RowMapGetter (int row, vqCell *cp) {
     vqView v = cp->v;
     vqCell *aux = vwAuxP(v);
     vqCell map = aux[1];
-    if (map.v != NULL && getcell(row, &map) == VQ_int) {
+    if (map.v != 0 && getcell(row, &map) == VQ_int) {
         /* extra logic to support special maps with relative offsets < 0 */
         if (map.i < 0) {
             row += map.i;
@@ -662,7 +662,7 @@ static vqType ColMapGetter (int row, vqCell *cp) {
     int c = cp->x.y.i, nc;
     vqCell *aux = vwAuxP(v);
     vqCell map = aux[1];
-    if (map.v != NULL && getcell(c, &map) == VQ_int)
+    if (map.v != 0 && getcell(c, &map) == VQ_int)
         c = map.i;
     v = aux[0].v;
     nc = vwCols(v);
@@ -695,6 +695,120 @@ static int colbyname (vqView meta, const char* s) {
         if (strcmp(s, vq_getString(meta, c, 0, "")) == 0)
             return c;
     return luaL_error(vwState(meta), "column '%s' not found", s);
+}
+
+/* for mmap */
+#ifdef VQ_WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#else
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#endif
+
+static const void *OpenMappedFile (const char *filename, size_t *szp) {
+    const char *data = 0;
+    intptr_t length = -1;
+#ifdef VQ_WIN32
+    {
+        DWORD n;
+        HANDLE h, f = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, 0,
+                                    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+        if (f != INVALID_HANDLE_VALUE) {
+            h = CreateFileMapping(f, 0, PAGE_READONLY, 0, 0, 0);
+            if (h != INVALID_HANDLE_VALUE) {
+                n = GetFileSize(f, 0);
+                data = MapViewOfFile(h, FILE_MAP_READ, 0, 0, n);
+                if (data != 0)
+                    length = n;
+                CloseHandle(h);
+            }
+            CloseHandle(f);
+        }
+    }
+#else
+    {
+        struct stat sb;
+        int fd = open(filename, O_RDONLY);
+        if (fd != -1) {
+            if (fstat(fd, &sb) == 0) {
+                data = mmap(0, sb.st_size, PROT_READ, MAP_SHARED, fd, 0);
+                if (data != MAP_FAILED)
+                    length = sb.st_size;
+            }
+            close(fd);
+        }
+    }
+#endif
+    if (length < 0)
+        data = 0;
+    *szp = length;
+    return data;
+}
+
+static void CloseMappedFile (void *data, size_t size) {
+#ifdef VQ_WIN32
+    UnmapViewOfFile(data);
+    VQ_UNUSED(size);
+#else
+    munmap(data, size);
+#endif
+}
+
+typedef struct vqMap_s {
+    lua_State *state;
+    const char *data;
+    size_t size;
+    int lref;
+    struct vqMap_s *vref;
+} *vqMap;
+
+static void MapCleaner (void *p) {
+    vqMap map = p;
+    lua_unref(map->state, map->lref);
+    vq_decref(map->vref);
+    if (map->lref == 0 && map->vref == 0)
+        CloseMappedFile((void*) map->data, map->size);
+}
+static vqDispatch mapvtab = {
+    "map", sizeof(struct vqMap_s), 0, MapCleaner
+};
+static vqMap new_map (lua_State *L) {
+    vqMap map = alloc_vec(&mapvtab, sizeof(struct vqMap_s));
+    map->state = L;
+    return map;
+}
+static int push_map (vqMap map) {
+    vqMap *ud = tagged_udata(map->state, sizeof *ud,"lvq.map");
+    *ud = map;
+    return 1;
+}
+static vqMap checkmap (lua_State *L, int t) {
+    if (lua_isstring(L, t)) {
+        vqMap map = new_map(L);
+        map->data = lua_tolstring(L, t, &map->size);
+        lua_pushvalue(L, t);
+        map->lref = luaL_ref(L, LUA_REGISTRYINDEX);
+        return map;
+    }
+    return *(vqMap*) luaL_checkudata(L, t, "lvq.map");
+}
+
+static int map_gc (lua_State *L) {
+    vqMap map = checkmap(L, 1);
+    vq_decref(map);
+    return 0;
+}
+static int map_len (lua_State *L) {
+    vqMap map = checkmap(L, 1);
+    lua_pushinteger(L, map->size);
+    return 1;
+}
+static int map2string (lua_State *L) {
+    vqMap map = checkmap(L, 1);
+    lua_pushlstring(L, map->data, map->size);
+    return 1;
 }
 
 static int row_call (lua_State *L) {
@@ -833,11 +947,39 @@ static int lvq_vopdef (lua_State *L) {
     lua_settable(L, 1);                 /* vops */
     return 0;
 }
+/* create a map from a filename or a string (with given offset and length) */
+static int lvq_map (lua_State *L) {
+    vqMap map = new_map(L);
+    if (lua_isstring(L, 1))
+        map->data = luaL_checklstring(L, 1, &map->size);
+    else {
+        vqMap parent = checkmap(L, 1);
+        map->data = parent->data;
+        map->size = parent->size;
+        map->vref = vq_incref(parent->vref != 0 ? parent->vref : parent);
+    }
+    if (lua_isnoneornil(L, 2)) {
+        map->data = OpenMappedFile(luaL_checkstring(L, 1), &map->size);
+        assert(map->data != 0);
+    } else {
+        map->data += luaL_checkinteger(L, 2);
+        map->size = luaL_checkinteger(L, 3);
+    }
+    lua_pushvalue(L, 1);
+    map->lref = luaL_ref(L, LUA_REGISTRYINDEX);
+    return push_map(map);
+}
 
 #include "vops.c"
-#include "nulls.c"
+#include "sparse.c"
 #include "mutable.c"
 
+static const struct luaL_reg lvqlib_map_m[] = {
+    {"__gc", map_gc},
+    {"__len", map_len},
+    {"__tostring", map2string},
+    {0, 0},
+};
 static const struct luaL_reg lvqlib_row_m[] = {
     {"__call", row_call},
     {"__gc", row_gc},
@@ -856,6 +998,7 @@ static const struct luaL_reg lvqlib_view_m[] = {
     {0, 0},
 };
 static const struct luaL_reg lvqlib_f[] = {
+    {"map", lvq_map},
     {"vopdef", lvq_vopdef},
     {0, 0},
 };
@@ -866,6 +1009,9 @@ LUA_API int luaopen_lvq_core (lua_State *L) {
     lua_setfield(L, -2, "__mode"); /* t */
     lua_setfield(L, LUA_REGISTRYINDEX, "lvq.pool"); /* <> */
 
+    luaL_newmetatable(L, "lvq.map");
+    luaL_register(L, 0, lvqlib_map_m);
+    
     luaL_newmetatable(L, "lvq.row");
     luaL_register(L, 0, lvqlib_row_m);
     
@@ -876,9 +1022,9 @@ LUA_API int luaopen_lvq_core (lua_State *L) {
     
     lua_newtable(L);
     /* register_vops(L, f_vdispatch); */
-    luaL_register(L, NULL, lvqlib_vops);
-    luaL_register(L, NULL, lvqlib_ranges);
-    luaL_register(L, NULL, lvqlib_mutable);
+    luaL_register(L, 0, lvqlib_vops);
+    luaL_register(L, 0, lvqlib_ranges);
+    luaL_register(L, 0, lvqlib_mutable);
     lua_setglobal(L, "vops");
     
     luaL_register(L, "lvq", lvqlib_f);
