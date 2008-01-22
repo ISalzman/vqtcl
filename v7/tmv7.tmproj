@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>src/file.c</string>
+	<string>src/lvq.c</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -26,9 +26,9 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>12</integer>
+				<integer>28</integer>
 				<key>line</key>
-				<integer>164</integer>
+				<integer>148</integer>
 			</dict>
 			<key>columnSelection</key>
 			<false/>
@@ -39,46 +39,16 @@
 			<key>selectFrom</key>
 			<dict>
 				<key>column</key>
-				<integer>8</integer>
-				<key>line</key>
-				<integer>164</integer>
-			</dict>
-			<key>selectTo</key>
-			<dict>
-				<key>column</key>
 				<integer>17</integer>
 				<key>line</key>
-				<integer>164</integer>
-			</dict>
-		</dict>
-		<key>lua/src/lobject.h</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>16</integer>
-				<key>line</key>
-				<integer>324</integer>
-			</dict>
-			<key>columnSelection</key>
-			<false/>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>284</integer>
-			<key>selectFrom</key>
-			<dict>
-				<key>column</key>
-				<integer>4</integer>
-				<key>line</key>
-				<integer>324</integer>
+				<integer>148</integer>
 			</dict>
 			<key>selectTo</key>
 			<dict>
 				<key>column</key>
-				<integer>16</integer>
+				<integer>30</integer>
 				<key>line</key>
-				<integer>324</integer>
+				<integer>148</integer>
 			</dict>
 		</dict>
 		<key>lua/src/lua.h</key>
@@ -86,29 +56,57 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>17</integer>
+				<integer>0</integer>
 				<key>line</key>
-				<integer>278</integer>
+				<integer>385</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>226</integer>
+		</dict>
+		<key>src/Makefile</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>27</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
+		<key>src/buffer.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>23</integer>
+				<key>line</key>
+				<integer>112</integer>
 			</dict>
 			<key>columnSelection</key>
 			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>238</integer>
+			<integer>39</integer>
 			<key>selectFrom</key>
 			<dict>
 				<key>column</key>
-				<integer>12</integer>
+				<integer>15</integer>
 				<key>line</key>
-				<integer>278</integer>
+				<integer>112</integer>
 			</dict>
 			<key>selectTo</key>
 			<dict>
 				<key>column</key>
-				<integer>17</integer>
+				<integer>26</integer>
 				<key>line</key>
-				<integer>278</integer>
+				<integer>112</integer>
 			</dict>
 		</dict>
 		<key>src/defs.h</key>
@@ -116,23 +114,81 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>0</integer>
+				<integer>29</integer>
 				<key>line</key>
-				<integer>73</integer>
+				<integer>123</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>4</integer>
+			<integer>64</integer>
+		</dict>
+		<key>src/emit.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>12</integer>
+				<key>line</key>
+				<integer>473</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>411</integer>
 		</dict>
 		<key>src/file.c</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>20</integer>
+				<integer>32</integer>
 				<key>line</key>
-				<integer>26</integer>
+				<integer>365</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>258</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>21</integer>
+				<key>line</key>
+				<integer>365</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>32</integer>
+				<key>line</key>
+				<integer>365</integer>
+			</dict>
+		</dict>
+		<key>src/group.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
+		<key>src/hash.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>307</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -144,85 +200,104 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>27</integer>
+				<integer>0</integer>
 				<key>line</key>
-				<integer>709</integer>
+				<integer>0</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>596</integer>
+		</dict>
+		<key>src/mutable.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>214</integer>
 			</dict>
 			<key>columnSelection</key>
 			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>643</integer>
+			<integer>140</integer>
 			<key>selectFrom</key>
 			<dict>
 				<key>column</key>
-				<integer>19</integer>
+				<integer>0</integer>
 				<key>line</key>
-				<integer>709</integer>
+				<integer>209</integer>
 			</dict>
 			<key>selectTo</key>
 			<dict>
 				<key>column</key>
-				<integer>33</integer>
+				<integer>0</integer>
 				<key>line</key>
-				<integer>709</integer>
+				<integer>214</integer>
 			</dict>
+		</dict>
+		<key>src/pack.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>32</integer>
+				<key>line</key>
+				<integer>12</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
+		<key>src/reduce.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
 		</dict>
 		<key>src/test.lua</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>17</integer>
+				<integer>41</integer>
 				<key>line</key>
-				<integer>194</integer>
+				<integer>229</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>128</integer>
-		</dict>
-		<key>src/vops.c</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>55</integer>
-				<key>line</key>
-				<integer>37</integer>
-			</dict>
-			<key>columnSelection</key>
-			<false/>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>0</integer>
-			<key>selectFrom</key>
-			<dict>
-				<key>column</key>
-				<integer>47</integer>
-				<key>line</key>
-				<integer>37</integer>
-			</dict>
-			<key>selectTo</key>
-			<dict>
-				<key>column</key>
-				<integer>64</integer>
-				<key>line</key>
-				<integer>37</integer>
-			</dict>
+			<integer>156</integer>
 		</dict>
 	</dict>
 	<key>openDocuments</key>
 	<array>
 		<string>src/lvq.c</string>
-		<string>src/file.c</string>
+		<string>src/mutable.c</string>
+		<string>src/emit.c</string>
 		<string>src/test.lua</string>
-		<string>src/vops.c</string>
+		<string>src/hash.c</string>
+		<string>src/group.c</string>
+		<string>src/pack.c</string>
+		<string>src/reduce.c</string>
 		<string>lua/src/lauxlib.h</string>
 		<string>lua/src/lua.h</string>
 		<string>src/defs.h</string>
+		<string>src/buffer.c</string>
+		<string>src/file.c</string>
+		<string>src/Makefile</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
 	<true/>

@@ -980,8 +980,8 @@ static int lvq_open (lua_State *L) {
     return push_view(MapToView(map));
 }
 
-#include "vops.c"
-#include "sparse.c"
+#include "ops.c"
+#include "nulls.c"
 #include "mutable.c"
 #include "file.c"
 #include "buffer.c"

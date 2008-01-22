@@ -1,5 +1,5 @@
 /*  Support for ranges and missing values.
-    $Id$
+    $Id: nulls.c 2053 2008-01-18 15:05:21Z jcw $
     This file is part of Vlerq, see src/vlerq.h for full copyright notice. */
 
 void *VecInsert (vqVec *vecp, int off, int cnt) {
