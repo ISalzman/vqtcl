@@ -221,10 +221,14 @@ assert(d2[0].v:s() ==
   "0 0 0 12 -36 -28324 4444 444444444444 4444.5 44444444.1 s4444 b44444444; "..
   "0 1 3 3 -125 22787 55555 5.5555555555556e+14 55555.5 5555555555.1 "..
                                   "s55555 b5555555555", "row 0 of alltypes.db")
-
 -- emit views
 assert(#d1:emit() == 61, "emit simple.db size")
 assert(#d2:emit() == 331, "emit alltypes.db size")
 assert(#m2:emit() == 74, "emit test view size")
+local s2 = d2:emit()
+local l2 = lvq.open(lvq.map(s2,0,#s2))
+assert(tostring(l2[0].v) == "view: view #5 IIIIIIILFDSB", "load emitted string")
+assert(l2:s() == "v; #5", "check loaded emitted string")
+assert(#l2[0].v:s() == 350, "check v contents size of loaded emitted string")
 
 print "OK"
