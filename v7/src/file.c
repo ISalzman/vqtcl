@@ -174,21 +174,51 @@ static void Rcleaner (void *p) {
     vq_decref(dvMap(v));
 }
 
-static vqDispatch vget_i0   = { "get_i0"  , 3, 0, Rcleaner, Rgetter_i0   };
-static vqDispatch vget_i1   = { "get_i1"  , 3, 0, Rcleaner, Rgetter_i1   };
-static vqDispatch vget_i2   = { "get_i2"  , 3, 0, Rcleaner, Rgetter_i2   };
-static vqDispatch vget_i4   = { "get_i4"  , 3, 0, Rcleaner, Rgetter_i4   };
-static vqDispatch vget_i8   = { "get_i8"  , 3, 0, Rcleaner, Rgetter_i8   };
-static vqDispatch vget_i16  = { "get_i16" , 3, 0, Rcleaner, Rgetter_i16  };
-static vqDispatch vget_i32  = { "get_i32" , 3, 0, Rcleaner, Rgetter_i32  };
-static vqDispatch vget_i64  = { "get_i64" , 3, 0, Rcleaner, Rgetter_i64  };
-static vqDispatch vget_i16r = { "get_i16r", 3, 0, Rcleaner, Rgetter_i16r };
-static vqDispatch vget_i32r = { "get_i32r", 3, 0, Rcleaner, Rgetter_i32r };
-static vqDispatch vget_i64r = { "get_i64r", 3, 0, Rcleaner, Rgetter_i64r };
-static vqDispatch vget_f32  = { "get_f32" , 3, 0, Rcleaner, Rgetter_f32  };
-static vqDispatch vget_f64  = { "get_f64" , 3, 0, Rcleaner, Rgetter_f64  };
-static vqDispatch vget_f32r = { "get_f32r", 3, 0, Rcleaner, Rgetter_f32r };
-static vqDispatch vget_f64r = { "get_f64r", 3, 0, Rcleaner, Rgetter_f64r };
+static vqDispatch vget_i0   = {
+    "get_i0"  , sizeof(struct vqDataVec_s), 0, Rcleaner, Rgetter_i0  
+};
+static vqDispatch vget_i1   = {                                      
+    "get_i1"  , sizeof(struct vqDataVec_s), 0, Rcleaner, Rgetter_i1  
+};
+static vqDispatch vget_i2   = {                                      
+    "get_i2"  , sizeof(struct vqDataVec_s), 0, Rcleaner, Rgetter_i2  
+};
+static vqDispatch vget_i4   = {                                      
+    "get_i4"  , sizeof(struct vqDataVec_s), 0, Rcleaner, Rgetter_i4  
+};
+static vqDispatch vget_i8   = {                                      
+    "get_i8"  , sizeof(struct vqDataVec_s), 0, Rcleaner, Rgetter_i8  
+};
+static vqDispatch vget_i16  = {                                      
+    "get_i16" , sizeof(struct vqDataVec_s), 0, Rcleaner, Rgetter_i16 
+};
+static vqDispatch vget_i32  = {                                      
+    "get_i32" , sizeof(struct vqDataVec_s), 0, Rcleaner, Rgetter_i32 
+};
+static vqDispatch vget_i64  = {                                      
+    "get_i64" , sizeof(struct vqDataVec_s), 0, Rcleaner, Rgetter_i64 
+};
+static vqDispatch vget_i16r = {                                      
+    "get_i16r", sizeof(struct vqDataVec_s), 0, Rcleaner, Rgetter_i16r
+};
+static vqDispatch vget_i32r = {                                      
+    "get_i32r", sizeof(struct vqDataVec_s), 0, Rcleaner, Rgetter_i32r
+};
+static vqDispatch vget_i64r = {                                      
+    "get_i64r", sizeof(struct vqDataVec_s), 0, Rcleaner, Rgetter_i64r
+};
+static vqDispatch vget_f32  = {                                      
+    "get_f32" , sizeof(struct vqDataVec_s), 0, Rcleaner, Rgetter_f32 
+};
+static vqDispatch vget_f64  = {                                      
+    "get_f64" , sizeof(struct vqDataVec_s), 0, Rcleaner, Rgetter_f64 
+};
+static vqDispatch vget_f32r = {                                      
+    "get_f32r", sizeof(struct vqDataVec_s), 0, Rcleaner, Rgetter_f32r
+};
+static vqDispatch vget_f64r = {                                      
+    "get_f64r", sizeof(struct vqDataVec_s), 0, Rcleaner, Rgetter_f64r
+};
 
 static vqDispatch* PickIntGetter (int bits) {
     switch (bits) {

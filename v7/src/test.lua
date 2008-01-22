@@ -209,13 +209,17 @@ local d1 = lvq.open(m)
 assert(tostring(d1) == "view: view #1 (I)", "open simple.db")
 assert(#d1[0].v == 5, "size of subview in simple.db")
 assert(tostring(d1[0].v) == "view: view #5 I", "subview in simple.db")
-assert(d1[0].v:dump() == [[
-  abc  
-  -----
-      1
-     22
-    333
-   4444
-  55555]], "dump view in simple.db")
+assert(d1[0].v:s() == "abc; 1; 22; 333; 4444; 55555", "dump view in simple.db")
+local d2 = lvq.open(lvq.map("../etc/alltypes.db"))
+assert(tostring(d2) == "view: view #1 (IIIIIIILFDSB)", "open alltypes.db")
+assert(tostring(d2[0].v) == "view: view #5 IIIIIIILFDSB", "subview in alltypes.db")
+assert(d2[0].v:s() ==
+  "i0 i1 i2 i4 i8 i16 i32 l f d s b; "..
+  "0 1 1 1 -127 -32767 1 111 1.5 11.1 s1 b11; "..
+  "0 0 2 6 -106 -32746 22 222222 22.5 2222.1 s22 b2222; "..
+  "0 1 1 13 -51 -32435 333 333333333 333.5 333333.1 s333 b333333; "..
+  "0 0 0 12 -36 -28324 4444 444444444444 4444.5 44444444.1 s4444 b44444444; "..
+  "0 1 3 3 -125 22787 55555 5.5555555555556e+14 55555.5 5555555555.1 "..
+                                  "s55555 b5555555555", "row 0 of alltypes.db")
 
 print "OK"
