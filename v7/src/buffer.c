@@ -26,8 +26,8 @@ void ReleaseBuffer (Buffer_p bp, int keep) {
         free(bp->result);
 }
 
-void AddToBuffer (Buffer_p bp, const void *data, Int_t len) {
-    Int_t n;
+void AddToBuffer (Buffer_p bp, const void *data, intptr_t len) {
+    intptr_t n;
     while (len > 0) {
         if (bp->fill.c >= bp->limit) {
             if (bp->head == 0 || 
@@ -78,7 +78,7 @@ int NextBuffer (Buffer_p bp, char **firstp, int *countp) {
     if (bp->head != NULL) {
         *firstp = bp->head->b;
         count = bp->saved - bp->used;
-        if (count > sizeof bp->head->b)
+        if (count > (int) sizeof bp->head->b)
             count = sizeof bp->head->b;
     } else {
         count = bp->fill.c - bp->buf;
@@ -90,7 +90,7 @@ int NextBuffer (Buffer_p bp, char **firstp, int *countp) {
 }
 
 void *BufferAsPtr (Buffer_p bp, int fast) {
-    Int_t len;
+    intptr_t len;
     char *data, *ptr = NULL;
     int cnt;
 
@@ -107,15 +107,12 @@ void *BufferAsPtr (Buffer_p bp, int fast) {
     return bp->result;
 }
 
-Seq_p BufferAsIntVec (Buffer_p bp) {
+vqVec BufferAsIntVec (Buffer_p bp) {
     int cnt;
     char *data, *ptr = NULL;
-    Seq_p seq;
-    
-    seq = NewIntVec(BufferFill(bp) / sizeof(int), (void*) &data);
-
+    vqVec vp = new_datavec(VQ_int, BufferFill(bp) / sizeof(int));
+    data = (void*) vp;
     for (; NextBuffer(bp, &ptr, &cnt); data += cnt)
         memcpy(data, ptr, cnt);
-
-    return seq;
+    return vp;
 }

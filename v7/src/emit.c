@@ -17,7 +17,7 @@ static void EmitView (EmitInfo *eip, vqView t, int describe); /* forward */
     
 /* -------------------------------------------------- META DESCRIPTIONS ----- */
 
-void MetaAsDesc (vqView meta, Buffer *buffer) {
+static void MetaAsDesc (vqView meta, Buffer *buffer) {
     int type, r, rows = vwRows(meta);
     const char *name;
     char buf [30];
@@ -39,7 +39,7 @@ void MetaAsDesc (vqView meta, Buffer *buffer) {
             ADD_CHAR_TO_BUF(*buffer, ']');
         } else {
             ADD_CHAR_TO_BUF(*buffer, ':');
-            TypeAsString(type, buf);
+            type2string(type, buf);
             AddToBuffer(buffer, buf, strlen(buf));
         }
     }
@@ -262,7 +262,7 @@ static void EmitVarCol (EmitInfo *eip, vqCell column, int istext, int rows) {
     int r, bytes;
     intptr_t buflen;
     Buffer buffer;
-    vqVec sizes = vq_incref(AllocDataVec(VQ_int, rows));
+    vqVec sizes = vq_incref(new_datavec(VQ_int, rows));
     int *sizevec = (void*) sizes;
 
     InitBuffer(&buffer);
@@ -288,7 +288,7 @@ static void EmitVarCol (EmitInfo *eip, vqCell column, int istext, int rows) {
     EmitPair(eip, EmitBuffer(eip, &buffer));    
     if (buflen > 0) {
         vqCell cell;
-        cell.v = sizes;
+        cell.p = sizes;
         EmitFixCol(eip, cell, 1);
     }
     vq_decref(sizes);
@@ -326,17 +326,17 @@ static void EmitCols (EmitInfo *eip, vqView view) {
                 case VQ_long:
                 case VQ_float:
                 case VQ_double:
-                    EmitFixCol(eip, view[c], type); 
+                    EmitFixCol(eip, vwCol(view,c), type); 
                     break;
                 case VQ_string:
-                    EmitVarCol(eip, view[c], 1, rows);
+                    EmitVarCol(eip, vwCol(view,c), 1, rows);
                     break;
                 case VQ_bytes:
-                    EmitVarCol(eip, view[c], 0, rows);
+                    EmitVarCol(eip, vwCol(view,c), 0, rows);
                     break;
                 case VQ_view:
                     subv = vq_getView(meta, c, 2, 0);
-                    EmitSubCol(eip, view[c], vwRows(subv) == 0, rows);
+                    EmitSubCol(eip, vwCol(view,c), vwRows(subv) == 0, rows);
                     break;
                 default: assert(0);
             }
@@ -465,3 +465,25 @@ vqType Meta2DescCmd_T (vqCell a[]) {
     return VQ_objref;
 }
 */
+
+static void* EmitDataFun (void *buf, const void *ptr, intptr_t len) {
+    luaL_addlstring(buf, ptr, len);
+    return buf;
+}
+
+static int e_emit (lua_State *L) {
+    intptr_t n;
+    luaL_Buffer b;
+    LVQ_ARGS(L,A,"V");
+    luaL_buffinit(L, &b);   
+    n = ViewSave(A[0].v, &b, NULL, EmitDataFun);
+    luaL_pushresult(&b);
+    if (n < 0)
+        return luaL_error(L, "error in view emit");
+    return 1;
+}
+
+static const struct luaL_reg lvqlib_emit[] = {
+    {"emit", e_emit},
+    {0, 0},
+};

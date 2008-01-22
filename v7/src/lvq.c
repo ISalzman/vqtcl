@@ -766,10 +766,8 @@ struct vqMap_s {
 
 static void MapCleaner (void *p) {
     vqMap map = p;
-#if 1
     if (map->lref == 0 && map->vref == 0)
         CloseMappedFile((void*) map->data, map->size);
-#endif
     vq_decref(map->vref);
     lua_unref(map->state, map->lref);
 }
@@ -986,6 +984,8 @@ static int lvq_open (lua_State *L) {
 #include "sparse.c"
 #include "mutable.c"
 #include "file.c"
+#include "buffer.c"
+#include "emit.c"
 
 static const struct luaL_reg lvqlib_map_m[] = {
     {"__gc", map_gc},
@@ -1039,6 +1039,7 @@ LUA_API int luaopen_lvq_core (lua_State *L) {
     luaL_register(L, 0, lvqlib_vops);
     luaL_register(L, 0, lvqlib_ranges);
     luaL_register(L, 0, lvqlib_mutable);
+    luaL_register(L, 0, lvqlib_emit);
     lua_setglobal(L, "vops");
     
     luaL_register(L, "lvq", lvqlib_f);

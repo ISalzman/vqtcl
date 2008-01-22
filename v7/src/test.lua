@@ -204,7 +204,7 @@ assert(#tostring(m) == 61, "size of mapped file as string")
 assert(type(m) == "userdata", "map is userdata")
 assert(tostring(lvq.map(m, 34, 8)) == "v[abc:I]", "substring in map")
 
--- map to view
+-- map string/file to view
 local d1 = lvq.open(m)
 assert(tostring(d1) == "view: view #1 (I)", "open simple.db")
 assert(#d1[0].v == 5, "size of subview in simple.db")
@@ -221,5 +221,10 @@ assert(d2[0].v:s() ==
   "0 0 0 12 -36 -28324 4444 444444444444 4444.5 44444444.1 s4444 b44444444; "..
   "0 1 3 3 -125 22787 55555 5.5555555555556e+14 55555.5 5555555555.1 "..
                                   "s55555 b5555555555", "row 0 of alltypes.db")
+
+-- emit views
+assert(#d1:emit() == 61, "emit simple.db size")
+assert(#d2:emit() == 331, "emit alltypes.db size")
+assert(#m2:emit() == 74, "emit test view size")
 
 print "OK"

@@ -71,6 +71,8 @@ struct vqView_s {
     vqInfo info;
 };
 
+/* sparse.c */
+
 void* (VecInsert) (vqVec *vecp, int off, int cnt);
 void* (VecDelete) (vqVec *vecp, int off, int cnt);
 
@@ -79,9 +81,63 @@ int (RangeLocate) (vqVec v, int off, int *offp);
 void (RangeInsert) (vqVec *vecp, int off, int count, int mode);
 void (RangeDelete) (vqVec *vecp, int off, int count);
 
+/* mutable.c */
+
 int (IsMutable) (vqView t);
 vqView (MutWrapVop) (vqView t);
+
+/* file.c */
 
 typedef struct vqMap_s *vqMap;
 
 vqView (MapToView) (vqMap map);
+
+/* buffer.c */
+
+typedef struct Buffer Buffer, *Buffer_p;
+typedef struct Overflow *Overflow_p;
+
+struct Buffer {
+    union { char *c; int *i; const void **p; } fill;
+    char       *limit;
+    Overflow_p  head;
+    intptr_t    saved;
+    intptr_t    used;
+    char       *ofill;
+    char       *result;
+    char        buf [128];
+    char        slack [8];
+};
+
+#define ADD_ONEC_TO_BUF(b,x) (*(b).fill.c++ = (x))
+
+#define ADD_CHAR_TO_BUF(b,x) \
+          { char _c = (x); \
+            if ((b).fill.c < (b).limit) *(b).fill.c++ = _c; \
+              else AddToBuffer(&(b), &_c, sizeof _c); }
+
+#define ADD_INT_TO_BUF(b,x) \
+          { int _i = (x); \
+            if ((b).fill.c < (b).limit) *(b).fill.i++ = _i; \
+              else AddToBuffer(&(b), &_i, sizeof _i); }
+
+#define ADD_PTR_TO_BUF(b,x) \
+          { const void *_p = (x); \
+            if ((b).fill.c < (b).limit) *(b).fill.p++ = _p; \
+              else AddToBuffer(&(b), &_p, sizeof _p); }
+
+#define BufferFill(b) ((b)->saved + ((b)->fill.c - (b)->buf))
+
+void (InitBuffer) (Buffer *bp);
+void (ReleaseBuffer) (Buffer *bp, int keep);
+void (AddToBuffer) (Buffer *bp, const void *data, intptr_t len);
+void* (BufferAsPtr) (Buffer *bp, int fast);
+vqVec (BufferAsIntVec) (Buffer *bp);
+int (NextBuffer) (Buffer *bp, char **firstp, int *countp);
+
+/* emit.c */
+
+typedef void *(*SaveInitFun)(void*,intptr_t);
+typedef void *(*SaveDataFun)(void*,const void*,intptr_t);
+
+intptr_t (ViewSave) (vqView t, void *aux, SaveInitFun fi, SaveDataFun fd);
