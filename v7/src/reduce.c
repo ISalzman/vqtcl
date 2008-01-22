@@ -2,7 +2,7 @@
     $Id$
     This file is part of Vlerq, see src/vlerq.h for full copyright notice. */
 
-static ItemTypes AggregateMax (ItemTypes type, Column column, Item_p item) {
+static vqType AggregateMax (vqType type, vqCell column, vqCell *item) {
     int r, rows;
     Item temp;
     
@@ -22,12 +22,12 @@ static ItemTypes AggregateMax (ItemTypes type, Column column, Item_p item) {
     return type;
 }
 
-ItemTypes MaxCmd_VN (Item args[]) {
-    Column column = ViewCol(args[0].v, args[1].i);
+vqType MaxCmd_VN (Item args[]) {
+    vqCell column = ViewCol(args[0].v, args[1].i);
     return AggregateMax(ViewColType(args[0].v, args[1].i), column, args);
 }
 
-static ItemTypes AggregateMin (ItemTypes type, Column column, Item_p item) {
+static vqType AggregateMin (vqType type, vqCell column, vqCell *item) {
     int r, rows;
     Item temp;
     
@@ -47,12 +47,12 @@ static ItemTypes AggregateMin (ItemTypes type, Column column, Item_p item) {
     return type;
 }
 
-ItemTypes MinCmd_VN (Item args[]) {
-    Column column = ViewCol(args[0].v, args[1].i);
+vqType MinCmd_VN (Item args[]) {
+    vqCell column = ViewCol(args[0].v, args[1].i);
     return AggregateMin(ViewColType(args[0].v, args[1].i), column, args);
 }
 
-static ItemTypes AggregateSum (ItemTypes type, Column column, Item_p item) {
+static vqType AggregateSum (vqType type, vqCell column, vqCell *item) {
     int r, rows = column.seq->count;
     
     switch (type) {
@@ -86,7 +86,7 @@ static ItemTypes AggregateSum (ItemTypes type, Column column, Item_p item) {
     }
 }
 
-ItemTypes SumCmd_VN (Item args[]) {
-    Column column = ViewCol(args[0].v, args[1].i);
+vqType SumCmd_VN (Item args[]) {
+    vqCell column = ViewCol(args[0].v, args[1].i);
     return AggregateSum(ViewColType(args[0].v, args[1].i), column, &args[0]);
 }

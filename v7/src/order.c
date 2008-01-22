@@ -2,7 +2,7 @@
     $Id$
     This file is part of Vlerq, see src/vlerq.h for full copyright notice. */
 
-static int ItemsEqual (ItemTypes type, Item a, Item b) {
+static int ItemsEqual (vqType type, Item a, Item b) {
     switch (type) {
 
         case IT_int:
@@ -30,9 +30,9 @@ static int ItemsEqual (ItemTypes type, Item a, Item b) {
     }
 }
 
-int RowEqual (View_p v1, int r1, View_p v2, int r2) {
+int RowEqual (vqView v1, int r1, vqView v2, int r2) {
     int c;
-    ItemTypes type;
+    vqType type;
     Item item1, item2;
 
     for (c = 0; c < ViewWidth(v1); ++c) {
@@ -49,7 +49,7 @@ int RowEqual (View_p v1, int r1, View_p v2, int r2) {
 
 /* TODO: UTF-8 comparisons, also case-sensitive & insensitive */
 
-static int ItemsCompare (ItemTypes type, Item a, Item b, int lower) {
+static int ItemsCompare (vqType type, Item a, Item b, int lower) {
     switch (type) {
 
         case IT_int:
@@ -84,9 +84,9 @@ static int ItemsCompare (ItemTypes type, Item a, Item b, int lower) {
     }
 }
 
-int RowCompare (View_p v1, int r1, View_p v2, int r2) {
+int RowCompare (vqView v1, int r1, vqView v2, int r2) {
     int c, f;
-    ItemTypes type;
+    vqType type;
     Item item1, item2;
 
     for (c = 0; c < ViewWidth(v1); ++c) {
@@ -102,9 +102,9 @@ int RowCompare (View_p v1, int r1, View_p v2, int r2) {
     return 0;
 }
 
-static int RowIsLess (View_p v, int a, int b) {
+static int RowIsLess (vqView v, int a, int b) {
     int c, f;
-    ItemTypes type;
+    vqType type;
     Item va, vb;
 
     if (a != b)
@@ -121,7 +121,7 @@ static int RowIsLess (View_p v, int a, int b) {
     return a < b;
 }
 
-static int TestAndSwap (View_p v, int *a, int *b) {
+static int TestAndSwap (vqView v, int *a, int *b) {
     if (RowIsLess(v, *b, *a)) {
         int t = *a;
         *a = *b;
@@ -131,7 +131,7 @@ static int TestAndSwap (View_p v, int *a, int *b) {
     return 0;
 }
 
-static void MergeSort (View_p v, int *ar, int nr, int *scr) {
+static void MergeSort (vqView v, int *ar, int nr, int *scr) {
     switch (nr) {
         case 2:
             TestAndSwap(v, ar, ar+1);
@@ -174,9 +174,9 @@ static void MergeSort (View_p v, int *ar, int nr, int *scr) {
     }
 }
 
-Column SortMap (View_p view) {
+vqCell SortMap (vqView view) {
     int r, rows, *imap, *itmp;
-    Seq_p seq;
+    vqVeq seq;
 
     rows = ViewSize(view);
 

@@ -2,9 +2,9 @@
     $Id$
     This file is part of Vlerq, see src/vlerq.h for full copyright notice. */
 
-static View_p MakeMetaSubview (const char *name, View_p view) {
-    View_p meta, result;
-    Seq_p names, types, subvs;
+static vqView MakeMetaSubview (const char *name, vqView view) {
+    vqView meta, result;
+    vqVeq names, types, subvs;
     
     names = NewStrVec(1);
     AppendToStrVec(name, -1, names);
@@ -27,17 +27,17 @@ static View_p MakeMetaSubview (const char *name, View_p view) {
 #define GV_group        data[2].q
 #define GV_cache        data[3].q
 
-static ItemTypes GroupedGetter (int row, Item_p item) {
-    Seq_p seq = item->c.seq;
-    View_p *subviews = seq->GV_cache->data[0].p;
+static vqType GroupedGetter (int row, vqCell *item) {
+    vqVeq seq = item->c.seq;
+    vqView *subviews = seq->GV_cache->data[0].p;
     
     if (subviews[row] == NULL) {
         const int *sptr = seq->GV_start->data[0].p;
-        Seq_p gmap = seq->GV_group;
+        vqVeq gmap = seq->GV_group;
         int start = row > 0 ? sptr[row-1] : 0;
         
         item->c.seq = gmap;
-        subviews[row] = IncRefCount(RemapSubview(seq->GV_parent, item->c,
+        subviews[row] = vq_incref(RemapSubview(seq->GV_parent, item->c,
                                                     start, sptr[row] - start));
     }
     
@@ -45,11 +45,11 @@ static ItemTypes GroupedGetter (int row, Item_p item) {
     return IT_view;
 }
 
-static struct SeqType ST_Grouped = { "grouped", GroupedGetter, 01111 };
+static vqDispatch ST_Grouped = { "grouped", GroupedGetter, 01111 };
 
-View_p GroupedView (View_p view, Column startcol, Column groupcol, const char *name) {
+vqView GroupedView (vqView view, vqCell startcol, vqCell groupcol, const char *name) {
     int groups;
-    Seq_p seq, subviews;
+    vqVeq seq, subviews;
     
     groups = startcol.seq->count;
     subviews = NewSeqVec(IT_view, NULL, groups);
@@ -59,10 +59,10 @@ View_p GroupedView (View_p view, Column startcol, Column groupcol, const char *n
     /* data[1] is the start map, as a sequence */
     /* data[2] is the group map, as a sequence */
     /* data[3] is a cache of subviews, as a pointer vector in a sequence */
-    seq->GV_parent = IncRefCount(view);
-    seq->GV_start = IncRefCount(startcol.seq);
-    seq->GV_group = IncRefCount(groupcol.seq);
-    seq->GV_cache = IncRefCount(subviews);
+    seq->GV_parent = vq_incref(view);
+    seq->GV_start = vq_incref(startcol.seq);
+    seq->GV_group = vq_incref(groupcol.seq);
+    seq->GV_cache = vq_incref(subviews);
 
     return IndirectView(MakeMetaSubview(name, view), seq);
 }
@@ -72,11 +72,11 @@ View_p GroupedView (View_p view, Column startcol, Column groupcol, const char *n
 #define UV_subcol       data[2].i
 #define UV_swidth       data[3].i
 
-static ItemTypes UngroupGetter (int row, Item_p item) {
+static vqType UngroupGetter (int row, vqCell *item) {
     int col, subcol, parentrow;
     const int *data;
-    View_p view;
-    Seq_p seq;
+    vqView view;
+    vqVeq seq;
 
     col = item->c.pos;
     seq = item->c.seq;
@@ -105,14 +105,14 @@ static ItemTypes UngroupGetter (int row, Item_p item) {
     return GetItem(row, item);
 }
 
-static struct SeqType ST_Ungroup = { "ungroup", UngroupGetter, 011 };
+static vqDispatch ST_Ungroup = { "ungroup", UngroupGetter, 011 };
 
-View_p UngroupView (View_p view, int col) {
+vqView UngroupView (vqView view, int col) {
     int i, n, r, rows;
     struct Buffer buffer;
-    View_p subview, meta, submeta, newmeta;
-    Seq_p seq, map;
-    Column column;
+    vqView subview, meta, submeta, newmeta;
+    vqVeq seq, map;
+    vqCell column;
     
     InitBuffer(&buffer);
 
@@ -142,8 +142,8 @@ View_p UngroupView (View_p view, int col) {
     /* data[1] is ungroup map as a sequence */
     /* data[2] is the subview column */
     /* data[3] is the subview width */
-    seq->UV_parent = IncRefCount(view);
-    seq->UV_unmap = IncRefCount(map);
+    seq->UV_parent = vq_incref(view);
+    seq->UV_unmap = vq_incref(map);
     seq->UV_subcol = col;
     seq->UV_swidth = ViewSize(submeta);
     
@@ -153,11 +153,11 @@ View_p UngroupView (View_p view, int col) {
 #define BV_parent       data[0].q
 #define BV_cumcnt       data[1].q
 
-static ItemTypes BlockedGetter (int row, Item_p item) {
+static vqType BlockedGetter (int row, vqCell *item) {
     int block;
     const int* data;
-    View_p subv;
-    Seq_p seq;
+    vqView subv;
+    vqVeq seq;
 
     seq = item->c.seq;
     data = seq->BV_cumcnt->data[0].p;
@@ -176,13 +176,13 @@ static ItemTypes BlockedGetter (int row, Item_p item) {
     return GetItem(row, item);
 }
 
-static struct SeqType ST_Blocked = { "blocked", BlockedGetter, 011 };
+static vqDispatch ST_Blocked = { "blocked", BlockedGetter, 011 };
 
-View_p BlockedView (View_p view) {
+vqView BlockedView (vqView view) {
     int r, rows, *limits, tally = 0;
-    View_p submeta;
-    Seq_p seq, offsets;
-    Column blocks;
+    vqView submeta;
+    vqVeq seq, offsets;
+    vqCell blocks;
 
     /* view must have exactly one subview column */
     if (ViewWidth(view) != 1)
@@ -200,8 +200,8 @@ View_p BlockedView (View_p view) {
     seq = NewSequence(tally, &ST_Blocked, 0);
     /* data[0] is the parent view */
     /* data[1] is a cumulative row count, as a sequence */
-    seq->BV_parent = IncRefCount(view);
-    seq->BV_cumcnt = IncRefCount(offsets);
+    seq->BV_parent = vq_incref(view);
+    seq->BV_cumcnt = vq_incref(offsets);
     
     submeta = GetViewItem(V_Meta(view), 0, MC_subv, IT_view).v;
     return IndirectView(submeta, seq);
