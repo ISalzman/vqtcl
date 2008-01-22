@@ -756,41 +756,49 @@ static void CloseMappedFile (void *data, size_t size) {
 #endif
 }
 
-typedef struct vqMap_s {
-    lua_State *state;
+struct vqMap_s {
     const char *data;
     size_t size;
+    lua_State *state;
     int lref;
-    struct vqMap_s *vref;
-} *vqMap;
+    vqMap vref;
+};
 
 static void MapCleaner (void *p) {
     vqMap map = p;
-    lua_unref(map->state, map->lref);
-    vq_decref(map->vref);
+#if 1
     if (map->lref == 0 && map->vref == 0)
         CloseMappedFile((void*) map->data, map->size);
+#endif
+    vq_decref(map->vref);
+    lua_unref(map->state, map->lref);
 }
 static vqDispatch mapvtab = {
-    "map", sizeof(struct vqMap_s), 0, MapCleaner
+    "map", sizeof(vqInfo)+100, 0, MapCleaner
 };
-static vqMap new_map (lua_State *L) {
+static vqMap new_map (lua_State *L, int t, vqMap parent, const char *ptr, size_t len) {
     vqMap map = alloc_vec(&mapvtab, sizeof(struct vqMap_s));
     map->state = L;
+    map->data = ptr;
+    map->size = len;
+    map->vref = vq_incref(parent);
+    map->lref = LUA_NOREF;
+    if (t != 0) {
+        lua_pushvalue(L, t);
+        map->lref = luaL_ref(L, LUA_REGISTRYINDEX);
+    }
     return map;
 }
 static int push_map (vqMap map) {
-    vqMap *ud = tagged_udata(map->state, sizeof *ud,"lvq.map");
-    *ud = map;
+    vqMap *ud = tagged_udata(map->state, sizeof *ud, "lvq.map");
+    *ud = vq_incref(map);
     return 1;
 }
 static vqMap checkmap (lua_State *L, int t) {
     if (lua_isstring(L, t)) {
-        vqMap map = new_map(L);
-        map->data = lua_tolstring(L, t, &map->size);
-        lua_pushvalue(L, t);
-        map->lref = luaL_ref(L, LUA_REGISTRYINDEX);
-        return map;
+        size_t n;
+        const char *s = lua_tolstring(L, t, &n);
+        return new_map(L, t, 0, s, n);
     }
     return *(vqMap*) luaL_checkudata(L, t, "lvq.map");
 }
@@ -949,30 +957,35 @@ static int lvq_vopdef (lua_State *L) {
 }
 /* create a map from a filename or a string (with given offset and length) */
 static int lvq_map (lua_State *L) {
-    vqMap map = new_map(L);
-    if (lua_isstring(L, 1))
-        map->data = luaL_checklstring(L, 1, &map->size);
-    else {
+    vqMap map;
+    size_t n;
+    const char *s = lua_tolstring(L, 1, &n);
+    if (s == 0) {
         vqMap parent = checkmap(L, 1);
-        map->data = parent->data;
-        map->size = parent->size;
-        map->vref = vq_incref(parent->vref != 0 ? parent->vref : parent);
-    }
-    if (lua_isnoneornil(L, 2)) {
-        map->data = OpenMappedFile(luaL_checkstring(L, 1), &map->size);
-        assert(map->data != 0);
+        map = new_map(L, 0, parent, parent->data, parent->size);
+    } else if (lua_isnumber(L, 2)) {
+        map = new_map(L, 1, 0, s, n);
     } else {
+        s = OpenMappedFile(s, &n);
+        assert(s != 0);
+        map = new_map(L, 0, 0, s, n);
+    }
+    if (lua_isnumber(L, 2)) {
         map->data += luaL_checkinteger(L, 2);
         map->size = luaL_checkinteger(L, 3);
     }
-    lua_pushvalue(L, 1);
-    map->lref = luaL_ref(L, LUA_REGISTRYINDEX);
     return push_map(map);
+}
+/* create a map from a filename or a string (with given offset and length) */
+static int lvq_open (lua_State *L) {
+    vqMap map = checkmap(L, 1);
+    return push_view(MapToView(map));
 }
 
 #include "vops.c"
 #include "sparse.c"
 #include "mutable.c"
+#include "file.c"
 
 static const struct luaL_reg lvqlib_map_m[] = {
     {"__gc", map_gc},
@@ -999,6 +1012,7 @@ static const struct luaL_reg lvqlib_view_m[] = {
 };
 static const struct luaL_reg lvqlib_f[] = {
     {"map", lvq_map},
+    {"open", lvq_open},
     {"vopdef", lvq_vopdef},
     {0, 0},
 };

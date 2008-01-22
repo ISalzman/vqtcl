@@ -81,3 +81,7 @@ void (RangeDelete) (vqVec *vecp, int off, int count);
 
 int (IsMutable) (vqView t);
 vqView (MutWrapVop) (vqView t);
+
+typedef struct vqMap_s *vqMap;
+
+vqView (MapToView) (vqMap map);

@@ -199,9 +199,23 @@ assert((mm:html():match("<table>.*</table>")), "html rendering")
 -- mapped files and strings
 assert(tostring(lvq.map("abcde", 1, 3)) == "bcd", "map substring")
 local m = lvq.map("../etc/simple.db")
-assert(type(m) == "userdata", "map is userdata")
 assert(#m == 61, "size of mapped file")
 assert(#tostring(m) == 61, "size of mapped file as string")
+assert(type(m) == "userdata", "map is userdata")
 assert(tostring(lvq.map(m, 34, 8)) == "v[abc:I]", "substring in map")
+
+-- map to view
+local d1 = lvq.open(m)
+assert(tostring(d1) == "view: view #1 (I)", "open simple.db")
+assert(#d1[0].v == 5, "size of subview in simple.db")
+assert(tostring(d1[0].v) == "view: view #5 I", "subview in simple.db")
+assert(d1[0].v:dump() == [[
+  abc  
+  -----
+      1
+     22
+    333
+   4444
+  55555]], "dump view in simple.db")
 
 print "OK"

@@ -212,3 +212,8 @@ static const struct luaL_reg lvqlib_mutable[] = {
     {"mutwrap", m_mutwrap},
     {0, 0},
 };
+
+#undef vInsv
+#undef vDelv
+#undef vOrig
+#undef vPerm
