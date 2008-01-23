@@ -165,7 +165,7 @@ static void MergeSort (vqView v, int *ar, int nr, int *scr) {
 }
 
 static vqVec NewIntVec (int count, int **dataptr) {
-	vqVec seq = new_datavec(count, VQ_int);
+	vqVec seq = new_datavec(VQ_int, count);
 	if (dataptr != 0)
 		*dataptr = (int*) seq;
 	return seq;

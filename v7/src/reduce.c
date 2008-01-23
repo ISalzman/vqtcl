@@ -56,31 +56,26 @@ static vqType AggregateSum (vqType type, vqCell column, vqCell *item) {
     int r, rows = columnp->count;
     
     switch (type) {
-        
         case VQ_int:
             item->w = 0; 
             for (r = 0; r < rows; ++r)
                 item->w += GetColItem(r, column, VQ_int).i;
             return VQ_long;
-            
         case VQ_long:
             item->w = 0;
             for (r = 0; r < rows; ++r)
                 item->w += GetColItem(r, column, VQ_long).l;
             return VQ_long;
-            
         case VQ_float:
             item->d = 0; 
             for (r = 0; r < rows; ++r)
                 item->d += GetColItem(r, column, VQ_float).f;
             return VQ_double;
-
         case VQ_double:     
             item->d = 0; 
             for (r = 0; r < rows; ++r)
                 item->d += GetColItem(r, column, VQ_double).d;
             return VQ_double;
-            
         default:
             return VQ_nil;
     }

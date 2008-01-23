@@ -150,3 +150,8 @@ end)
 vopdef ('clone', 'V', function (v)
   return view(0, v:meta())
 end)
+
+-- natural sort
+vopdef ('sort', 'V', function (v)
+  return v [v:sortmap()]
+end)

@@ -235,6 +235,8 @@ assert(l2:s() == "v; #5", "check loaded emitted string")
 assert(#l2[0].v:s() == 350, "check v contents size of loaded emitted string")
 
 -- sorting
-assert(view{7,5,2}:sortmap():s() == "?; 2; 1; 0", "sortmap on reversed ints")
+assert(view{9,5,3}:sortmap():s() == "?; 2; 1; 0", "sortmap on reversed ints")
+assert(view{9,5,3}:sort():s() == "?; 3; 5; 9", "sort on reversed ints")
+assert(mm:sortmap():s() == "?; 0; 2; 1", "sortmap multiple columns")
 
 print "OK"
