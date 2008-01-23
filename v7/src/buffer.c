@@ -57,9 +57,9 @@ void AddToBuffer (Buffer_p bp, const void *data, intptr_t len) {
 int NextBuffer (Buffer_p bp, char **firstp, int *countp) {
     int count;
     
-    if (*firstp == NULL) {
-        Overflow_p p = bp->head, q = NULL;
-        while (p != NULL) {
+    if (*firstp == 0) {
+        Overflow_p p = bp->head, q = 0;
+        while (p != 0) {
             Overflow_p t = p->next;
             p->next = q;
             q = p;
@@ -75,7 +75,7 @@ int NextBuffer (Buffer_p bp, char **firstp, int *countp) {
     } else if (*firstp == bp->buf)
         return *countp == 0;
     
-    if (bp->head != NULL) {
+    if (bp->head != 0) {
         *firstp = bp->head->b;
         count = bp->saved - bp->used;
         if (count > (int) sizeof bp->head->b)
@@ -91,7 +91,7 @@ int NextBuffer (Buffer_p bp, char **firstp, int *countp) {
 
 void *BufferAsPtr (Buffer_p bp, int fast) {
     intptr_t len;
-    char *data, *ptr = NULL;
+    char *data, *ptr = 0;
     int cnt;
 
     if (fast && bp->saved == 0)
@@ -109,7 +109,7 @@ void *BufferAsPtr (Buffer_p bp, int fast) {
 
 vqVec BufferAsIntVec (Buffer_p bp) {
     int cnt;
-    char *data, *ptr = NULL;
+    char *data, *ptr = 0;
     vqVec vp = new_datavec(VQ_int, BufferFill(bp) / sizeof(int));
     data = (void*) vp;
     for (; NextBuffer(bp, &ptr, &cnt); data += cnt)

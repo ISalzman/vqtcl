@@ -345,6 +345,10 @@ static void *new_datavec (vqType type, int rows) {
     return vq_incref(v);
 }
 
+static vqType ViewColType (vqView v, int col) {
+    return vq_getInt(vwMeta(v), col, 1, VQ_nil) & VQ_TYPEMASK;
+}
+
 static void ViewCleaner (void *p) {
     vqView v = p;
     int c, nc = vwCols(v);
@@ -367,7 +371,7 @@ vqView vq_new (vqView meta, int rows) {
     if (rows > 0) {
         int c, nc = vwRows(meta);
         for (c = 0; c < nc; ++c) {
-            vqType type = vq_getInt(meta, c, 1, VQ_nil) & VQ_TYPEMASK;
+            vqType type = ViewColType(v, c);
             vwCol(v,c).v = new_datavec(type, rows);
         }
     }
@@ -557,7 +561,7 @@ static vqView table2view (lua_State *L, int t) {
     rows = cols > 0 ? lua_objlen(L, t) / cols : 0;
     v = vq_new(m, rows);
     for (c = 0; c < cols; ++c) {
-        vqType type = vq_getInt(m, c, 1, VQ_nil) & VQ_TYPEMASK;
+        vqType type = ViewColType(v, c);
         for (r = 0; r < rows; ++r) {
             vqType ty = type;
             lua_pushinteger(L, r * cols + c + 1);
@@ -651,7 +655,7 @@ static vqView RowMapVop (vqView v, vqView map) {
     t = IndirectView(&rowmaptab, vwMeta(v), vwRows(map), 2 * sizeof(vqCell));
     aux = vwAuxP(t);
     aux[0].v = vq_incref(v);
-    if (vwRows(m) > 0 && (vq_getInt(m, 0, 1, VQ_nil) & VQ_TYPEMASK) == VQ_int) {
+    if (vwRows(m) > 0 && ViewColType(map, 0) == VQ_int) {
         aux[1] = vwCol(map,0);
         vq_incref(aux[1].v);
     }
@@ -681,7 +685,7 @@ static vqView ColMapVop (vqView v, vqView map) {
     t = IndirectView(&colmaptab, mm, vwRows(v), 2 * sizeof(vqCell));
     aux = vwAuxP(t);
     aux[0].v = vq_incref(v);
-    if (vwRows(m) > 0 && (vq_getInt(m, 0, 1, VQ_nil) & VQ_TYPEMASK) == VQ_int) {
+    if (vwRows(m) > 0 && ViewColType(map, 0) == VQ_int) {
         aux[1] = vwCol(map,0);
         vq_incref(aux[1].v);
     }
@@ -862,7 +866,7 @@ static int row_newindex (lua_State *L) {
     vqType type = VQ_nil;
     int r, c = rowcolcheck(L, &v, &r);
     if (!lua_isnil(L, 3)) {
-        type = vq_getInt(vwMeta(v), c, 1, VQ_nil) & VQ_TYPEMASK;
+        type = ViewColType(v, c);
         type = check_cell(L, 3, VQ_TYPES[type], &cell);
     }
     vq_set(v, r, c, type, cell);
@@ -986,6 +990,7 @@ static int lvq_open (lua_State *L) {
 #include "file.c"
 #include "buffer.c"
 #include "emit.c"
+#include "sort.c"
 
 static const struct luaL_reg lvqlib_map_m[] = {
     {"__gc", map_gc},
@@ -1040,6 +1045,7 @@ LUA_API int luaopen_lvq_core (lua_State *L) {
     luaL_register(L, 0, lvqlib_ranges);
     luaL_register(L, 0, lvqlib_mutable);
     luaL_register(L, 0, lvqlib_emit);
+    luaL_register(L, 0, lvqlib_sort);
     lua_setglobal(L, "vops");
     
     luaL_register(L, "lvq", lvqlib_f);

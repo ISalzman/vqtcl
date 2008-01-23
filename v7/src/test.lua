@@ -175,6 +175,9 @@ assert(view{1,2,3}:last(4):s() == "?; 1; 2; 3", "last vop too many")
 -- reverse vop
 assert(view{1,2,3}:reverse():s() == "?; 3; 2; 1", "reverse vop")
 
+-- clone vop
+assert(m2:clone():s() == "A B C", "clone vop")
+
 -- minimal range operations tests
 assert(view{1,8}:r_flip(3,2):s() == "?; 1; 3; 5; 8", "r_flip")
 assert(table.concat({view{1,2}:r_locate(1)}, '.') == "0.0", "r_locate")
@@ -230,5 +233,8 @@ local l2 = lvq.open(lvq.map(s2,0,#s2))
 assert(tostring(l2[0].v) == "view: view #5 IIIIIIILFDSB", "load emitted string")
 assert(l2:s() == "v; #5", "check loaded emitted string")
 assert(#l2[0].v:s() == 350, "check v contents size of loaded emitted string")
+
+-- sorting
+assert(view{7,5,2}:sortmap():s() == "?; 2; 1; 0", "sortmap on reversed ints")
 
 print "OK"

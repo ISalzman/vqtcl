@@ -317,7 +317,7 @@ static vqDispatch mvtab = {
     MappedViewCleaner, MappedViewGetter
 };
 
-static vqDataVec MappedViewCol (vqMap map, int rows, const char **nextp, vqView meta) {
+static vqDataVec MappedvwCol (vqMap map, int rows, const char **nextp, vqView meta) {
     int r, c, cols, subcols;
     intptr_t colsize, colpos, *offsets;
     const char *next;
@@ -513,7 +513,7 @@ static vqView MapCols (vqMap map, const char **nextp, vqView meta) {
                     break;
                 case VQ_view:
                     sub = vq_getView(meta, c, 2, 0);
-                    vec = MappedViewCol(map, r, nextp, sub); 
+                    vec = MappedvwCol(map, r, nextp, sub); 
                     break;
                 default:
                     assert(0);
@@ -548,7 +548,7 @@ vqView MapToView (vqMap map) {
     intptr_t datalen, rootoff;
     
     if (map->size <= 24 || *(map->data + map->size - 16) != '\x80')
-        return NULL;
+        return 0;
         
     for (i = 0; i < 4; ++i)
         t[i] = BigEndianInt32(map->data + map->size - 16 + i * 4);

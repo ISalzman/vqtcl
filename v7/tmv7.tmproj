@@ -200,9 +200,9 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>0</integer>
+				<integer>25</integer>
 				<key>line</key>
-				<integer>0</integer>
+				<integer>605</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>

@@ -2,19 +2,19 @@
     $Id$
     This file is part of Vlerq, see src/vlerq.h for full copyright notice. */
 
-int TestBit (vqVeq bitmap, int row) {
-    if (bitmap != NULL && row < bitmap->count) {
+int TestBit (vqVec bitmap, int row) {
+    if (bitmap != 0 && row < bitmap->count) {
         const Byte_t *bits = bitmap->data[0].p;
         return (bits[row>>3] >> (row&7)) & 1;
     }
     return 0;
 }
 
-int SetBit (vqVeq *pbitmap, int row) {
+int SetBit (vqVec *pbitmap, int row) {
     Byte_t *bits;
-    vqVeq bitmap = *pbitmap;
+    vqVec bitmap = *pbitmap;
     
-    if (bitmap == NULL)
+    if (bitmap == 0)
         *pbitmap = bitmap = vq_incref(NewBitVec(row+1));
 
     if (TestBit(bitmap, row))
@@ -23,7 +23,7 @@ int SetBit (vqVeq *pbitmap, int row) {
     if (row >= bitmap->count) {
         int bytes = bitmap->data[1].i;
         if (row >= 8 * bytes) {
-            vqVeq newbitmap = vq_incref(NewBitVec(12 * bytes));
+            vqVec newbitmap = vq_incref(NewBitVec(12 * bytes));
             memcpy(newbitmap->data[0].p, LoseRef(bitmap)->data[0].p, bytes);
             *pbitmap = bitmap = newbitmap;
         }
@@ -36,20 +36,20 @@ int SetBit (vqVeq *pbitmap, int row) {
     return 8 * bitmap->data[1].i;
 }
 
-void ClearBit (vqVeq bitmap, int row) {
+void ClearBit (vqVec bitmap, int row) {
     if (TestBit(bitmap, row)) {
         Byte_t *bits = bitmap->data[0].p;
         bits[row>>3] &= ~ (1 << (row&7));
     }
 }
 
-void SetBitRange (vqVeq bits, int from, int count) {
+void SetBitRange (vqVec bits, int from, int count) {
     while (--count >= 0)
         SetBit(&bits, from++);
 }
 
-vqVeq MinBitCount (vqVeq *pbitmap, int count) {
-    if (*pbitmap == NULL || (*pbitmap)->count < count) {
+vqVec MinBitCount (vqVec *pbitmap, int count) {
+    if (*pbitmap == 0 || (*pbitmap)->count < count) {
         SetBit(pbitmap, count);
         ClearBit(*pbitmap, count);
         --(*pbitmap)->count;
@@ -57,7 +57,7 @@ vqVeq MinBitCount (vqVeq *pbitmap, int count) {
     return *pbitmap;
 }
 
-int NextBits (vqVeq bits, int *fromp, int *countp) {
+int NextBits (vqVec bits, int *fromp, int *countp) {
     int curr = *fromp + *countp;
     
     while (curr < bits->count && !TestBit(bits, curr))
@@ -98,7 +98,7 @@ static void EmitBits(char *bytes, int val, int *ppos) {
     int bit = 8 - (*ppos & 7);
     int top = TopBit(val), n = top + 1;
     
-    Assert(val > 0);
+    assert(val > 0);
     
     while (top >= bit) {
         ++curr;
@@ -125,7 +125,7 @@ char *Bits2elias (const char *bytes, int count, int *outbits) {
     
     if (count <= 0) {
         *outbits = 0;
-        return NULL;
+        return 0;
     }
     
     out = calloc(1, (count+count/2)/8+1);
@@ -185,10 +185,10 @@ int NextElias (const char *bytes, int count, int *inbits) {
     return val;
 }
 
-int CountBits (vqVeq seq) {
+int CountBits (vqVec seq) {
     int result = 0, from = 0, count = 0;
 
-    if (seq != NULL)
+    if (seq != 0)
         while (NextBits(seq, &from, &count))
             result += count;
 
@@ -196,15 +196,15 @@ int CountBits (vqVeq seq) {
 }
 
 vqType BitRunsCmd_i (vqCell *a) {
-    int i, outsize, count = a->c.seq->count, pos = 0;
+    int i, outsize, count = a->p->count, pos = 0;
     char *data;
     struct Buffer buffer;
-    vqVeq temp;
+    vqVec temp;
 
     temp = NewBitVec(count);
     
     for (i = 0; i < count; ++i) {
-        if (GetColItem(i, a->c, IT_int).i)
+        if (GetColItem(i, *a, VQ_int).i)
             SetBit(&temp, i);
     }
 
@@ -221,6 +221,6 @@ vqType BitRunsCmd_i (vqCell *a) {
     
     free(data);
     
-    a->c = SeqAsCol(BufferAsIntVec(&buffer));
+    *a = SeqAsCol(BufferAsIntVec(&buffer));
     return IT_column;
 }

@@ -63,7 +63,7 @@ static intptr_t EmitBlock (EmitInfo *eip, const void* data, int size) {
 }
 
 static void *EmitCopy (EmitInfo *eip, const void* data, int size) {
-    void *buf = NULL;
+    void *buf = 0;
     if (size > 0) {
         buf = memcpy(malloc(size), data, size);
         EmitBlock(eip, buf, size);
@@ -199,7 +199,7 @@ static int* PackedIntVec (const int *data, int rows, intptr_t *outsize) {
         }
     } else {
         bytes = 0;
-        result = NULL;
+        result = 0;
     }
 
     *outsize = bytes;
@@ -349,7 +349,7 @@ static void EmitView (EmitInfo *eip, vqView view, int describe) {
 
     if (describe) {
         int cnt = 0;
-        char *ptr = NULL;
+        char *ptr = 0;
         struct Buffer desc;
         InitBuffer(&desc);
         MetaAsDesc(vwMeta(view), &desc);
@@ -388,7 +388,7 @@ static intptr_t EmitComplete (EmitInfo *eip, vqView view) {
     EmitView(eip, view, 1);
 
     rootpos = EmitBuffer(eip, eip->colbuf);  
-    eip->colbuf = NULL;
+    eip->colbuf = 0;
 
     if (eip->position != (intptr_t) eip->position)
         return -1; /* fail if >= 2 Gb on machines with a 32-bit address space */
@@ -435,16 +435,16 @@ intptr_t ViewSave (vqView view, void *aux, SaveInitFun initfun, SaveDataFun data
     numitems = BufferFill(&buffer) / sizeof(EmitItem);
     items = BufferAsPtr(&buffer, 1);
 
-    if (initfun != NULL)
+    if (initfun != 0)
         aux = initfun(aux, bytes);
 
     for (i = 0; i < numitems; ++i) {
-        if (aux != NULL)
+        if (aux != 0)
             aux = datafun(aux, items[i].data, items[i].size);
         free((void*) items[i].data);
     }
     
-    if (aux == NULL)
+    if (aux == 0)
         bytes = 0;
     
     ReleaseBuffer(&buffer, 0);
@@ -476,7 +476,7 @@ static int e_emit (lua_State *L) {
     luaL_Buffer b;
     LVQ_ARGS(L,A,"V");
     luaL_buffinit(L, &b);   
-    n = ViewSave(A[0].v, &b, NULL, EmitDataFun);
+    n = ViewSave(A[0].v, &b, 0, EmitDataFun);
     luaL_pushresult(&b);
     if (n < 0)
         return luaL_error(L, "error in view emit");

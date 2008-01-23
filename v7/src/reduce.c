@@ -4,9 +4,9 @@
 
 static vqType AggregateMax (vqType type, vqCell column, vqCell *item) {
     int r, rows;
-    Item temp;
+    vqCell temp;
     
-    rows = column.seq->count;
+    rows = columnp->count;
     if (rows == 0) {
         item->e = EC_nalor;
         return IT_error;
@@ -22,16 +22,16 @@ static vqType AggregateMax (vqType type, vqCell column, vqCell *item) {
     return type;
 }
 
-vqType MaxCmd_VN (Item args[]) {
-    vqCell column = ViewCol(args[0].v, args[1].i);
+vqType MaxCmd_VN (vqCell args[]) {
+    vqCell column = vwCol(args[0].v, args[1].i);
     return AggregateMax(ViewColType(args[0].v, args[1].i), column, args);
 }
 
 static vqType AggregateMin (vqType type, vqCell column, vqCell *item) {
     int r, rows;
-    Item temp;
+    vqCell temp;
     
-    rows = column.seq->count;
+    rows = columnp->count;
     if (rows == 0) {
         item->e = EC_nalor;
         return IT_error;
@@ -47,46 +47,46 @@ static vqType AggregateMin (vqType type, vqCell column, vqCell *item) {
     return type;
 }
 
-vqType MinCmd_VN (Item args[]) {
-    vqCell column = ViewCol(args[0].v, args[1].i);
+vqType MinCmd_VN (vqCell args[]) {
+    vqCell column = vwCol(args[0].v, args[1].i);
     return AggregateMin(ViewColType(args[0].v, args[1].i), column, args);
 }
 
 static vqType AggregateSum (vqType type, vqCell column, vqCell *item) {
-    int r, rows = column.seq->count;
+    int r, rows = columnp->count;
     
     switch (type) {
         
-        case IT_int:
+        case VQ_int:
             item->w = 0; 
             for (r = 0; r < rows; ++r)
-                item->w += GetColItem(r, column, IT_int).i;
-            return IT_wide;
+                item->w += GetColItem(r, column, VQ_int).i;
+            return VQ_long;
             
-        case IT_wide:
+        case VQ_long:
             item->w = 0;
             for (r = 0; r < rows; ++r)
-                item->w += GetColItem(r, column, IT_wide).w;
-            return IT_wide;
+                item->w += GetColItem(r, column, VQ_long).l;
+            return VQ_long;
             
-        case IT_float:
+        case VQ_float:
             item->d = 0; 
             for (r = 0; r < rows; ++r)
-                item->d += GetColItem(r, column, IT_float).f;
-            return IT_double;
+                item->d += GetColItem(r, column, VQ_float).f;
+            return VQ_double;
 
-        case IT_double:     
+        case VQ_double:     
             item->d = 0; 
             for (r = 0; r < rows; ++r)
-                item->d += GetColItem(r, column, IT_double).d;
-            return IT_double;
+                item->d += GetColItem(r, column, VQ_double).d;
+            return VQ_double;
             
         default:
-            return IT_unknown;
+            return VQ_nil;
     }
 }
 
-vqType SumCmd_VN (Item args[]) {
-    vqCell column = ViewCol(args[0].v, args[1].i);
+vqType SumCmd_VN (vqCell args[]) {
+    vqCell column = vwCol(args[0].v, args[1].i);
     return AggregateSum(ViewColType(args[0].v, args[1].i), column, &args[0]);
 }

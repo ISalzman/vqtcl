@@ -145,3 +145,8 @@ end)
 vopdef ('reverse', 'V', function (v)
   return v [v:step(#v-1, -1)]
 end)
+
+-- create a view with same structure but no rows
+vopdef ('clone', 'V', function (v)
+  return view(0, v:meta())
+end)

@@ -2,44 +2,37 @@
     $Id$
     This file is part of Vlerq, see src/vlerq.h for full copyright notice. */
 
-static int ItemsEqual (vqType type, Item a, Item b) {
+static int ItemsEqual (vqType type, vqCell a, vqCell b) {
     switch (type) {
-
-        case IT_int:
+        case VQ_int:
             return a.i == b.i;
-
-        case IT_wide:
-            return a.w == b.w;
-
-        case IT_float:
+        case VQ_long:
+            return a.l == b.l;
+        case VQ_float:
             return a.f == b.f;
-
-        case IT_double:
+        case VQ_double:
             return a.d == b.d;
-
-        case IT_string:
+        case VQ_string:
             return strcmp(a.s, b.s) == 0;
-
-        case IT_bytes:
-            return a.u.len == b.u.len && memcmp(a.u.ptr, b.u.ptr, a.u.len) == 0;
-
-        case IT_view:
+        case VQ_bytes:
+            return a.x.y.i == b.x.y.i && memcmp(a.p, b.p, a.x.y.i) == 0;
+        case VQ_view:
             return ViewCompare(a.v, b.v) == 0;
-            
-        default: Assert(0); return -1;
+        default: assert(0); return -1;
     }
 }
 
 int RowEqual (vqView v1, int r1, vqView v2, int r2) {
     int c;
     vqType type;
-    Item item1, item2;
+    vqCell item1, item2;
 
-    for (c = 0; c < ViewWidth(v1); ++c) {
+    for (c = 0; c < vwCols(v1); ++c) {
         type = ViewColType(v1, c);
-        item1 = GetViewItem(v1, r1, c, type);
-        item2 = GetViewItem(v2, r2, c, type);
-
+        item1 = vwCol(v1,c);
+        item2 = vwCol(v2,c);
+        getcell(r1, &item1);
+        getcell(r2, &item2);
         if (!ItemsEqual(type, item1, item2))
             return 0;
     }
@@ -49,51 +42,42 @@ int RowEqual (vqView v1, int r1, vqView v2, int r2) {
 
 /* TODO: UTF-8 comparisons, also case-sensitive & insensitive */
 
-static int ItemsCompare (vqType type, Item a, Item b, int lower) {
+static int ItemsCompare (vqType type, vqCell a, vqCell b, int lower) {
     switch (type) {
-
-        case IT_int:
+        case VQ_int:
             return (a.i > b.i) - (a.i < b.i);
-
-        case IT_wide:
-            return (a.w > b.w) - (a.w < b.w);
-
-        case IT_float:
+        case VQ_long:
+            return (a.l > b.l) - (a.l < b.l);
+        case VQ_float:
             return (a.f > b.f) - (a.f < b.f);
-
-        case IT_double:
+        case VQ_double:
             return (a.d > b.d) - (a.d < b.d);
-
-        case IT_string:
+        case VQ_string:
             return (lower ? strcasecmp : strcmp)(a.s, b.s);
-
-        case IT_bytes: {
+        case VQ_bytes: {
             int f;
-
-            if (a.u.len == b.u.len)
-                return memcmp(a.u.ptr, b.u.ptr, a.u.len);
-
-            f = memcmp(a.u.ptr, b.u.ptr, a.u.len < b.u.len ? a.u.len : b.u.len);
-            return f != 0 ? f : a.u.len - b.u.len;
+            if (a.x.y.i == b.x.y.i)
+                return memcmp(a.p, b.p, a.x.y.i);
+            f = memcmp(a.p, b.p, a.x.y.i < b.x.y.i ? a.x.y.i : b.x.y.i);
+            return f != 0 ? f : a.x.y.i - b.x.y.i;
         }
-        
-        case IT_view:
+        case VQ_view:
             return ViewCompare(a.v, b.v);
-            
-        default: Assert(0); return -1;
+        default: assert(0); return -1;
     }
 }
 
-int RowCompare (vqView v1, int r1, vqView v2, int r2) {
+static int RowCompare (vqView v1, int r1, vqView v2, int r2) {
     int c, f;
     vqType type;
-    Item item1, item2;
+    vqCell item1, item2;
 
-    for (c = 0; c < ViewWidth(v1); ++c) {
+    for (c = 0; c < vwCols(v1); ++c) {
         type = ViewColType(v1, c);
-        item1 = GetViewItem(v1, r1, c, type);
-        item2 = GetViewItem(v2, r2, c, type);
-
+        item1 = vwCol(v1,c);
+        item2 = vwCol(v2,c);
+        getcell(r1, &item1);
+        getcell(r2, &item2);
         f = ItemsCompare(type, item1, item2, 0);
         if (f != 0)
             return f < 0 ? -1 : 1;
@@ -102,23 +86,29 @@ int RowCompare (vqView v1, int r1, vqView v2, int r2) {
     return 0;
 }
 
-static int RowIsLess (vqView v, int a, int b) {
-    int c, f;
-    vqType type;
-    Item va, vb;
+int ViewCompare (vqView view1, vqView view2) {
+    int f, r, rows1, rows2;
+    
+    if (view1 == view2)
+        return 0;
+    f = ViewCompare(vwMeta(view1), vwMeta(view2));
+    if (f != 0)
+        return f;
+        
+    rows1 = vwRows(view1);
+    rows2 = vwRows(view2);
+    for (r = 0; r < rows1; ++r) {
+        if (r >= rows2)
+            return 1;
+        f = RowCompare(view1, r, view2, r);
+        if (f != 0)
+            return f < 0 ? -1 : 1;
+    }
+    return rows1 < rows2 ? -1 : 0;
+}
 
-    if (a != b)
-        for (c = 0; c < ViewWidth(v); ++c) {
-            type = ViewColType(v, c);
-            va = GetViewItem(v, a, c, type);
-            vb = GetViewItem(v, b, c, type);
-
-            f = ItemsCompare(type, va, vb, 0);
-            if (f != 0)
-                return f < 0;
-        }
-
-    return a < b;
+static int RowIsLess (vqView v, int r1, int r2) {
+    return r1 < r2 || RowCompare(v, r1, v, r2) < 0;
 }
 
 static int TestAndSwap (vqView v, int *a, int *b) {
@@ -174,22 +164,37 @@ static void MergeSort (vqView v, int *ar, int nr, int *scr) {
     }
 }
 
-vqCell SortMap (vqView view) {
-    int r, rows, *imap, *itmp;
-    vqVeq seq;
+static vqVec NewIntVec (int count, int **dataptr) {
+	vqVec seq = new_datavec(count, VQ_int);
+	if (dataptr != 0)
+		*dataptr = (int*) seq;
+	return seq;
+}
 
-    rows = ViewSize(view);
-
-    if (rows <= 1 || ViewWidth(view) == 0)
-        return NewIotaColumn(rows);
-
+static vqVec SortMap (vqView view) {
+    vqVec seq, tv;
+    int r, rows = vwRows(view), *imap, *itmp;
+    if (rows <= 1 || vwCols(view) == 0)
+        return 0;
     seq = NewIntVec(rows, &imap);
-    NewIntVec(rows, &itmp);
-    
+    tv = vq_incref(NewIntVec(rows, &itmp));
     for (r = 0; r < rows; ++r)
         imap[r] = itmp[r] = r;
-
     MergeSort(view, imap, rows, itmp);
-
-    return SeqAsCol(seq);
+    vq_decref(tv);
+    return seq;
 }
+
+static int s_sortmap (lua_State *L) {
+    vqView v = checkview(L, 1), w;
+    vqVec map = SortMap(v);
+    assert(map != 0);
+    w = vq_new(desc2meta(L, ":I", 2), vSize(map));
+    vwCol(w,0).v = vq_incref(map);
+    return push_view(w);
+}
+
+static const struct luaL_reg lvqlib_sort[] = {
+    {"sortmap", s_sortmap},
+    {0, 0},
+};
