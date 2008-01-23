@@ -15,11 +15,6 @@ struct vqDataVec_s {
     vqInfo info;
 };
 
-#define dvData(v)   vHead(v,data)
-#define dvMeta(v)   vHead(v,meta)
-#define dvSizes(v)  vHead(v,sizes)
-#define dvMap(v)    vHead(v,map)
-
 #if 0
 static void BytesCleaner (vqVec map) {
     /* ObjRelease(map[2].p); FIXME: need to release object somehow */
@@ -43,25 +38,25 @@ static vqType Rgetter_i0 (int row, vqCell *cp) {
 }
 static vqType Rgetter_i1 (int row, vqCell *cp) {
     vqDataVec dv = cp->p;
-    const char *ptr = (const char*) dvData(dv);
+    const char *ptr = (const char*) dv[-1].data;
     cp->i = (ptr[row>>3] >> (row&7)) & 1;
     return VQ_int;
 }
 static vqType Rgetter_i2 (int row, vqCell *cp) {
     vqDataVec dv = cp->p;
-    const char *ptr = (const char*) dvData(dv);
+    const char *ptr = (const char*) dv[-1].data;
     cp->i = (ptr[row>>2] >> 2*(row&3)) & 3;
     return VQ_int;
 }
 static vqType Rgetter_i4 (int row, vqCell *cp) {
     vqDataVec dv = cp->p;
-    const char *ptr = (const char*) dvData(dv);
+    const char *ptr = (const char*) dv[-1].data;
     cp->i = (ptr[row>>1] >> 4*(row&1)) & 15;
     return VQ_int;
 }
 static vqType Rgetter_i8 (int row, vqCell *cp) {
     vqDataVec dv = cp->p;
-    const char *ptr = (const char*) dvData(dv);
+    const char *ptr = (const char*) dv[-1].data;
     cp->i = (int8_t) ptr[row];
     return VQ_int;
 }
@@ -69,7 +64,7 @@ static vqType Rgetter_i8 (int row, vqCell *cp) {
 #ifdef VQ_MUSTALIGN
 static vqType Rgetter_i16 (int row, vqCell *cp) {
     vqDataVec dv = cp->p;
-    const uint8_t *ptr = (const uint8_t*) dvData(dv) + row * 2;
+    const uint8_t *ptr = (const uint8_t*) dv[-1].data + row * 2;
 #ifdef VQ_BIGENDIAN
     cp->i = (((int8_t) ptr[0]) << 8) | ptr[1];
 #else
@@ -79,7 +74,7 @@ static vqType Rgetter_i16 (int row, vqCell *cp) {
 }
 static vqType Rgetter_i32 (int row, vqCell *cp) {
     vqDataVec dv = cp->p;
-    const char *ptr = (const char*) dvData(dv) + row * 4;
+    const char *ptr = (const char*) dv[-1].data + row * 4;
     int i;
     for (i = 0; i < 4; ++i)
         cp->b[i] = ptr[i];
@@ -87,7 +82,7 @@ static vqType Rgetter_i32 (int row, vqCell *cp) {
 }
 static vqType Rgetter_i64 (int row, vqCell *cp) {
     vqDataVec dv = cp->p;
-    const char *ptr = (const char*) dvData(dv) + row * 8;
+    const char *ptr = (const char*) dv[-1].data + row * 8;
     int i;
     for (i = 0; i < 8; ++i)
         cp->b[i] = ptr[i];
@@ -104,31 +99,31 @@ static vqType Rgetter_f64 (int row, vqCell *cp) {
 #else
 static vqType Rgetter_i16 (int row, vqCell *cp) {
     vqDataVec dv = cp->p;
-    const char *ptr = (const char*) dvData(dv);
+    const char *ptr = (const char*) dv[-1].data;
     cp->i = ((short*) ptr)[row];
     return VQ_int;
 }
 static vqType Rgetter_i32 (int row, vqCell *cp) {
     vqDataVec dv = cp->p;
-    const char *ptr = (const char*) dvData(dv);
+    const char *ptr = (const char*) dv[-1].data;
     cp->i = ((const int*) ptr)[row];
     return VQ_int;
 }
 static vqType Rgetter_i64 (int row, vqCell *cp) {
     vqDataVec dv = cp->p;
-    const char *ptr = (const char*) dvData(dv);
+    const char *ptr = (const char*) dv[-1].data;
     cp->l = ((const int64_t*) ptr)[row];
     return VQ_long;
 }
 static vqType Rgetter_f32 (int row, vqCell *cp) {
     vqDataVec dv = cp->p;
-    const char *ptr = (const char*) dvData(dv);
+    const char *ptr = (const char*) dv[-1].data;
     cp->f = ((const float*) ptr)[row];
     return VQ_float;
 }
 static vqType Rgetter_f64 (int row, vqCell *cp) {
     vqDataVec dv = cp->p;
-    const char *ptr = (const char*) dvData(dv);
+    const char *ptr = (const char*) dv[-1].data;
     cp->d = ((const double*) ptr)[row];
     return VQ_double;
 }
@@ -136,7 +131,7 @@ static vqType Rgetter_f64 (int row, vqCell *cp) {
 
 static vqType Rgetter_i16r (int row, vqCell *cp) {
     vqDataVec dv = cp->p;
-    const uint8_t *ptr = (const uint8_t*) dvData(dv) + row * 2;
+    const uint8_t *ptr = (const uint8_t*) dv[-1].data + row * 2;
 #ifdef VQ_BIGENDIAN
     cp->i = (((int8_t) ptr[1]) << 8) | ptr[0];
 #else
@@ -146,7 +141,7 @@ static vqType Rgetter_i16r (int row, vqCell *cp) {
 }
 static vqType Rgetter_i32r (int row, vqCell *cp) {
     vqDataVec dv = cp->p;
-    const char *ptr = (const char*) dvData(dv) + row * 4;
+    const char *ptr = (const char*) dv[-1].data + row * 4;
     int i;
     for (i = 0; i < 4; ++i)
         ((char*) cp)[i] = ptr[3-i];
@@ -154,7 +149,7 @@ static vqType Rgetter_i32r (int row, vqCell *cp) {
 }
 static vqType Rgetter_i64r (int row, vqCell *cp) {
     vqDataVec dv = cp->p;
-    const char *ptr = (const char*) dvData(dv) + row * 8;
+    const char *ptr = (const char*) dv[-1].data + row * 8;
     int i;
     for (i = 0; i < 8; ++i)
         ((char*) cp)[i] = ptr[7-i];
@@ -171,7 +166,7 @@ static vqType Rgetter_f64r (int row, vqCell *cp) {
 
 static void Rcleaner (void *p) {
     vqDataVec v = p;
-    vq_decref(dvMap(v));
+    vq_decref(v[-1].map);
 }
 
 static vqDispatch vget_i0   = {
@@ -293,8 +288,8 @@ static void MappedViewCleaner (void *p) {
     for (i = 0; i < count; ++i)
         if ((offsets[i] & 1) == 0)
             vq_decref((void*) offsets[i]);
-    vq_decref(dvMeta(v));
-    vq_decref(dvMap(v));
+    vq_decref(v[-1].meta);
+    vq_decref(v[-1].map);
 }
 
 static vqType MappedViewGetter (int row, vqCell *cp) {
@@ -304,7 +299,8 @@ static vqType MappedViewGetter (int row, vqCell *cp) {
     /* odd means it's a file offset, else it's a cached view pointer */
     if (offsets[row] & 1) {
         intptr_t o = (uintptr_t) offsets[row] >> 1;
-        offsets[row] = (intptr_t) vq_incref(MapSubview(dvMap(v), o, dvMeta(v)));
+        offsets[row] = (intptr_t) vq_incref(MapSubview(v[-1].map, o,
+                                                                v[-1].meta));
         assert((offsets[row] & 1) == 0);
     }
     
@@ -353,8 +349,8 @@ static vqDataVec MappedvwCol (vqMap map, int rows, const char **nextp, vqView me
     }
     
     vSize(result) = rows;
-    dvMap(result) = vq_incref(map);
-    dvMeta(result) = vq_incref(cols > 0 ? meta : empty_meta(map->state));    
+    result[-1].map = vq_incref(map);
+    result[-1].meta = vq_incref(cols > 0 ? meta : empty_meta(map->state));    
     return result;
 }
 
@@ -366,8 +362,8 @@ static vqDataVec MappedFixedCol (vqMap map, int rows, const char **nextp, int re
     vqDispatch *vt = FixedGetter(bytes, rows, real, IsReversedEndian(map));
     vqDataVec result = alloc_vec(vt, 0);    
     vSize(result) = rows;
-    dvData(result) = (void*) (map->data + colpos);
-    dvMap(result) = vq_incref(map);
+    result[-1].data = (void*) (map->data + colpos);
+    result[-1].map = vq_incref(map);
     return result;
 }
 
@@ -375,14 +371,14 @@ static vqDataVec MappedFixedCol (vqMap map, int rows, const char **nextp, int re
 
 static void MappedStringCleaner (void *p) {
     vqDataVec v = p;
-    vq_decref(dvSizes(v));
-    vq_decref(dvMap(v));
+    vq_decref(v[-1].sizes);
+    vq_decref(v[-1].map);
 }
 
 static vqType MappedStringGetter (int row, vqCell *cp) {
     vqDataVec v = cp->p;
     const intptr_t *offsets = (void*) v;
-    const char *data = dvMap(v)->data;
+    const char *data = v[-1].map->data;
 
     if (offsets[row] == 0)
         cp->s = "";
@@ -405,13 +401,13 @@ static vqDispatch mstab = {
 static vqType MappedBytesGetter (int row, vqCell *cp) {
     vqDataVec v = cp->p;
     const intptr_t *offsets = (void*) v;
-    const char *data = dvMap(v)->data;
+    const char *data = v[-1].map->data;
     
     if (offsets[row] == 0) {
         cp->x.y.i = 0;
         cp->p = 0;
     } else if (offsets[row] > 0) {
-        cp->p = dvSizes(v); /* reuse cell to access sizes */
+        cp->p = v[-1].sizes; /* reuse cell to access sizes */
         getcell(row, cp);
         cp->x.y.i = cp->i;
         cp->p = (char*) data + offsets[row];
@@ -470,12 +466,12 @@ static vqDataVec MappedStringCol (vqMap map, int rows, const char **nextp, int i
     }
 
     vSize(result) = rows;
-    dvMap(result) = vq_incref(map);
+    result[-1].map = vq_incref(map);
     
     if (istext)
         vq_decref(sizes);
     else
-        dvSizes(result) = sizes;
+        result[-1].sizes = sizes;
 
     return result;
 }

@@ -7,10 +7,8 @@ static vqType AggregateMax (vqType type, vqCell column, vqCell *item) {
     vqCell temp;
     
     rows = columnp->count;
-    if (rows == 0) {
-        item->e = EC_nalor;
-        return IT_error;
-    }
+    if (rows == 0)
+        return VQ_nil;
     
     *item = GetColItem(0, column, type);
     for (r = 1; r < rows; ++r) {
@@ -32,10 +30,8 @@ static vqType AggregateMin (vqType type, vqCell column, vqCell *item) {
     vqCell temp;
     
     rows = columnp->count;
-    if (rows == 0) {
-        item->e = EC_nalor;
-        return IT_error;
-    }
+    if (rows == 0)
+        return VQ_nil;
     
     *item = GetColItem(0, column, type);
     for (r = 1; r < rows; ++r) {
@@ -57,14 +53,14 @@ static vqType AggregateSum (vqType type, vqCell column, vqCell *item) {
     
     switch (type) {
         case VQ_int:
-            item->w = 0; 
+            item->l = 0; 
             for (r = 0; r < rows; ++r)
-                item->w += GetColItem(r, column, VQ_int).i;
+                item->l += GetColItem(r, column, VQ_int).i;
             return VQ_long;
         case VQ_long:
-            item->w = 0;
+            item->l = 0;
             for (r = 0; r < rows; ++r)
-                item->w += GetColItem(r, column, VQ_long).l;
+                item->l += GetColItem(r, column, VQ_long).l;
             return VQ_long;
         case VQ_float:
             item->d = 0; 

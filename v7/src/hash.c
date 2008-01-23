@@ -2,6 +2,8 @@
     $Id$
     This file is part of Vlerq, see src/vlerq.h for full copyright notice. */
 
+static vqVec (HashValues) (vqView view); /* forward */
+    
 typedef struct HashInfo *HashInfo_p;
 
 typedef struct HashInfo {
@@ -9,11 +11,11 @@ typedef struct HashInfo {
     int     prime;      /* prime used for hashing */
     int     fill;       /* used to fill map */
     int    *map;        /* map of unique rows */
-    vqCell  mapcol;     /* owner of map */
+    vqVec   mapcol;     /* owner of map */
     int    *hvec;       /* hash probe vector */
-    vqCell  veccol;     /* owner of hvec */
+    vqVec   veccol;     /* owner of hvec */
     int    *hashes;     /* hash values, one per view row */
-    vqCell  hashcol;    /* owner of hashes */
+    vqVec   hashcol;    /* owner of hashes */
 } HashInfo;
 
 static int StringHash (const char *s, int n) {
@@ -26,95 +28,71 @@ static int StringHash (const char *s, int n) {
     return h ^ i;
 }
 
-static vqCell HashCol (vqType type, vqCell column) {
+static vqVec HashCol (vqCell column) {
     int i, count, *data;
     vqVec seq;
     vqCell item;
 
-/* the following is not possible: the result may be xor-ed into!
-    if (type == VQ_int && columnp->getter == PickIntGetter(32))
-        return column;
-*/
-
-    count = columnp->count;
+    count = vSize(column.p);
     seq = NewIntVec(count, &data);
 
-    switch (type) {
-        case VQ_int:
-            for (i = 0; i < count; ++i)
-                data[i] = GetColItem(i, column, VQ_int).i;
-            break;
-        case VQ_long:
-            for (i = 0; i < count; ++i) {
-                item = GetColItem(i, column, VQ_long);
-                data[i] = item.q[0] ^ item.q[1];
-            }
-            break;
-        case VQ_float:
-            for (i = 0; i < count; ++i)
-                data[i] = GetColItem(i, column, VQ_float).i;
-            break;
-        case VQ_double:
-            for (i = 0; i < count; ++i) {
-                item = GetColItem(i, column, VQ_double);
-                data[i] = item.q[0] ^ item.q[1];
-            }
-            break;
-        case VQ_string:
-            for (i = 0; i < count; ++i) {
-                item = GetColItem(i, column, VQ_string);
+    for (i = 0; i < count; ++i) {
+        item = column;
+        switch (getcell(i, &item)) {
+            case VQ_int:
+                data[i] = item.i;
+                break;
+            case VQ_long:
+                data[i] = item.i ^ item.x.y.i;
+                break;
+            case VQ_float:
+                data[i] = item.i;
+                break;
+            case VQ_double:
+                data[i] = item.i ^ item.x.y.i;
+                break;
+            case VQ_string:
                 data[i] = StringHash(item.s, -1);
-            }
-            break;
-        case VQ_bytes:
-            for (i = 0; i < count; ++i) {
-                item = GetColItem(i, column, VQ_bytes);
+                break;
+            case VQ_bytes:
                 data[i] = StringHash(item.s, item.x.y.i);
-            }
-            break;
-        case VQ_view:
-            for (i = 0; i < count; ++i) {
-                int j, hcount, hval = 0;
-                const int *hvec;
-                vqCell hashes;
-                
-                item = GetColItem(i, column, VQ_view);
-                hashes = HashValues(item.v);
-                hvec = (const int*) hashesp->data[0].p;
-                hcount = hashesp->count;
-                
+                break;
+            case VQ_view: {
+                vqVec hashes = HashValues(item.v);
+                const int *hvec = (const int*) hashes;
+                int j, hcount = vSize(hashes), hval = 0;
+                            
                 for (j = 0; j < hcount; ++j)
                     hval ^= hvec[j];
                 /* TODO: release hashes right now */
-            
+        
                 data[i] = hval ^ hcount;
+                break;
             }
-            break;
-        default: assert(0);
+            default: assert(0);
+        }
     }
 
-    return SeqAsCol(seq);
+    return seq;
 }
 
+#if 0
 vqType HashColCmd_SO (vqCell args[]) {
-    vqType type;
-    vqCell column;
-    
-    type = CharAsItemType(args[0].s[0]);
-    column = CoerceColumn(type, args[1].o);
-    if (columnp == 0)
-        return VQ_nil;
-        
-    *args = HashCol(type, column);
+    vqType type = CharAsItemType(args[0].s[0]);
+    vqCell column = CoerceColumn(type, args[1].o);
+    if (column.p == 0)
+        return VQ_nil;        
+    *args = HashCol(column);
     return IT_column;
 }
+#endif
 
-int RowHash (vqView view, int row) {
+static int RowHash (vqView view, int row) {
     int c, hash = 0;
     vqCell item;
 
     for (c = 0; c < vwCols(view); ++c) {
-        item.c = vwCol(view, c);
+        item = vwCol(view, c);
         switch (getcell(row, &item)) {
 
             case VQ_int:
@@ -130,9 +108,14 @@ int RowHash (vqView view, int row) {
                 break;
 
             default: {
+#if 0
                 vqView rview = StepView(view, 1, row, 1, 1);
-                vqCell rcol = HashValues(rview);
-                hash = *(const int*) rcolp->data[0].p;
+#else
+                vqView rview = view; /* FIXME: should only hash a single row */
+#endif
+                vqVec rcol = vq_incref(HashValues(rview));
+                hash = *(const int*) rcol;
+                vq_decref(rcol);
                 break;
             }
         }
@@ -141,26 +124,27 @@ int RowHash (vqView view, int row) {
     return hash;
 }
 
-static void XorWithIntCol (vqCell src, Column_p dest) {
-    const int *srcdata = (const int*) srcp->data[0].p;
-    int i, count = srcp->count, *destdata = (int*) dest->seq->data[0].p;
+static void XorWithIntCol (vqVec src, vqVec dest) {
+    const int *srcdata = (const int*) src;
+    int i, count = vSize(src), *destdata = (int*) dest;
 
     for (i = 0; i < count; ++i)
         destdata[i] ^= srcdata[i];
 }
 
-vqCell HashValues (vqView view) {
+static vqVec HashValues (vqView view) {
     int c;
-    vqCell result;
+    vqVec result;
 
     if (vwCols(view) == 0 || vwRows(view) == 0)
-        return SeqAsCol(NewIntVec(vwRows(view), 0));
+        return NewIntVec(vwRows(view), 0);
         
-    result = HashCol(ViewColType(view, 0), vwCol(view, 0));
+    result = HashCol(vwCol(view, 0));
     for (c = 1; c < vwCols(view); ++c) {
-        vqCell auxcol = HashCol(ViewColType(view, c), vwCol(view, c));
+        vqVec auxcol = vq_incref(HashCol(vwCol(view, c)));
         /* TODO: get rid of the separate xor step by xoring in HashCol */
-        XorWithIntCol(auxcol, &result);
+        XorWithIntCol(auxcol, result);
+        vq_decref(auxcol);
     }
     return result;
 }
@@ -168,7 +152,7 @@ vqCell HashValues (vqView view) {
 static int HashFind (vqView keyview, int keyrow, int keyhash, HashInfo_p data) {
     int probe, datarow, mask, step;
 
-    mask = data->veccolp->count - 1;
+    mask = vSize(data->veccol) - 1;
     probe = ~keyhash & mask;
 
     step = (keyhash ^ (keyhash >> 3)) & mask;
@@ -200,7 +184,7 @@ static int HashFind (vqView keyview, int keyrow, int keyhash, HashInfo_p data) {
 
 static int StringHashFind (const char *key, vqVec hseq, vqCell values) {
     int probe, datarow, mask, step, keyhash;
-    const int *hvec = (const int*) hseq->data[0].p;
+    const int *hvec = (const int*) hseq;
     int prime = hseq->data[2].i;
     
     keyhash = StringHash(key, -1);
@@ -238,15 +222,15 @@ static int Log2bits (int n) {
     return bits;
 }
 
-static vqCell HashVector (int rows) {
+static vqVec HashVector (int rows) {
     int bits = Log2bits((4 * rows) / 3);
     if (bits < 2)
         bits = 2;
-    return SeqAsCol(NewIntVec(1 << bits, 0));
+    return NewIntVec(1 << bits, 0);
 }
 
-static void InitHashInfo (HashInfo_p info, vqView view, vqCell hmap, vqCell hvec, vqCell hashes) {
-    int size = hvecp->count;
+static void InitHashInfo (HashInfo_p info, vqView view, vqVec hmap, vqVec hvec, vqVec hashes) {
+    int size = vSize(hvec.p);
 
     static char slack [] = {
         0, 0, 3, 3, 3, 5, 3, 3, 29, 17, 9, 5, 83, 27, 43, 3,
@@ -258,52 +242,52 @@ static void InitHashInfo (HashInfo_p info, vqView view, vqCell hmap, vqCell hvec
     info->fill = 0;
     
     info->mapcol = hmap;
-    info->map = (int*) hmapp->data[0].p;
+    info->map = (int*) hmap;
 
     info->veccol = hvec;
-    info->hvec = (int*) hvecp->data[0].p;
+    info->hvec = (int*) hvec;
 
     info->hashcol = hashes;
-    info->hashes = (int*) hashesp->data[0].p;
+    info->hashes = (int*) hashes;
 }
 
 int StringLookup (const char *key, vqCell values) {
     int h, r, rows, *hptr;
     const char *string;
-    vqCell hvec;
+    vqVec hvec;
     HashInfo info;
     
     /* adjust data[2], this assumes values is a string column */
     
-    if (valuesp->data[2].p == 0) {
-        rows = valuesp->count;
+    if (values.p->data[2].p == 0) {
+        rows = vSize(values.p);
         hvec = HashVector(rows);
-        hptr = (int*) hvecp->data[0].p;
+        hptr = (int*) hvec;
         
         /* use InitHashInfo to get at the prime number, bit of a hack */
         InitHashInfo(&info, 0, hvec, hvec, hvec);
-        hvecp->data[2].i = info.prime;
+        hvec.p->data[2].i = info.prime;
         
         for (r = 0; r < rows; ++r) {
             string = GetColItem(r, values, VQ_string).s;
-            h = StringHashFind(string, hvecp, values);
+            h = StringHashFind(string, hvec, values);
             if (h < 0) /* silently ignore duplicates */
                 hptr[~h] = r + 1;
         }
         
-        valuesp->data[2].p = vq_incref(hvecp);
+        values.p->data[2].p = vq_incref(hvec);
     }
     
-    h = StringHashFind(key, (vqVec) valuesp->data[2].p, values);
+    h = StringHashFind(key, (vqVec) values.p->data[2].p, values);
     return h >= 0 ? h : -1;
 }
 
 static void FillHashInfo (HashInfo_p info, vqView view) {
     int r, rows;
-    vqCell mapcol;
+    vqVec mapcol;
     
     rows = vwRows(view);
-    mapcol = SeqAsCol(NewIntVec(rows, 0)); /* worst-case, dunno #groups */
+    mapcol = NewIntVec(rows, 0); /* worst-case, dunno #groups */
 
     InitHashInfo(info, view, mapcol, HashVector(rows), HashValues(view));
 
@@ -311,7 +295,7 @@ static void FillHashInfo (HashInfo_p info, vqView view) {
         HashFind(view, r, info->hashes[r], info);
 
     /* TODO: reclaim unused entries at end of map */
-    mapcolp->count = info->fill;
+    vSize(mapcol.p) = info->fill;
 }
 
 static void ChaseLinks (HashInfo_p info, int count, const int *hmap, const int *lmap) {
@@ -330,12 +314,12 @@ static void ChaseLinks (HashInfo_p info, int count, const int *hmap, const int *
 
 void FillGroupInfo (HashInfo_p info, vqView view) {
     int g, r, rows, *hmap, *lmap;
-    vqCell mapcol, headmap, linkmap;
+    vqVec mapcol, headmap, linkmap;
     
     rows = vwRows(view);
-    mapcol = SeqAsCol(NewIntVec(rows, 0)); /* worst-case, dunno #groups */
-    headmap = SeqAsCol(NewIntVec(rows, &hmap)); /* same: don't know #groups */
-    linkmap = SeqAsCol(NewIntVec(rows, &lmap));
+    mapcol = NewIntVec(rows, 0); /* worst-case, dunno #groups */
+    headmap = NewIntVec(rows, &hmap); /* same: don't know #groups */
+    linkmap = NewIntVec(rows, &lmap);
 
     InitHashInfo(info, view, mapcol, HashVector(rows), HashValues(view));
 
@@ -348,7 +332,7 @@ void FillGroupInfo (HashInfo_p info, vqView view) {
     }
     
     /* TODO: reclaim unused entries at end of map and hvec */
-    info->mapcolp->count = info->veccolp->count = info->fill;
+    vSize(info->mapcol.p) = vSize(info->veccol.p) = info->fill;
     
     ChaseLinks(info, rows, hmap, lmap);
 
@@ -377,11 +361,11 @@ vqView GroupCol (vqView view, vqCell cols, const char *name) {
 
 static void FillJoinInfo (HashInfo_p info, vqView left, vqView right) {
     int g, r, gleft, nleft, nright, nused = 0, *hmap, *lmap, *jmap;
-    vqCell mapcol, headmap, linkmap, joincol;
+    vqVec mapcol, headmap, linkmap, joincol;
     
     nleft = vwRows(left);
-    mapcol = SeqAsCol(NewIntVec(nleft, 0)); /* worst-case dunno #groups */
-    joincol = SeqAsCol(NewIntVec(nleft, &jmap));
+    mapcol = NewIntVec(nleft, 0); /* worst-case dunno #groups */
+    joincol = NewIntVec(nleft, &jmap);
     
     InitHashInfo(info, left, mapcol, HashVector(nleft), HashValues(left));
 
@@ -393,14 +377,14 @@ static void FillJoinInfo (HashInfo_p info, vqView left, vqView right) {
     }
 
     /* TODO: reclaim unused entries at end of map */
-    mapcolp->count = info->fill;
+    vSize(mapcol) = info->fill;
 
-    gleft = info->mapcolp->count;
-    nleft = info->hashcolp->count;
+    gleft = vSize(info->mapcol);
+    nleft = vSize(info->hashcol);
     nright = vwRows(right);
     
-    headmap = SeqAsCol(NewIntVec(gleft, &hmap)); /* don't know #groups */
-    linkmap = SeqAsCol(NewIntVec(nright, &lmap));
+    headmap = NewIntVec(gleft, &hmap); /* don't know #groups */
+    linkmap = NewIntVec(nright, &lmap);
 
     for (r = 0; r < nright; ++r) {
         g = HashFind(right, r, RowHash(right, r), info);
@@ -413,10 +397,10 @@ static void FillJoinInfo (HashInfo_p info, vqView left, vqView right) {
 
     /* we're reusing veccol, but it might not be large enough to start with */
     /* TODO: reclaim unused entries at end of hvec */
-    if (info->veccolp->count < nused)
-        info->veccol = SeqAsCol(NewIntVec(nused, &info->hvec));
+    if (vSize(info->veccol) < nused)
+        info->veccol = NewIntVec(nused, &info->hvec);
     else 
-        info->veccolp->count = nused;
+        vSize(info->veccol) = nused;
 
     /* reorder output to match results from FillHashInfo and FillGroupInfo */
     info->hashcol = info->veccol;
@@ -436,13 +420,13 @@ static void FillJoinInfo (HashInfo_p info, vqView left, vqView right) {
      */
 }
 
-vqCell IntersectMap (vqView keys, vqView view) {
+vqVec IntersectMap (vqView keys, vqView view) {
     int r, rows;
     HashInfo info;
     struct Buffer buffer;
     
     if (!ViewCompat(keys, view)) 
-        return SeqAsCol(0);
+        return 0;
         
     FillHashInfo(&info, view);
     InitBuffer(&buffer);
@@ -453,11 +437,11 @@ vqCell IntersectMap (vqView keys, vqView view) {
         if (HashFind(keys, r, RowHash(keys, r), &info) >= 0)
             ADD_INT_TO_BUF(buffer, r);
 
-    return SeqAsCol(BufferAsIntVec(&buffer));
+    return BufferAsIntVec(&buffer);
 }
 
 /* ReverseIntersectMap returns RHS indices, instead of IntersectMap's LHS */
-static vqCell ReverseIntersectMap (vqView keys, vqView view) {
+static vqVec ReverseIntersectMap (vqView keys, vqView view) {
     int r, rows;
     HashInfo info;
     struct Buffer buffer;
@@ -472,7 +456,7 @@ static vqCell ReverseIntersectMap (vqView keys, vqView view) {
             ADD_INT_TO_BUF(buffer, f);
     }
     
-    return SeqAsCol(BufferAsIntVec(&buffer));
+    return BufferAsIntVec(&buffer);
 }
 
 vqView JoinView (vqView left, vqView right, const char *name) {
@@ -502,14 +486,14 @@ vqCell UniqMap (vqView view) {
     return info.mapcol;
 }
 
-int HashDoFind (vqView view, int row, vqView w, vqCell a, vqCell b, vqCell c) {
+int HashDoFind (vqView view, int row, vqView w, vqVec a, vqVec b, vqVec c) {
     HashInfo info;
     /* TODO: avoid Log2bits call in InitHashInfo, since done on each find */
     InitHashInfo(&info, w, a, b, c);
     return HashFind(view, row, RowHash(view, row), &info);
 }
 
-vqCell GetHashInfo (vqView left, vqView right, int type) {
+vqVec GetHashInfo (vqView left, vqView right, int type) {
     HashInfo info;
     vqVec seqvec[3];
 
@@ -519,11 +503,11 @@ vqCell GetHashInfo (vqView left, vqView right, int type) {
         default:    FillJoinInfo(&info, left, right); break;
     }
         
-    seqvec[0] = info.mapcolp;
-    seqvec[1] = info.veccolp;
-    seqvec[2] = info.hashcolp;
+    seqvec[0] = info.mapcol;
+    seqvec[1] = info.veccol;
+    seqvec[2] = info.hashcol;
 
-    return SeqAsCol(NewSeqVec(IT_column, seqvec, 3));
+    return NewSeqVec(IT_column, seqvec, 3);
 }
 
 vqView IjoinView (vqView left, vqView right) {
@@ -548,17 +532,15 @@ vqVec HashMapNew (void) {
 /* FIXME: dumb linear scan instead of hashing for now, for small tests only */
 
 static int HashMapLocate(vqVec hmap, int key, int *pos) {
-    const int *data = hmap->data[0].p;
-    
+    const int *data = (const int*) hmap;
     for (*pos = 0; *pos < hmap->count; ++*pos)
         if (key == data[*pos])
             return 1;
-        
     return 0;
 }
 
 int HashMapAdd (vqVec hmap, int key, int value) {
-    int pos, *data = hmap->data[0].p;
+    int pos, *data = (int*) hmap;
     int allocnt = hmap->data[1].i;
 
     if (HashMapLocate(hmap, key, &pos)) {
@@ -569,7 +551,7 @@ int HashMapAdd (vqVec hmap, int key, int value) {
     assert(pos == hmap->count);
     if (pos >= allocnt) {
         int newlen = (allocnt / 2) * 3 + 10;
-        hmap->data[0].p = data = realloc(data, newlen * 2 * sizeof(int));
+        hmap = data = realloc(data, newlen * 2 * sizeof(int));
         memmove(data+newlen, data+allocnt, allocnt * sizeof(int));
         allocnt = hmap->data[1].i = newlen;
     }
@@ -585,7 +567,7 @@ int HashMapLookup (vqVec hmap, int key, int defval) {
 
     if (HashMapLocate(hmap, key, &pos)) {
         int allocnt = hmap->data[1].i;
-        const int *data = hmap->data[0].p;
+        const int *data = (const int*) hmap;
         return data[pos+allocnt];
     }
     

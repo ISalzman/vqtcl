@@ -23,20 +23,17 @@
 /* treat a vector pointer v as an array with elements of type t */
 #define vCast(v,t)  ((t*)(v))
 
-/* access to header fields, i.e. in memory preceding the vector contents */
-#define vHead(v,f)  (v)[-1].f
-
 /* header fields common to all views and vectors */
-#define vSize(v)    vHead(vCast(v,vqInfo),size)
-#define vRefs(v)    vHead(vCast(v,vqInfo),refs)
-#define vExtra(v)   vHead(vCast(v,vqInfo),extra)
-#define vDisp(v)    vHead(vCast(v,vqInfo),disp)
+#define vSize(v)    vCast(v,vqInfo)[-1].size
+#define vRefs(v)    vCast(v,vqInfo)[-1].refs
+#define vExtra(v)   vCast(v,vqInfo)[-1].extra
+#define vDisp(v)    vCast(v,vqInfo)[-1].disp
 
 /* view-specific header fields */
-#define vwState(v)  vHead(v,state)
-#define vwAuxP(v)   vHead(v,auxp)
+#define vwState(v)  v[-1].state
+#define vwAuxP(v)   v[-1].auxp
 #define vwAuxI(v)   ((intptr_t) vwAuxP(v))
-#define vwMeta(v)   vHead(v,meta)
+#define vwMeta(v)   v[-1].meta
 #define vwRows(v)   vSize(v)
 #define vwCols(v)   vSize(vwMeta(v))
 #define vwMore(v)   ((void*) (((vqCell*) v) + vwCols(v)))
