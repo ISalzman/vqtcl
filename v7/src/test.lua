@@ -239,4 +239,29 @@ assert(view{9,5,3}:sortmap():s() == "?; 2; 1; 0", "sortmap on reversed ints")
 assert(view{9,5,3}:sort():s() == "?; 3; 5; 9", "sort on reversed ints")
 assert(mm:sortmap():s() == "?; 0; 2; 1", "sortmap multiple columns")
 
+-- view comparisons
+assert(mm == mm, "compare same views")
+assert(mm ~= m2, "compare different views")
+assert(view{9,5,3} == view{9,5,3}, "compare views with same contents")
+assert(view{9,5,3} ~= view{9,5,2}, "compare views with different contents")
+assert(view{} == view{}, "compare empty views")
+assert(view{1} <= view{1}, "compare v <= v")
+assert(view{1} >= view{1}, "compare v >= v")
+assert(view{1} < view{2}, "compare v1 < v2")
+assert(view{} < view{1}, "compare v1 < v2, no rows in v1")
+assert(view{1} < view{1,2}, "compare v1 < v2, more rows in v2")
+assert(view{2} > view{1}, "compare v2 > v1")
+
+-- row comparisons
+local r = mm[1]
+assert(r == r, "compare same rows")
+assert(r <= r, "compare r <= r")
+assert(r >= r, "compare r >= r")
+assert(r <= mm[1], "compare r <= r, but as different objects")
+assert(r >= mm[1], "compare r >= r, but as different objects")
+assert(r == mm[1], "compare same rows, but as different objects")
+assert(r ~= mm[2], "compare different rows")
+assert(view{9,5,3}[2] == view{9,5,3}[2], "compare rows with same contents")
+assert(view{9,5,3}[2] ~= view{9,5,2}[2], "compare rows with different contents")
+
 print "OK"

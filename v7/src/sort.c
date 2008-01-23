@@ -67,7 +67,7 @@ static int ItemsCompare (vqType type, vqCell a, vqCell b, int lower) {
     }
 }
 
-static int RowCompare (vqView v1, int r1, vqView v2, int r2) {
+int RowCompare (vqView v1, int r1, vqView v2, int r2) {
     int c, f;
     vqType type;
     vqCell item1, item2;

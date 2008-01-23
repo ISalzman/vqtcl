@@ -145,4 +145,5 @@ intptr_t (ViewSave) (vqView t, void *aux, SaveInitFun fi, SaveDataFun fd);
 /* sort.c */
 
 int (ViewCompare) (vqView view1, vqView view2);
+int (RowCompare) (vqView v1, int r1, vqView v2, int r2);
 int (RowEqual) (vqView v1, int r1, vqView v2, int r2);

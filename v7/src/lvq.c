@@ -825,6 +825,16 @@ static int row_call (lua_State *L) {
     vqCell *cp = lua_touserdata(L, 1);
     return push_view(cp->v);
 }
+static int row_eq (lua_State *L) {
+    vqCell *r1 = checkrow(L, 1), *r2 = checkrow(L, 2);
+    lua_pushboolean(L, RowEqual(r1->v, r1->x.y.i, r2->v, r2->x.y.i));
+    return 1;
+}
+static int row_lt (lua_State *L) {
+    vqCell *r1 = checkrow(L, 1), *r2 = checkrow(L, 2);
+    lua_pushboolean(L, RowCompare(r1->v, r1->x.y.i, r2->v, r2->x.y.i) < 0);
+    return 1;
+}
 static int row_gc (lua_State *L) {
     vqCell *cp = checkrow(L, 1);
     vq_decref(cp->v);
@@ -892,6 +902,16 @@ static int view_div (lua_State *L) {
     w = vq_new(desc2meta(L, ":I", 2), 1);
     vq_setInt(w, 0, 0, c);
     return push_view(ColMapVop(v, w));
+}
+static int view_eq (lua_State *L) {
+    vqView v1 = checkview(L, 1), v2 = checkview(L, 2);
+    lua_pushboolean(L, ViewCompare(v1, v2) == 0);
+    return 1;
+}
+static int view_lt (lua_State *L) {
+    vqView v1 = checkview(L, 1), v2 = checkview(L, 2);
+    lua_pushboolean(L, ViewCompare(v1, v2) < 0);
+    return 1;
 }
 static int view_gc (lua_State *L) {
     vqView v = checkview(L, 1);
@@ -1000,18 +1020,22 @@ static const struct luaL_reg lvqlib_map_m[] = {
 };
 static const struct luaL_reg lvqlib_row_m[] = {
     {"__call", row_call},
+    {"__eq", row_eq},
     {"__gc", row_gc},
     {"__index", row_index},
     {"__len", row_len},
+    {"__lt", row_lt},
     {"__newindex", row_newindex},
     {"__tostring", row2string},
     {0, 0},
 };
 static const struct luaL_reg lvqlib_view_m[] = {
     {"__div", view_div},
+    {"__eq", view_eq},
     {"__gc", view_gc},
     {"__index", view_index},
     {"__len", view_len},
+    {"__lt", view_lt},
     {"__tostring", view2string},
     {0, 0},
 };
