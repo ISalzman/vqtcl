@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <title>
+      LuaVlerq Reference
+    </title>
+  </head>
+  <body>
+    <h1>
+      LuaVlerq Reference
+    </h1>
+    <p>
+      Version 1.7.0 (DRAFT)
+    </p>
+    <p>
+      Copyright © 2008 Jean-Claude Wippler.
+    </p>
+    <hr />
+    <h1>
+      1 - Introduction
+    </h1>
+    <p>
+      LuaVlerq is an extension for <a href="http://www.lua.org">Lua</a> to manage structured datasets.
+    </p>
+    <h1>
+      2 - Getting started
+    </h1>
+    <p>
+      Get the latest source code from svn:
+    </p>
+    <pre>
+      <strong>svn co svn://svn.vlerq.org/vlerq/branches/v7 vlerq</strong>
+</pre>
+    <p>
+      Adjust "<code>vlerq/src/config</code>" as needed, then compile as follows:
+    </p>
+    <pre>
+      cd vlerq/src
+      make
+      make test     #optional
+      make install  #optional
+</pre>
+    <p>
+      On to the first example:
+    </p>
+    <pre>
+      &gt; <strong>require 'vq'</strong>
+      &gt; <strong>vq{1,2,3}:p()</strong><em>
+        ?
+        -
+        1
+        2
+        3</em>
+      &gt;
+</pre>
+    <p>
+      Explanation: <strong>vq</strong> is the name of the LuaVlerq module and also the interface through which all objects are constructed. In this example, a call with a single table argument turns that table into a LuaVlerq object, which is then printed on standard output using its "<strong>p</strong>" method and the standard ":" and "()" Lua notation for a method call.
+    </p>
+    <p>
+      Here's a more elaborate example:
+    </p>
+    <pre>
+      &gt; <strong>(vq{meta='A';1,2,3}..vq{meta='B';4,5,6}):reverse():p()</strong><em>
+        A  B
+        -  -
+        3  6
+        2  5
+        1  4</em>
+      &gt;
+</pre>
+    <p>
+      Explanation: two tables are used, this time each with explicit column names. Once converted to LuaVlerq objects, they are "paired" (i.e. concatenated in the horizontal direction). The result is a new object, of which the rows are printed in reverse order.
+    </p>
+    <p>
+      These examples only scratched the surface of LuaVlerq, illustrating how various operations can be applied to combine and re-organize data structures in different ways. The <strong>p()</strong> method is mostly a convenience method for debugging, normally the resulting data structures would be saved into variables for further use later on.
+    </p>
+    <blockquote>
+      <p>
+        Note: the typographical conventions used above will be used for the remainder of this document. User input is in <strong>bold</strong>. Machine output is in <em>italics</em>.
+      </p>
+    </blockquote>
+    <h1>
+      3 - Concepts
+    </h1>
+    <p>
+      LuaVlerq introduces a bit of terminology, all of which is essential to understand how LuaVlerq works with its data and what its operations do. The key terms and concepts are described in this section.
+    </p>
+    <h2>
+      3.1 - Views
+    </h2>
+    <h2>
+      3.2 - Rows
+    </h2>
+    <h2>
+      3.3 - Subviews
+    </h2>
+    <h2>
+      3.4 - Empty views
+    </h2>
+    <h2>
+      3.5 - Meta-views
+    </h2>
+    <h2>
+      3.6 - Missing values
+    </h2>
+    <h2>
+      3.7 - Vops
+    </h2>
+    <h2>
+      3.8 - Mutable views
+    </h2>
+    <h2>
+      3.9 - Storage
+    </h2>
+    <h1>
+      4 - View operations
+    </h1>
+    <h2>
+      4.1 - View setup and details
+    </h2>
+    <h3>
+      <code>vq(t1)</code>
+    </h3>
+    <p>
+      Convert table <code>t1</code> into a view. This can also be written as <code>vq{...}</code> when <code>t1</code> is a literal table.
+    </p>
+    <h3>
+      <code>vq(n1[,m1])</code>
+    </h3>
+    <p>
+      Create a new view with <code>n1</code> rows. If <code>m1</code> is either a string or a view, it is used as the meta-view describing the structure of the new view, otherwise an empty 0-column/n1-row view is returned.
+    </p>
+    <h3>
+      <code>vq(s1)</code>
+    </h3>
+    <p>
+      Convert a description string <code>s1</code> into a meta-view.
+    </p>
+    <h3>
+      <code>#v1</code>
+    </h3>
+    <p>
+      Return the size of <code>v1</code>, i.e. the number of rows in <code>v1</code>.
+    </p>
+    <h3>
+      <code>tostring(v1)</code>
+    </h3>
+    <p>
+      Return a short string describing the type, size, and structure of view <code>v1</code>.
+    </p>
+    <h3>
+      <code>v1:cols()</code>
+    </h3>
+    <p>
+      Return the number of columns in <code>v1</code>. This is equivalent to <code>#v1:meta()</code>.
+    </p>
+    <h3>
+      <code>v1:dump()</code>
+    </h3>
+    <p>
+      Return a nicely-formatted tabular version of the contents of view <code>v1</code> as a string. Sub-views are shown as a row count.
+    </p>
+    <h3>
+      <code>v1:html()</code>
+    </h3>
+    <p>
+      Return a html snippet rendering of the contents of view <code>v1</code> as a string. Unlike the <code>dump()</code> operator, this recursively renders the contents of sub-views as well.
+    </p>
+    <h3>
+      <code>v1:meta()</code>
+    </h3>
+    <p>
+      Return the meta-view of <code>v1</code>, describing its structure.
+    </p>
+    <h3>
+      <code>v1:p()</code>
+    </h3>
+    <p>
+      Display view <code>v1</code> on standard output. This is equivalent to <code>print(v1:dump())</code>.
+    </p>
+    <h2>
+      4.2 - Getting and setting cells
+    </h2>
+    <h3>
+      <code>v1[n1].name</code>
+    </h3>
+    <p>
+      Access to the "<code>name</code>" field of row <code>n1</code> in view <code>v1</code>. This can be used for getting and for setting cells in the designated <em>cell</em> in the view. Unlike Lua tables, <em>the <code>n1</code> index is zero-based.</em> Also, setting a cell to <em>nil</em> does not delete the cell, but marks that cell as being a missing value. Use the <code>replace()</code> operator to delete rows.
+    </p>
+    <h3>
+      <code>v1[n1][n2]</code>
+    </h3>
+    <p>
+      Access to column <code>n2</code> of row <code>n1</code> in view <code>v1</code>. This can be used for getting and for setting values in the designated <em>cell</em> in the view. <em>The <code>n1</code> and <code>n2</code> indices are zero-based.</em>
+    </p>
+    <h3>
+      v1:replace(off,len[,v2])
+    </h3>
+    <p>
+      Replace rows <code>off</code> through <code>off+len-1</code> in view <code>v1</code> with all rows in view <code>v2</code>. If present, the structure of <code>v2</code> must be compatible with <code>v1</code>. When <code>len</code> is zero, this acts as row insertion. When <code>v2</code> is nil or absent, this acts as row deletion. <em>The <code>off</code> index is zero-based.</em>
+    </p>
+    <h2>
+      4.3 - Basic operators
+    </h2>
+    <h3>
+      <code>v1..v2</code>
+    </h3>
+    <p>
+      Return a new view with all columns of <code>v1</code> on the left and all the columns of <code>v2</code> on the right. This is a special case of the <strong>pair()</strong> operator, which takes an arbitrary number of input views.
+    </p>
+    <h3>
+      <code>v1+v2</code>
+    </h3>
+    <p>
+      Return a new view with all rows of <code>v1</code> followed by all rows of <code>v2</code>. This is a special case of the <strong>concat()</strong> operator, which takes an arbitrary number of input views.
+    </p>
+    <h3>
+      <code>v1[n1]</code>
+    </h3>
+    <p>
+      Return row <code>n1</code> of view <code>v1</code> as a new row object. <em>Row indices are zero-based</em>, i.e. valid rows numbers are from 0 through <code>#v1</code>.
+    </p>
+    <h3>
+      <code>v1[v2]</code>
+    </h3>
+    <p>
+      Return a view with rows from view <code>v1</code> "mapped" by the indices in the first column of view <code>v2</code>. The number of rows in the resulting view is the number of rows in <code>v2</code>.
+    </p>
+    <h3>
+      <code>v1/n1</code>
+    </h3>
+    <p>
+      Return a 1-column view, by taking just column <code>n1</code> from view <code>v1</code>. <em>Column indices are zero-based</em>, i.e. valid column numbers are 0 through <code>#v1:cols()-1</code>.
+    </p>
+    <h3>
+      <code>v1/s1</code>
+    </h3>
+    <p>
+      Return a 1-column view, using the first column named "<code>s1</code>".
+    </p>
+    <h3>
+      <code>v1/v2</code>
+    </h3>
+    <p>
+      Return a view with columns from view <code>v1</code> "mapped" by the indices in the first column of view <code>v2</code>. The number of columns in the resulting view is the number of rows in <code>v2</code>.
+    </p>
+    <h2>
+      4.4 - Vector operators
+    </h2>
+    <h3>
+      <code>v1:concat(...)</code>
+    </h3>
+    <h3>
+      <code>v1:first(n)</code>
+    </h3>
+    <h3>
+      <code>v1:last(n)</code>
+    </h3>
+    <h3>
+      <code>v1:pair(...)</code>
+    </h3>
+    <h3>
+      <code>v1:reverse()</code>
+    </h3>
+    <h3>
+      <code>v1:spread(n)</code>
+    </h3>
+    <h3>
+      <code>v1:step(off,step,rate)</code>
+    </h3>
+    <h3>
+      <code>v1:times(n)</code>
+    </h3>
+    <h2>
+      4.5 - Set operators
+    </h2>
+    <h3>
+      <code>v1:except(v2)</code>
+    </h3>
+    <h3>
+      <code>v1:exceptmap(v2)</code>
+    </h3>
+    <h3>
+      <code>v1:intersect(v2)</code>
+    </h3>
+    <h3>
+      <code>v1:isectmap(v2)</code>
+    </h3>
+    <h3>
+      <code>v1:union(v2)</code>
+    </h3>
+    <h3>
+      <code>v1:unionmap(v2)</code>
+    </h3>
+    <h2>
+      4.6 - Sorting and comparing
+    </h2>
+    <h3>
+      <code>v1:sort()</code>
+    </h3>
+    <h3>
+      <code>v1:sortmap()</code>
+    </h3>
+    <h3>
+      <code>v1:uniq()</code>
+    </h3>
+    <h3>
+      <code>v1:uniqmap()</code>
+    </h3>
+    <h2>
+      4.7 - Relational operators
+    </h2>
+    <h3>
+      <code>v1:divide(v2)</code>
+    </h3>
+    <h3>
+      <code>v1:ijoin(v2)</code>
+    </h3>
+    <h3>
+      <code>v1:join(v2)</code>
+    </h3>
+    <h3>
+      <code>v1:product(v2)</code>
+    </h3>
+    <h3>
+      <code>v1:select(...)</code>
+    </h3>
+    <h3>
+      <code>v1:where(...)</code>
+    </h3>
+    <h2>
+      4.8 - Grouping
+    </h2>
+    <h3>
+      <code>v1:group(...)</code>
+    </h3>
+    <h3>
+      <code>v1:ungroup(...)</code>
+    </h3>
+  </body>
+</html>
