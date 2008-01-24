@@ -31,7 +31,7 @@
       Get the latest source code from svn:
     </p>
     <pre>
-      <strong>svn co svn://svn.vlerq.org/vlerq/branches/v7 vlerq</strong>
+      <strong>svn co svn://svn.vlerq.org/vlerq/trunk vlerq</strong>
 </pre>
     <p>
       Edit <code>vlerq/src/config</code> as needed, then proceed as follows:
@@ -58,7 +58,7 @@
       &gt;
 </pre>
     <p>
-      Explanation: <strong>vq</strong> is the name of the LuaVlerq module and also the interface through which all objects are constructed. In this example, a call with a single table argument turns that table into a LuaVlerq object, which is then printed on stdout using its "<strong>p</strong>" operator and the "<code>:...()</code>" Lua notation for method calls.
+      Explanation: <strong>vq</strong> is the name of the LuaVlerq module and also the interface through which all objects are constructed. In this example, a call with a single table argument turns that table into a LuaVlerq object, which is then printed on stdout using its "<strong>p</strong>" operator and Lua's "<code><em>object</em>:<em>name</em>()</code>" notation for method calls.
     </p>
     <p>
       Here is a more elaborate example:
@@ -75,14 +75,17 @@
     <p>
       Explanation: two tables are used, this time each with explicit column names. Once converted to LuaVlerq objects, they are "paired" (i.e. concatenated in the horizontal direction). The result is a new object, of which the rows are printed in reverse order.
     </p>
+    <blockquote>
+      <p>
+        Note 1: this example defines <code>A</code> and <code>B</code> as <em>string</em> columns, which is not quite same as the first example. To force the column type to integer, use <code>meta='A:I'</code> and <code>meta='B:I'</code>.
+      </p>
+      <p>
+        Note 2: the typographical conventions used above will be used for the remainder of this document. User input is in <strong>bold</strong>. Machine output is in <em>italics</em>.
+      </p>
+    </blockquote>
     <p>
       These examples only scratch the surface of LuaVlerq, illustrating how operations are applied to combine and re-organize data structures in different ways. The <strong>p()</strong> method is mostly a convenience method for debugging, in normal use the resulting objects would be saved in variables for further use.
     </p>
-    <blockquote>
-      <p>
-        Note: the typographical conventions used above will be used for the remainder of this document. User input is in <strong>bold</strong>. Machine output is in <em>italics</em>.
-      </p>
-    </blockquote>
     <h1>
       3 - Concepts
     </h1>
@@ -134,16 +137,16 @@
       3.5 - Meta-views
     </h2>
     <p>
-      Every view in LuaVlerq has a structure, and this structure is in fact also a view. For each column in view <code>v</code>, there is a row in its meta-view, which describes the properties of that column. All meta-views have the same structure: each row in a meta-view contains a name, a type, and a sub-view structure.
+      Every view in LuaVlerq has a structure, and this structure is also described using a view, called the "<em>meta-view</em>". For each <em>column</em> in view <code>v</code>, there is a <em>row</em> in its meta-view, which describes the properties of that column. All meta-views have the same structure: each row in a meta-view contains a name, a type, and a sub-view structure.
     </p>
     <p>
-      Given that a meta-view is a view, it too has a meta-view (the "meta-meta-view"). Since all meta-views have the same structure, there is exactly one such meta-meta-view. It is rarely needed in day-to-day use, but it exists so that the entire view "tower" is well-defined. This is similar to the issues encountered in good database dictionaries: a closed system must be able to describe itself.
+      Given that a meta-view is a view, it too has a meta-view (the "meta-meta-view"). But since all meta-views have the same structure, there is exactly one such meta-meta-view. It is rarely needed in day-to-day use, but it exists so that the entire view "tower" is well-defined. This is similar to the issues encountered in good database dictionaries: a closed system must be able to describe itself.
     </p>
     <h2>
       3.6 - Missing values
     </h2>
     <p>
-      Each cell in a view, i.e. each row/column position holds at most one value. The type of that value is fixed for each individual column. Optionally, one or more columns can be defined to support missing values, i.e. the absence of a value (it is common to call these "null values" in SQL, but that is a <em>contradictio-in-terminis</em>).
+      Each cell in a view, i.e. each row/column position holds at most one value. The type of that value is fixed for each individual column. Optionally, columns can be defined to allow missing values, i.e. the absence of a value (it is common to call these "null values" in SQL, but that is a <em>contradictio-in-terminis</em>).
     </p>
     <p>
       Such <em>sparse</em> views are fully supported: LuaVlerq implements both views which are nearly "full" and nearly "empty" relatively efficiently.
@@ -371,7 +374,7 @@
       4.5 - Set operators
     </h2>
     <p>
-      When all rows in a view are unique, then standard set operators will return the expected results. Furthermore, all set operators are fully specified even when the input views are not pure sets:
+      When all rows in a view are unique, then these standard set operators will return the expected results. But even when the input views are not pure sets, each of these operators is unambiguously defined:
     </p>
     <h3>
       <code>v1:except(v2)</code>
@@ -473,7 +476,7 @@
       5 - Persistence
     </h1>
     <p>
-      These simple operators support saving and loading views in a compact and portable format (similar, and in some cases compatible, to the <a href="http://www.equi4.com/metakit.html">Metakit</a> database library).
+      These simple operators support saving and loading views in a compact and portable format, similar (and under some conditions <em>compatible</em>) to the <a href="http://www.equi4.com/metakit.html">Metakit</a> database library.
     </p>
     <h2>
       5.1 - Saving
@@ -506,7 +509,10 @@
       <code>vq.open(fn)</code>
     </h3>
     <p>
-      Map a file into memory in read-only mode and return a view with the same structure and contents as the original view. Mapping is instant because the file will only be accessed when the data is actually needed. A relatively small amount of memory will be allocated when this happens, but it will be considerably less than the bytes need for the actual data since everything remains memory mapped.
+      Map a file into memory in read-only mode and return a view with the same structure and contents as the original view.
+    </p>
+    <p>
+      Mapping is quick: the disk will only be accessed whenever data is actually needed. Some memory is needed to manage the process, but this is substantially less than the view contents itself do virtual memory on-demand paging.
     </p>
     <h1>
       6 - Implementation
