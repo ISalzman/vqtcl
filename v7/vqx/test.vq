@@ -1,6 +1,0 @@
-package.loaded["lvq.core"] = lvq
-loadfile "../src/lvq.lua" "lvq"
-dofile "../src/test.lua"
-print(lvq._COPYRIGHT)
-print(lvq._RELEASE)
-print(lvq._VERSION)
