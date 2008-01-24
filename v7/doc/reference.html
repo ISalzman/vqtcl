@@ -34,18 +34,20 @@
       <strong>svn co svn://svn.vlerq.org/vlerq/branches/v7 vlerq</strong>
 </pre>
     <p>
-      Adjust "<code>vlerq/src/config</code>" as needed, then compile as follows:
+      Edit <code>vlerq/src/config</code> as needed, then proceed as follows:
     </p>
     <pre>
-      cd vlerq/src
-      make
-      make test     #optional
-      make install  #optional
+      <strong>cd vlerq/src</strong>
+      <strong>make</strong>
+      <strong>make test</strong>     #optional
+      <strong>make install</strong>  #optional
 </pre>
     <p>
       On to the first example:
     </p>
     <pre>
+      $ <strong>lua</strong>
+      <em>Lua 5.1.2  Copyright (C) 1994-2007 Lua.org, PUC-Rio</em>
       &gt; <strong>require 'vq'</strong>
       &gt; <strong>vq{1,2,3}:p()</strong><em>
         ?
@@ -56,10 +58,10 @@
       &gt;
 </pre>
     <p>
-      Explanation: <strong>vq</strong> is the name of the LuaVlerq module and also the interface through which all objects are constructed. In this example, a call with a single table argument turns that table into a LuaVlerq object, which is then printed on standard output using its "<strong>p</strong>" method and the standard ":" and "()" Lua notation for a method call.
+      Explanation: <strong>vq</strong> is the name of the LuaVlerq module and also the interface through which all objects are constructed. In this example, a call with a single table argument turns that table into a LuaVlerq object, which is then printed on standard output using its "<strong>p</strong>" operator and the standard ":...()" Lua notation for method calls.
     </p>
     <p>
-      Here's a more elaborate example:
+      Here is a more elaborate example:
     </p>
     <pre>
       &gt; <strong>(vq{meta='A';1,2,3}..vq{meta='B';4,5,6}):reverse():p()</strong><em>
@@ -74,7 +76,7 @@
       Explanation: two tables are used, this time each with explicit column names. Once converted to LuaVlerq objects, they are "paired" (i.e. concatenated in the horizontal direction). The result is a new object, of which the rows are printed in reverse order.
     </p>
     <p>
-      These examples only scratched the surface of LuaVlerq, illustrating how various operations can be applied to combine and re-organize data structures in different ways. The <strong>p()</strong> method is mostly a convenience method for debugging, normally the resulting data structures would be saved into variables for further use later on.
+      These examples only scratch the surface of LuaVlerq, illustrating how operations are applied to combine and re-organize data structures in different ways. The <strong>p()</strong> method is mostly a convenience method for debugging, in normal use the resulting objects would be saved in variables for further use.
     </p>
     <blockquote>
       <p>
@@ -85,41 +87,100 @@
       3 - Concepts
     </h1>
     <p>
-      LuaVlerq introduces a bit of terminology, all of which is essential to understand how LuaVlerq works with its data and what its operations do. The key terms and concepts are described in this section.
+      LuaVlerq introduces a bit of terminology, all of which is essential to understand how LuaVlerq works with its data and what its operators do. The key terms and concepts are described in this section.
     </p>
     <h2>
       3.1 - Views
     </h2>
+    <p>
+      The "<strong>view</strong>" is the central data structure in LuaVlerq. It is a rectangular collection of cells, with rows and columns. A cell can store at most one value. Rows are indexed by their ordinal position in the view. Columns are identified either by their ordinal position or by name (if they have one).
+    </p>
+    <p>
+      <em>Row and column positions are zero-based</em>, i.e. rows run from 0 through &lt;numrows&gt;-1, and columns from 0 through &lt;numcols&gt;-1.
+    </p>
+    <p>
+      Rows are uniquely identified by their position. When rows are inserted or deleted in the middle of a view, all following row positions change.
+    </p>
+    <p>
+      Column names may be absent (the empty string), and they need not be unique. In the case of duplicate column names, column access by name is not well-defined - this can be resolved by adjusting all such column names in a view.
+    </p>
+    <p>
+      Columns are <strong>typed</strong>: all values in a single column must be of the same basic data type. The types supported are: integer (up to 32b), longs (64b), floats (32b), doubles (64b), strings (0-terminated), bytes (arbitrary byte sequences), and (sub-)views.
+    </p>
     <h2>
       3.2 - Rows
     </h2>
+    <p>
+      In addition to view objects, LuaVlerq supports lightweight row objects. These are (view,index) pairs which identify a row in a view. Being objects, rows can be passed around as needed. A row in a view can be treated as a collection of values in named fields, and as such very much acts like an object itself, whose state happens to be stored in a view.
+    </p>
+    <blockquote>
+      <p>
+        Note: row positions are <em>not</em> adjusted when rows are inserted or deleted from the associated view. This is not as bad as it may seem, due to the availability of "mutable views" (these are described later on).
+      </p>
+    </blockquote>
     <h2>
       3.3 - Subviews
     </h2>
+    <p>
+      A sub-view is a view stored as values in another view. Sub-views are values, not references: circular/recursive sub-view chains are not possible.
+    </p>
     <h2>
       3.4 - Empty views
     </h2>
+    <p>
+      There are two edge cases for views: views without rows, and views without columns. Both are allowed (and so is their combination: the 0-row/0-column view). A zero-row view is simply a structured collection with no data (yet). A zero-column view is slightly unusual in that it cannot contain any values. This case is less common, but it turns out that as an edge case, 0-column views are in fact quite important. A 0-column views with N rows is in many ways similar to the integer <em>value</em> N. For example: the relational product of two 0-column views with N1 and N2 rows, respectively, produces the 0-column view with N1*N2 rows.
+    </p>
     <h2>
       3.5 - Meta-views
     </h2>
+    <p>
+      Every view in LuaVlerq has a structure, and this structure is in fact also a view. For each column in view <code>v</code>, there is a row in its meta-view, which describes the properties of that column. All meta-views have the same structure: each row in a meta-view contains a name, a type, and a sub-view structure.
+    </p>
+    <p>
+      Given that a meta-view is a view, it too has a meta-view (the "meta-meta-view"). Since all meta-views have the same structure, there is exactly one such meta-meta-view. It is rarely needed in day-to-day use, but it exists so that the entire view "tower" is well-defined. This is similar to the issues encountered in good database dictionaries: a closed system must be able to describe itself.
+    </p>
     <h2>
       3.6 - Missing values
     </h2>
+    <p>
+      Each cell in a view, i.e. each row/column position holds at most one value. The type of that value is fixed for each individual column. On top of that, one or more columns can be defined to support missing values, i.e. the absence of a value (it is common to call these "null values" in SQL, but that is a <em>contradictio-in-terminis</em>).
+    </p>
+    <p>
+      Such <em>sparse</em> views are fully supported: LuaVlerq implements both views which are nearly "full" and nearly "empty" relatively efficiently.
+    </p>
     <h2>
       3.7 - Vops
     </h2>
+    <p>
+      As objects, views have access to a wide range of view operators or "vops". The built-in ones are described later in this document, but vops can also be defined by the application. Once defined, such custom vops become indistinguishable from the built-in ones. Furthermore, a vop can be defined either in Lua or in C (LuaVlerq itself consists of a mix of both).
+    </p>
     <h2>
       3.8 - Mutable views
     </h2>
+    <p>
+      To provide a level of isolation between different users (within an application) of a view, there is a mechanism called the "mutable view". It adds a layer on top of an existing view where all changes made to the original are collected. From the outside, a mutable view looks like the original view with all the changes applied. Yet the original view is unaffected, and can still be accessed independent of these changes. This does not require any copies of the view.
+    </p>
     <h2>
       3.9 - Storage
     </h2>
+    <p>
+      LuaVlerq is designed with disk-backed storage and network-based exchanges in mind. Any view can be stored on file or sent across a communications channel in a very compact format. When re-opened, views can be loaded on-demand, such that the time to open is instant and data only gets read off the disk when actually needed. There is a separate "Persistence" section describing these capabilities.
+    </p>
     <h1>
-      4 - View operations
+      4 - View operators
     </h1>
+    <p>
+      There is a large set of pre-defined view operators, custom ones can also be added. The normal way to access the operators is via Lua's ":" method-call convention, but note that <code>v1:someop(...)</code> is always equivalent to <code>vq.someop(v1, ...)</code>.
+    </p>
+    <p>
+      The view operators described in this section are grouped in several categories to place related ones near each other.
+    </p>
     <h2>
       4.1 - View setup and details
     </h2>
+    <p>
+      Several important functions defy categorization and are described first:
+    </p>
     <h3>
       <code>vq(t1)</code>
     </h3>
@@ -166,7 +227,7 @@
       <code>v1:html()</code>
     </h3>
     <p>
-      Return a html snippet rendering of the contents of view <code>v1</code> as a string. Unlike the <code>dump()</code> operator, this recursively renders the contents of sub-views as well.
+      Return an HTML rendering of the contents of view <code>v1</code> as a string (to be used as part of a complete HTML page, presumably). Unlike the <code>dump()</code> operator, this recursively renders the contents of sub-views as well.
     </p>
     <h3>
       <code>v1:meta()</code>
@@ -183,6 +244,9 @@
     <h2>
       4.2 - Getting and setting cells
     </h2>
+    <p>
+      The main mechanism to access and modify values in views is fully contained in the following three calls:
+    </p>
     <h3>
       <code>v1[n1].name</code>
     </h3>
@@ -202,8 +266,11 @@
       Replace rows <code>off</code> through <code>off+len-1</code> in view <code>v1</code> with all rows in view <code>v2</code>. If present, the structure of <code>v2</code> must be compatible with <code>v1</code>. When <code>len</code> is zero, this acts as row insertion. When <code>v2</code> is nil or absent, this acts as row deletion. <em>The <code>off</code> index is zero-based.</em>
     </p>
     <h2>
-      4.3 - Basic operators
+      4.3 - Lua operators
     </h2>
+    <p>
+      Some operators are so common that they have been defned as operators in Lua itself (via metatables):
+    </p>
     <h3>
       <code>v1..v2</code>
     </h3>
@@ -249,6 +316,9 @@
     <h2>
       4.4 - Vector operators
     </h2>
+    <p>
+      One way to deal with views is to treat them as vectors of rows or columns. The following operators provide some convenient wrappers:
+    </p>
     <h3>
       <code>v1:concat(...)</code>
     </h3>
@@ -276,6 +346,9 @@
     <h2>
       4.5 - Set operators
     </h2>
+    <p>
+      When all rows in a view are unique, then standard set operators will return the expected results. Furthermore, all set operators are fully specified even when the input views are not pure sets:
+    </p>
     <h3>
       <code>v1:except(v2)</code>
     </h3>
@@ -295,8 +368,47 @@
       <code>v1:unionmap(v2)</code>
     </h3>
     <h2>
-      4.6 - Sorting and comparing
+      4.6 - Relational operators
     </h2>
+    <p>
+      The Relational Algebra operators make it possible to express all queries for which SQL is also often used:
+    </p>
+    <h3>
+      <code>v1:ijoin(v2)</code>
+    </h3>
+    <h3>
+      <code>v1:join(v2)</code>
+    </h3>
+    <h3>
+      <code>v1:product(v2)</code>
+    </h3>
+    <h3>
+      <code>v1:project(...)</code>
+    </h3>
+    <h3>
+      <code>v1:select(...)</code>
+    </h3>
+    <h3>
+      <code>v1:where(...)</code>
+    </h3>
+    <h2>
+      4.8 - Grouping
+    </h2>
+    <p>
+      Since values can be views, i.e. views can contain sub-views, it is very simple to rearrange collections:
+    </p>
+    <h3>
+      <code>v1:group(...)</code>
+    </h3>
+    <h3>
+      <code>v1:ungroup(...)</code>
+    </h3>
+    <h2>
+      4.7 - Sorting and comparing
+    </h2>
+    <p>
+      These operators provide basic sorting and comparison funtionality:
+    </p>
     <h3>
       <code>v1:sort()</code>
     </h3>
@@ -309,35 +421,8 @@
     <h3>
       <code>v1:uniqmap()</code>
     </h3>
-    <h2>
-      4.7 - Relational operators
-    </h2>
-    <h3>
-      <code>v1:divide(v2)</code>
-    </h3>
-    <h3>
-      <code>v1:ijoin(v2)</code>
-    </h3>
-    <h3>
-      <code>v1:join(v2)</code>
-    </h3>
-    <h3>
-      <code>v1:product(v2)</code>
-    </h3>
-    <h3>
-      <code>v1:select(...)</code>
-    </h3>
-    <h3>
-      <code>v1:where(...)</code>
-    </h3>
-    <h2>
-      4.8 - Grouping
-    </h2>
-    <h3>
-      <code>v1:group(...)</code>
-    </h3>
-    <h3>
-      <code>v1:ungroup(...)</code>
-    </h3>
+    <h1>
+      5 - Persistence
+    </h1>
   </body>
 </html>
