@@ -22,7 +22,7 @@
       1 - Introduction
     </h1>
     <p>
-      LuaVlerq is an extension for <a href="http://www.lua.org">Lua</a> to manage structured datasets.
+      LuaVlerq is a <a href="http://www.lua.org">Lua</a> extension for managing structured datasets. It is part of the <a href="http://www.vlerq.org">Vlerq</a> project.
     </p>
     <h1>
       2 - Getting started
@@ -39,8 +39,8 @@
     <pre>
       <strong>cd vlerq/src</strong>
       <strong>make</strong>
-      <strong>make test</strong>     #optional
-      <strong>make install</strong>  #optional
+      <strong>make test   </strong>     # &lt;-- optional
+      <strong>make install</strong>     # &lt;-- optional
 </pre>
     <p>
       On to the first example:
@@ -58,7 +58,7 @@
       &gt;
 </pre>
     <p>
-      Explanation: <strong>vq</strong> is the name of the LuaVlerq module and also the interface through which all objects are constructed. In this example, a call with a single table argument turns that table into a LuaVlerq object, which is then printed on standard output using its "<strong>p</strong>" operator and the standard ":...()" Lua notation for method calls.
+      Explanation: <strong>vq</strong> is the name of the LuaVlerq module and also the interface through which all objects are constructed. In this example, a call with a single table argument turns that table into a LuaVlerq object, which is then printed on stdout using its "<strong>p</strong>" operator and the "<code>:...()</code>" Lua notation for method calls.
     </p>
     <p>
       Here is a more elaborate example:
@@ -143,7 +143,7 @@
       3.6 - Missing values
     </h2>
     <p>
-      Each cell in a view, i.e. each row/column position holds at most one value. The type of that value is fixed for each individual column. On top of that, one or more columns can be defined to support missing values, i.e. the absence of a value (it is common to call these "null values" in SQL, but that is a <em>contradictio-in-terminis</em>).
+      Each cell in a view, i.e. each row/column position holds at most one value. The type of that value is fixed for each individual column. Optionally, one or more columns can be defined to support missing values, i.e. the absence of a value (it is common to call these "null values" in SQL, but that is a <em>contradictio-in-terminis</em>).
     </p>
     <p>
       Such <em>sparse</em> views are fully supported: LuaVlerq implements both views which are nearly "full" and nearly "empty" relatively efficiently.
@@ -158,19 +158,19 @@
       3.8 - Mutable views
     </h2>
     <p>
-      To provide a level of isolation between different users (within an application) of a view, there is a mechanism called the "mutable view". It adds a layer on top of an existing view where all changes made to the original are collected. From the outside, a mutable view looks like the original view with all the changes applied. Yet the original view is unaffected, and can still be accessed independent of these changes. This does not require any copies of the view.
+      To provide a level of isolation between different users (within an application) of a view, there is a mechanism called the "mutable view". It adds a layer on top of an existing view where all changes made to the original are collected. From the outside, a mutable view looks like the original view with all the changes applied. Yet the original view is unaffected, and can still be accessed independent of these changes. This does not cause any copying of the view.
     </p>
     <h2>
       3.9 - Storage
     </h2>
     <p>
-      LuaVlerq is designed with disk-backed storage and network-based exchanges in mind. Any view can be stored on file or sent across a communications channel in a very compact format. When re-opened, views can be loaded on-demand, such that the time to open is instant and data only gets read off the disk when actually needed. There is a separate "Persistence" section describing these capabilities.
+      LuaVlerq is designed with disk-backed storage and network-based exchanges in mind. Any view can be stored on file or sent across a communications channel in a very compact format. Later on views can be loaded on-demand, whereby file opening is instant and data only gets read off the disk when actually needed, regardless of the size or complexity of the saved view and sub-views. There is a separate "Persistence" section describing these capabilities.
     </p>
     <h1>
       4 - View operators
     </h1>
     <p>
-      There is a large set of pre-defined view operators, custom ones can also be added. The normal way to access the operators is via Lua's ":" method-call convention, but note that <code>v1:someop(...)</code> is always equivalent to <code>vq.someop(v1, ...)</code>.
+      There are many pre-defined view operators and additional custom ones can be defined at any time. The normal way to access these operators is via Lua's ":" method-call convention, but note that <code>v1:someop(...)</code> is always equivalent to "<code>vq.someop(v1, ...)</code>".
     </p>
     <p>
       The view operators described in this section are grouped in several categories to place related ones near each other.
@@ -179,13 +179,13 @@
       4.1 - View setup and details
     </h2>
     <p>
-      Several important functions defy categorization and are described first:
+      Several important functions defy categorization - these are described first:
     </p>
     <h3>
       <code>vq(t1)</code>
     </h3>
     <p>
-      Convert table <code>t1</code> into a view. This can also be written as <code>vq{...}</code> when <code>t1</code> is a literal table.
+      Convert table <code>t1</code> into a view. This can also be written as <code>vq{...}</code> when <code>t1</code> is a literal table. Only the list portion is used, i.e. the entries stored at <code>t1[1]</code> through <code>t1[#t1]</code>. If <code>t1.meta</code> does not exist, then <code>t1</code> is converted to a view with a single un-named integer column. Otherwise <code>t1.meta</code> is used as meta-view. If 2 or more columns are defined, then values are pulled from <code>t1</code> in row-wise order.
     </p>
     <h3>
       <code>vq(n1[,m1])</code>
@@ -215,7 +215,7 @@
       <code>v1:cols()</code>
     </h3>
     <p>
-      Return the number of columns in <code>v1</code>. This is equivalent to <code>#v1:meta()</code>.
+      Return the number of columns in <code>v1</code>. This is equivalent to "<code>#v1:meta()</code>".
     </p>
     <h3>
       <code>v1:dump()</code>
@@ -239,19 +239,19 @@
       <code>v1:p()</code>
     </h3>
     <p>
-      Display view <code>v1</code> on standard output. This is equivalent to <code>print(v1:dump())</code>.
+      Display view <code>v1</code> on stdout. This is equivalent to "<code>print(v1:dump())</code>".
     </p>
     <h2>
       4.2 - Getting and setting cells
     </h2>
     <p>
-      The main mechanism to access and modify values in views is fully contained in the following three calls:
+      The mechanism to access and modify values in views is defined by the following three operations:
     </p>
     <h3>
       <code>v1[n1].name</code>
     </h3>
     <p>
-      Access to the "<code>name</code>" field of row <code>n1</code> in view <code>v1</code>. This can be used for getting and for setting cells in the designated <em>cell</em> in the view. Unlike Lua tables, <em>the <code>n1</code> index is zero-based.</em> Also, setting a cell to <em>nil</em> does not delete the cell, but marks that cell as being a missing value. Use the <code>replace()</code> operator to delete rows.
+      Access the "<code>name</code>" field of row <code>n1</code> in view <code>v1</code>. This can be used for both getting and setting cells in the designated <em>cell</em> in the view. Unlike Lua tables, <em>the <code>n1</code> index is zero-based.</em> Also, setting a cell to <em>nil</em> does not delete the cell, but marks that cell as being a missing value. Use the <code>replace()</code> operator to delete rows.
     </p>
     <h3>
       <code>v1[n1][n2]</code>
@@ -317,32 +317,56 @@
       4.4 - Vector operators
     </h2>
     <p>
-      One way to deal with views is to treat them as vectors of rows or columns. The following operators provide some convenient wrappers:
+      One way to deal with views is to treat them as vectors of rows or columns. The following operators provide some convenient primitives and wrappers:
     </p>
     <h3>
       <code>v1:concat(...)</code>
     </h3>
+    <p>
+      Return a view containing all the rows of view <code>v1</code>, followed by all the rows of each of the views passed as argument to <code>concat()</code>. All views must have a compatible structure.
+    </p>
     <h3>
       <code>v1:first(n)</code>
     </h3>
+    <p>
+      Return a view with the first <code>n</code> rows of view <code>v1</code>, or return <code>v1</code> if <code>n</code> exceeds the row count of <code>v1</code>.
+    </p>
     <h3>
       <code>v1:last(n)</code>
     </h3>
+    <p>
+      Return a view with the last <code>n</code> rows of view <code>v1</code>, or return <code>v1</code> if <code>n</code> exceeds the row count of <code>v1</code>.
+    </p>
     <h3>
       <code>v1:pair(...)</code>
     </h3>
+    <p>
+      Return a view containing all the columns of view <code>v1</code>, followed by all the columns of each of the views passed as argument to <code>concat()</code>. All views must have the same number of rows.
+    </p>
     <h3>
       <code>v1:reverse()</code>
     </h3>
+    <p>
+      Return a view with all rows from view <code>v1</code> in reversed order.
+    </p>
     <h3>
       <code>v1:spread(n)</code>
     </h3>
+    <p>
+      Return a view, where each of the separate rows in view <code>v1</code> is repeated <code>n</code> times.
+    </p>
     <h3>
-      <code>v1:step(off,step,rate)</code>
+      <code>v1:step([off[,step[,rate]]])</code>
     </h3>
+    <p>
+      Return a 1-column view with the same number of rows as view <code>v1</code>. The integer in row position <strong>x</strong> is "<code>off+(x/rate)*step</code>", where <code>off</code> defaults to 0, and both <code>step</code> and <code>rate</code> default to 1. Integer division is used here (<code>rate</code> must be at least 1).
+    </p>
     <h3>
       <code>v1:times(n)</code>
     </h3>
+    <p>
+      Return a view, where all the rows in view <code>v1</code> are repeated <code>n</code> times.
+    </p>
     <h2>
       4.5 - Set operators
     </h2>
@@ -352,26 +376,38 @@
     <h3>
       <code>v1:except(v2)</code>
     </h3>
+    <p>
+      Return the rows of view <code>v1</code> which are not present in view <code>v2</code>. This is equivalent to "<code>v1[v1:exceptmap(v2)]</code>".
+    </p>
     <h3>
       <code>v1:exceptmap(v2)</code>
     </h3>
+    <p>
+      Return a 1-column map of row numbers in view <code>v1</code>, for those rows which are not present in view <code>v2</code>.
+    </p>
     <h3>
       <code>v1:intersect(v2)</code>
     </h3>
+    <p>
+      Return the rows of view <code>v1</code> which are also present in view <code>v2</code>. This is equivalent to "<code>v1[v1:isectmap(v2)]</code>".
+    </p>
     <h3>
       <code>v1:isectmap(v2)</code>
     </h3>
+    <p>
+      Return a 1-column map of row numbers in view <code>v1</code>, for those rows which are also present in view <code>v2</code>.
+    </p>
     <h3>
       <code>v1:union(v2)</code>
     </h3>
-    <h3>
-      <code>v1:unionmap(v2)</code>
-    </h3>
+    <p>
+      Return all rows of view <code>v1</code>, followed by those rows in view <code>v2</code> which are not present in view <code>v1</code>. This is equivalent to "<code>v1+v2[v2:exceptmap(v1)]</code>".
+    </p>
     <h2>
       4.6 - Relational operators
     </h2>
     <p>
-      The Relational Algebra operators make it possible to express all queries for which SQL is also often used:
+      The Relational Algebra operators make it possible to express queries for which SQL is often used:
     </p>
     <h3>
       <code>v1:ijoin(v2)</code>
@@ -395,7 +431,7 @@
       4.8 - Grouping
     </h2>
     <p>
-      Since values can be views, i.e. views can contain sub-views, it is very simple to rearrange collections:
+      Grouping re-shapes collections so that common parts are collected into sub-views, whereas ungrouping does the inverse:
     </p>
     <h3>
       <code>v1:group(...)</code>
@@ -407,22 +443,76 @@
       4.7 - Sorting and comparing
     </h2>
     <p>
-      These operators provide basic sorting and comparison funtionality:
+      These operators provide basic sorting and comparison functionality:
     </p>
     <h3>
       <code>v1:sort()</code>
     </h3>
+    <p>
+      Return a sorted version o view <code>v1</code>. This is equivalent to "<code>v1[v1:sortmap()]</code>".
+    </p>
     <h3>
       <code>v1:sortmap()</code>
     </h3>
+    <p>
+      Return a 1-column map of row numbers in <code>v1</code>, such that it would sort view <code>v1</code> if the map were used to reorder <code>v1</code>. The sort is <em>stable</em>, i.e. equal rows retain their relative order.
+    </p>
     <h3>
       <code>v1:uniq()</code>
     </h3>
+    <p>
+      Return a view with all duplicate rows in <code>v1</code> omitted. The order of the rows is not affected. Equivalent to "<code>v1[v1:uniqmap()]</code>".
+    </p>
     <h3>
       <code>v1:uniqmap()</code>
     </h3>
+    <p>
+      Return a 1-column map of row numbers in <code>v1</code>, for those rows which are not duplicates of any preceding rows.
+    </p>
     <h1>
       5 - Persistence
     </h1>
+    <p>
+      These simple operators support saving and loading views in a compact and portable format (similar, and in some cases compatible, to the <a href="http://www.equi4.com/metakit.html">Metakit</a> database library).
+    </p>
+    <h2>
+      5.1 - Saving
+    </h2>
+    <p>
+      Views can be saved to a (binary) string or to file:
+    </p>
+    <h3>
+      <code>v1:emit()</code>
+    </h3>
+    <p>
+      Return a binary string representing view <code>v1</code>, i.e. its structure and contents (including any nested sub-views).
+    </p>
+    <h3>
+      <code>v1:save(fn)</code>
+    </h3>
+    <p>
+      Save view <code>v1</code> to a file named <code>fn</code>. Return the number of bytes written.
+    </p>
+    <h2>
+      5.2 - Loading
+    </h2>
+    <h3>
+      <code>vq.load(s1)</code>
+    </h3>
+    <p>
+      Reconstruct a complete view a (binary) string, as previously created via codeemit() or as read from a file created with <code>save()</code>.
+    </p>
+    <h3>
+      <code>vq.open(fn)</code>
+    </h3>
+    <p>
+      Map a file into memory in read-only mode and return a view with the same structure and contents as the original view. Mapping is instant because the file will only be accessed when the data is actually needed. A relatively small amount of memory will be allocated when this happens, but it will be considerably less than the bytes need for the actual data since everything remains memory mapped.
+    </p>
+    <h1>
+      6 - Implementation
+    </h1>
+    <p>
+      <strong>#TBD#</strong>
+    </p>
   </body>
 </html>
