@@ -3,22 +3,9 @@
     This file is part of Vlerq, see src/vlerq.h for full copyright notice. */
 
 static vqView MakeMetaSubview (const char *name, vqView view) {
-    vqView meta, result;
-    vqVec names, types, subvs;
-    
-    names = NewStrVec(1);
-    AppendToStrVec(name, -1, names);
-
-    types = NewStrVec(1);
-    AppendToStrVec("V", -1, types);
-    
-    meta = vwMeta(view);
-    subvs = NewSeqVec(VQ_view, &meta, 1);
-    
-    result = NewView(vwMeta(meta));
-    SetViewSeqs(result, MC_name, 1, FinishStrVec(names));
-    SetViewSeqs(result, MC_type, 1, FinishStrVec(types));
-    SetViewSeqs(result, MC_subv, 1, subvs);
+    vqView result;
+    result = vq_new(vwMeta(empty_meta(vwState(view))), 1);
+    vq_setMetaRow(result, 0, name, VQ_view, vwMeta(view));
     return result;
 }
 
@@ -28,6 +15,7 @@ static vqView MakeMetaSubview (const char *name, vqView view) {
 #define GV_cache        data[3].q
 
 static vqType GroupedGetter (int row, vqCell *item) {
+#if 0
     vqVec seq = item->p;
     vqView *subviews = seq->GV_cache->data[0].p;
     
@@ -42,16 +30,18 @@ static vqType GroupedGetter (int row, vqCell *item) {
     }
     
     item->v = subviews[row];
+#endif
     return VQ_view;
 }
 
-static vqDispatch ST_Grouped = { "grouped", GroupedGetter, 01111 };
+static vqDispatch ST_Grouped = { "grouped", /* 01111 */0, 0, 0, GroupedGetter };
 
-vqView GroupedView (vqView view, vqCell startcol, vqCell groupcol, const char *name) {
+static vqView GroupedView (vqView view, vqVec startcol, vqVec groupcol, const char *name) {
+#if 0
     int groups;
     vqVec seq, subviews;
     
-    groups = startcolp->count;
+    groups = vSize(startcol.p);
     subviews = NewSeqVec(VQ_view, 0, groups);
 
     seq = NewSequence(groups, &ST_Grouped, 0);
@@ -65,6 +55,8 @@ vqView GroupedView (vqView view, vqCell startcol, vqCell groupcol, const char *n
     seq->GV_cache = vq_incref(subviews);
 
     return IndirectView(MakeMetaSubview(name, view), seq);
+#endif
+    return 0;
 }
 
 #define UV_parent       data[0].q
@@ -73,6 +65,7 @@ vqView GroupedView (vqView view, vqCell startcol, vqCell groupcol, const char *n
 #define UV_swidth       data[3].i
 
 static vqType UngroupGetter (int row, vqCell *item) {
+#if 0
     int col, subcol, parentrow;
     const int *data;
     vqView view;
@@ -103,11 +96,14 @@ static vqType UngroupGetter (int row, vqCell *item) {
     
     item = vwCol(view, col);
     return getcell(row, item);
+#endif
+    return VQ_nil;
 }
 
-static vqDispatch ST_Ungroup = { "ungroup", UngroupGetter, 011 };
+static vqDispatch ST_Ungroup = { "ungroup", 0, 011, 0, UngroupGetter };
 
-vqView UngroupView (vqView view, int col) {
+static vqView UngroupView (vqView view, int col) {
+#if 0
     int i, n, r, rows;
     struct Buffer buffer;
     vqView subview, meta, submeta, newmeta;
@@ -117,7 +113,7 @@ vqView UngroupView (vqView view, int col) {
     InitBuffer(&buffer);
 
     column = vwCol(view, col);
-    rows = columnp->count;
+    rows = vSize(column.p);
     
     for (r = 0; r < rows; ++r) {
         subview = GetColItem(r, column, VQ_view).v;
@@ -137,7 +133,7 @@ vqView UngroupView (vqView view, int col) {
     newmeta = ConcatView(FirstView(meta, col), submeta);
     newmeta = ConcatView(newmeta, LastView(meta, vwRows(meta) - (col + 1)));
     
-    seq = NewSequence(map->count, &ST_Ungroup, 0);
+    seq = NewSequence(vSize(map), &ST_Ungroup, 0);
     /* data[0] is the parent view */
     /* data[1] is ungroup map as a sequence */
     /* data[2] is the subview column */
@@ -148,12 +144,15 @@ vqView UngroupView (vqView view, int col) {
     seq->UV_swidth = vwRows(submeta);
     
     return IndirectView(newmeta, seq);
+#endif
+    return 0;
 }
 
 #define BV_parent       data[0].q
 #define BV_cumcnt       data[1].q
 
 static vqType BlockedGetter (int row, vqCell *item) {
+#if 0
     int block;
     const int* data;
     vqView subv;
@@ -174,11 +173,14 @@ static vqType BlockedGetter (int row, vqCell *item) {
     subv = vq_getView(seq->BV_parent, block, 0, 0);
     item = vwCol(subv, item->x.y.i);    
     return getcell(row, item);
+#endif
+    return VQ_nil;
 }
 
-static vqDispatch ST_Blocked = { "blocked", BlockedGetter, 011 };
+static vqDispatch ST_Blocked = { "blocked", 011, 0, 0, BlockedGetter };
 
-vqView BlockedView (vqView view) {
+static vqView BlockedView (vqView view) {
+#if 0
     int r, rows, *limits, tally = 0;
     vqView submeta;
     vqVec seq, offsets;
@@ -205,4 +207,6 @@ vqView BlockedView (vqView view) {
     
     submeta = vq_getView(vwMeta(view), 0, MC_subv, 0);
     return IndirectView(submeta, seq);
+#endif
+    return 0;
 }

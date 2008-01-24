@@ -1011,7 +1011,8 @@ static int lvq_open (lua_State *L) {
 #include "buffer.c"
 #include "emit.c"
 #include "sort.c"
-/*#include "hash.c"*/
+#include "group.c"
+#include "hash.c"
 
 static const struct luaL_reg lvqlib_map_m[] = {
     {"__gc", map_gc},
