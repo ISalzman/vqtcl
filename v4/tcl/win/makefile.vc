@@ -204,9 +204,9 @@ COMPATDIR	= $(ROOT)\compat
 !if !$(DEBUG)
 !if $(OPTIMIZING)
 ### This cranks the optimization level to maximize speed
-cdebug	= $(OPTIMIZATIONS)
+cdebug	= -Zi $(OPTIMIZATIONS)
 !else
-cdebug	=
+cdebug	= -Zi
 !endif
 !else if "$(MACHINE)" == "IA64"
 ### Warnings are too many, can't support warnings into errors.
@@ -265,7 +265,7 @@ ldebug	= -debug:full -debugtype:cv
 ldebug = $(ldebug) -nodefaultlib:msvcrt
 !endif
 !else
-ldebug	= -release -opt:ref -opt:icf,3
+ldebug	= -debug -opt:ref -opt:icf,3
 !endif
 
 ### Declarations common to all linker options
