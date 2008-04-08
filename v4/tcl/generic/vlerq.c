@@ -16,7 +16,9 @@
  */
 
 #include <stddef.h>
+#ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif
 #include <unistd.h>
 
 typedef ptrdiff_t Int_t; /* large enough to hold a pointer */
@@ -5528,7 +5530,6 @@ ItemTypes ViewConvCmd_V (Item_p a) {
 #include <string.h>
 
 
-#define USE_TCL_STUBS 1
 #include <tcl.h>
 
 /* colobj.c */
