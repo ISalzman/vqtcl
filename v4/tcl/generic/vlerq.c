@@ -2030,8 +2030,20 @@ static MappedFile_p OpenMappedFile (const char *filename) {
 #if WIN32+0
     {
         DWORD n;
-        HANDLE h, f = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, 0,
-                                    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+        HANDLE h, f;
+        OSVERSIONINFO os;
+
+        memset(&os, 0, sizeof(os));
+        os.dwOSVersionInfoSize = sizeof(os);
+	os.dwPlatformId = VER_PLATFORM_WIN32_WINDOWS;
+        GetVersionEx(&os);
+        if (os.dwPlatformId < VER_PLATFORM_WIN32_NT) {
+            f = CreateFileA(filename, GENERIC_READ, FILE_SHARE_READ, 0,
+                OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+        } else {
+            f = CreateFileW((LPCWSTR)filename, GENERIC_READ, FILE_SHARE_READ, 0,
+                OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+        }
         if (f != INVALID_HANDLE_VALUE) {
             h = CreateFileMapping(f, 0, PAGE_READONLY, 0, 0, 0);
             if (h != INVALID_HANDLE_VALUE) {
@@ -7181,8 +7193,54 @@ ItemTypes RefCmd_OX (Item args[]) {
 
 ItemTypes OpenCmd_S (Item args[]) {
     View_p result;
-    
-    result = OpenDataFile(args[0].s);
+    Tcl_DString ds;
+    char *native;
+
+    /*
+     * When providing a database for a tclkit, we have here a "chicken
+     * and egg" problem with encodings: a call to this code will
+     * result from invoking the "open" script-level Vlerq command, and
+     * thus it will be passed an UTF-8 encoded filename.  In the case
+     * of tclkits this filename is obtained via a call to [info
+     * nameofexecutable], and at the time of that call [encoding
+     * system] is "identity" because the encodings subsystem can be
+     * initialized only after the tclkit VFS is mounted, and its
+     * mounting is what this very function is called for.
+     *
+     * On Windows, when converting between "system native" characters
+     * and UTF-8 (and vice-versa) two encodings may be used:
+     * - [encoding system] on Win9x/ME
+     * - "unicode" encoding on Windows NT.
+     * The "unicode" encoding is built-in, and [encoding system] will
+     * only have correct value on Latin-1 and UTF-8 systems,
+     * on others it will be "identity".
+     *
+     * This means when the tclkit is started from a folder whose name
+     * contains non-latin-1 characters, on Windows NT this function
+     * will receive correct UTF-8 string and the call to
+     * Tcl_WinUtfToTChar() below will return proper array of WCHARs.
+     * On Win95/ME and Unices the behaviour depends on whether the
+     * system encoding happens to be UTF-8 or any variant of Latin-1;
+     * if it is, this function will receive a proper UTF-8 string and
+     * the call to Tcl_WinUtfToTChar()/Tcl_UtfToExternalDString()
+     * below will produce a proper "native" string back. Otherwise,
+     * [encoding system] will be "identity" and due to the way it
+     * works this function will receive a string containing exactly
+     * the bytes returned by some relevant system call, which [info
+     * nameofexecutable] performed and the call to
+     * Tcl_WinUtfToTChar()/Tcl_UtfToExternalDString() will produce an
+     * array of char with the same bytes.  It this case startup from a
+     * folder containing non-latin-1 characters will fail.
+     */
+
+#if WIN32+0
+    native = Tcl_WinUtfToTChar(args[0].s, strlen(args[0].s), &ds);
+#else
+    native = Tcl_UtfToExternalDString(NULL,
+         args[0].s, strlen(args[0].s), &ds);
+#endif
+    result = OpenDataFile(native);
+    Tcl_DStringFree(&ds);
     if (result == NULL) {
         Tcl_AppendResult(Interp(), "cannot open file: ", args[0].s, NULL);
         return IT_unknown;
