@@ -1370,7 +1370,7 @@ int CastObjToItem (char type, Item_p item) {
 			if (type < 'a' || type > 'z')
 				return ObjToItem(CharAsItemType(type), item);
 
-			item->c = CoerceColumn(CharAsItemType(type +'A'-'a'), item->o);
+			item->c = CoerceColumn(CharAsItemType(type + 'A'-'a'), item->o);
 			break;
 	}
 
@@ -1443,7 +1443,7 @@ static void EmitAlign (EmitInfo_p eip) {
 }
 
 void MetaAsDesc (View_p meta, Buffer_p buffer) {
-    int r, rows = ViewSize(meta);
+    int r, rows = (int)ViewSize(meta);
     Column names, types, subvs;
     char type;
     const char *name;
@@ -4179,7 +4179,7 @@ ItemTypes SetCmd_MIX (Item args[]) {
     if (row < 0)
         row += ViewSize(view);
     
-    objv = (const void*) args[2].u.ptr;
+    objv = (const Object_p *) args[2].u.ptr;
     objc = args[2].u.len;
 
     if (objc % 2 != 0) {
@@ -5049,7 +5049,7 @@ ItemTypes DataCmd_VX (Item args[]) {
     meta = args[0].v;
     cols = ViewSize(meta);
     
-    objv = (const void*) args[1].u.ptr;
+    objv = (const Object_p *) args[1].u.ptr;
     objc = args[1].u.len;
 
     if (objc != cols) {
@@ -5544,6 +5544,11 @@ ItemTypes ViewConvCmd_V (Item_p a) {
 
 #include <tcl.h>
 
+#if 10 * TCL_MAJOR_VERSION + TCL_MINOR_VERSION < 86
+#define Tcl_GetErrorLine(interp) (interp)->errorLine
+#define CONST86
+#endif
+
 /* colobj.c */
 
 extern Tcl_ObjType f_colObjType;
@@ -5686,7 +5691,7 @@ ItemTypes GetCmd_VX (Item args[]) {
     view = args[0].v;
     currtype = IT_view;
     
-    objv = (const void*) args[1].u.ptr;
+    objv = (const Object_p *) args[1].u.ptr;
     objc = args[1].u.len;
 
     if (objc == 0) {
@@ -6208,7 +6213,7 @@ static int loop_vop(int oc, Tcl_Obj* const* ov) {
                             else if (e == TCL_ERROR) {
                                 char msg[50];
                                 sprintf(msg, "\n    (\"loop\" body line %d)",
-                                                        Interp()->errorLine);
+				    Tcl_GetErrorLine(Interp()));
                                 Tcl_AddObjErrorInfo(Interp(), msg, -1);
                             }
                             break;
@@ -6272,7 +6277,7 @@ ItemTypes LoopCmd_X (Item args[]) {
     int objc;
     const Object_p *objv;
 
-    objv = (const void*) args[0].u.ptr;
+    objv = (const Object_p *) args[0].u.ptr;
     objc = args[0].u.len;
 
     if (loop_vop(objc, objv) != TCL_OK)
@@ -6856,12 +6861,13 @@ ItemTypes DepsCmd_O (Item_p a) {
 #if STATIC_BUILD+0
 #define MyInitStubs(x) 1
 #else
+#ifdef FAKE_TCL_STUBS
 /*
  * stubs.h - Internal stub code, adapted from CritLib
  */
 
-TclStubs               *tclStubsPtr        = NULL;
-TclPlatStubs           *tclPlatStubsPtr    = NULL;
+CONST86 TclStubs               *tclStubsPtr        = NULL;
+CONST86 TclPlatStubs           *tclPlatStubsPtr    = NULL;
 struct TclIntStubs     *tclIntStubsPtr     = NULL;
 struct TclIntPlatStubs *tclIntPlatStubsPtr = NULL;
 
@@ -6897,7 +6903,10 @@ static int MyInitStubs (Tcl_Interp *ip) {
 
     return 1;
 }
-#endif
+#else /* !FAKE_TCL_STUBS */
+#define MyInitStubs(ip) Tcl_InitStubs((ip), "8.4", 0)
+#endif /* FAKE_TCL_STUBS */
+#endif /* !STATIC_BUILD */
 
 #if NO_THREAD_CALLS+0
 Shared_p GetShared (void) {
@@ -7183,7 +7192,7 @@ ItemTypes RefCmd_OX (Item args[]) {
     int objc;
     const Object_p *objv;
     
-    objv = (const void*) args[1].u.ptr;
+    objv = (const Object_p *) args[1].u.ptr;
     objc = args[1].u.len;
 
     args->o = Tcl_ObjGetVar2(Interp(), args[0].o, 0,
@@ -7399,7 +7408,7 @@ ItemTypes ViewCmd_X (Item args[]) {
     Tcl_Interp *interp = Interp();
     const CmdDispatch *cmds = GetShared()->info->cmds;
 
-    objv = (const void*) args[0].u.ptr;
+    objv = (const Object_p *) args[0].u.ptr;
     objc = args[0].u.len;
 
     if (objc < 1) {
