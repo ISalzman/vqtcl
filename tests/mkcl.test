@@ -14,7 +14,7 @@ test 1 {load mkclvfs package} vfs {
       source library/mkclvfs.tcl
     }
     package require vfs::mkcl
-} 1.5
+} 1.6
 
 test 2 {} -constraints vfs -body {
     set fs [vfs::mkcl::Mount data/lkit-le.db /try1]

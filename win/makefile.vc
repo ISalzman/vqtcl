@@ -163,7 +163,7 @@ PRJNAME = vqtcl
 #PROJECT_REQUIRES_TK=1
 !include "rules.vc"
 
-DOTVERSION      = 4.1
+DOTVERSION      = 4.2
 VERSION         = $(DOTVERSION:.=)
 STUBPREFIX      = $(PROJECT)stub
 

@@ -10,12 +10,12 @@
 # 1.7 adjusted for vlerq 4
 # 1.8 allow overwriting files
 
-package provide vfs::m2m 1.8
+package provide vfs::m2m 1.9
 
 package require vfs
 package require vlerq
 
-namespace eval vfs::m2m {
+namespace eval ::vfs::m2m {
     namespace eval v {
         variable outfn   ;# output file name
         # following lists are all indexed by the same directory ordinal number
@@ -31,8 +31,8 @@ namespace eval vfs::m2m {
         set v::dname [list <root>]
         set v::prows [list -1]
         set v::files [list {}]
-        ::vfs::filesystem mount $local [list ::vfs::m2m::handler -]
-        ::vfs::RegisterMount $local [list ::vfs::m2m::Unmount -]
+        ::vfs::filesystem mount $local [namespace code "handler -"]
+        ::vfs::RegisterMount $local [namespace code "Unmount -"]
         return m2m
     }
 
@@ -52,8 +52,7 @@ namespace eval vfs::m2m {
         set d {}
         foreach f $v::files {
             set x [lsort -index 0 -unique $f]
-            lappend d [vlerq def {name size:I date:I contents:B} \
-                        [eval concat $x]]
+            lappend d [vlerq def {name size:I date:I contents:B} [concat {*}$x]]
         }
         set desc {name parent:I {files {name size:I date:I contents:B}}}
         set dirs [vlerq data [vlerq mdef $desc] $v::dname $v::prows $d]
@@ -63,14 +62,14 @@ namespace eval vfs::m2m {
     proc handler {db cmd root path actual args} {
         #puts [list M2M $db <$cmd> r: $root p: $path a: $actual $args]
         switch $cmd {
-            matchindirectory { eval [linsert $args 0 $cmd $db $path $actual] }
-            fileattributes   { eval [linsert $args 0 $cmd $db $root $path] } 
-            default          { eval [linsert $args 0 $cmd $db $path] }
+            matchindirectory { $cmd $db $path $actual {*}$args }
+            fileattributes   { $cmd $db $root $path {*}$args } 
+            default          { $cmd $db $path {*}$args }
         }
     }
 
     proc fail {code} {
-        ::vfs::filesystem posixerror $::vfs::posix($code)
+        ::vfs::filesystem posixerror [::vfs::posixError $code]
     }
 
     proc lookUp {db path} {
@@ -89,8 +88,7 @@ namespace eval vfs::m2m {
                 }
                 if {$parent != $r} {
                     if {$remain == 1} {
-                        set i [lsearch -exact \
-                                        [subFileNames [list ? ? $parent]] $e]
+                        set i [lsearch -exact [subFileNames [list ? ? $parent]] $e]
                         if {$i >= 0} {
                             # eval this 4-item result returns info about a file
                             return [list lindex $v::files $parent $i]
@@ -150,26 +148,25 @@ namespace eval vfs::m2m {
     proc fileattributes {db root path args} {
         switch -- [llength $args] {
             0 { return [::vfs::listAttributes] }
-            1 { return [eval [linsert $args 0 \
-                                        ::vfs::attributesGet $root $path]] }
-            2 { return [eval [linsert $args 0 \
-                                        ::vfs::attributesSet $root $path]] }
+            1 { return [::vfs::attributesGet $root $path {*}$args] }
+            2 { return [::vfs::attributesSet $root $path {*}$args] }
         }
     }
 
     proc open {db file mode permissions} {
         switch -- $mode {
-            "" - r {
+            "" -
+	    r {
                 set tag [lookUp $db $file]
                 if {[isDir $tag]} { fail ENOENT }
-                foreach {name size date contents} [eval $tag] break
+                foreach {name size date contents} [{*}$tag] break
                 if {[string length $contents] != $size} {
-                    set contents [vfs::zip -mode decompress $contents]
+                    set contents [::vfs::zip -mode decompress $contents]
                 }
-                set fd [vfs::memchan]
+                set fd [::vfs::memchan]
                 fconfigure $fd -translation binary
                 puts -nonewline $fd $contents
-                fconfigure $fd -translation auto
+                fconfigure $fd -translation auto -encoding [encoding system]
                 seek $fd 0
                 return [list $fd]
             }
@@ -180,8 +177,8 @@ namespace eval vfs::m2m {
                 set fpos [llength $curr]
                 lappend curr [list [file tail $file] 0 [clock seconds] ""]
                 lset v::files $dpos $curr
-                set fd [vfs::memchan]
-                return [list $fd [list ::vfs::m2m::doClose $db $dpos $fpos $fd]]
+                set fd [::vfs::memchan]
+                return [list $fd [namespace code "doClose $db $dpos $fpos $fd"]]
             }
             default { error "unsupported access mode: $mode" }
         }
@@ -192,7 +189,7 @@ namespace eval vfs::m2m {
         seek $fd 0
         set d [read $fd]
         set n [string length $d]
-        set z [vfs::zip -mode compress $d]
+        set z [::vfs::zip -mode compress $d]
         if {[string length $z] < $n} { set d $z }
         lset v::files $dpos $fpos 1 $n
         lset v::files $dpos $fpos 3 $d
@@ -214,10 +211,10 @@ namespace eval vfs::m2m {
             incr l [llength [subDirNums $tag]]
         } else {
             set t file
-            foreach {n s d c} [eval $tag] break
+            foreach {n s d c} [{*}$tag] break
         }
         return [list type $t size $s atime $d ctime $d mtime $d nlink $l \
-            csize [string length $c] gid 0 uid 0 ino 0 mode 0777]
+                    csize [string length $c] gid 0 uid 0 ino 0 mode 0777]
     }
 
     proc createdirectory {db path} {

@@ -8,14 +8,14 @@
 # 1.4 minor cleanup
 # 1.5 adjusted for vlerq 4
 
-package provide vfs::mkcl 1.5
+package provide vfs::mkcl 1.6
 
 package require vfs
 package require vlerq
 
 namespace eval ::vfs::mkcl {
-    interp alias {} ::vfs::mkcl::vopen {} ::vlerq open
-    interp alias {} ::vfs::mkcl::vget {} ::vlerq get
+    interp alias {} [namespace current]::vopen {} ::vlerq open
+    interp alias {} [namespace current]::vget {} ::vlerq get
         
     namespace eval v {
         variable seq 0  ;# used to generate a unique db handle
@@ -33,8 +33,8 @@ namespace eval ::vfs::mkcl {
         set v::prows($db) [vget $v::rootv($db) * parent]
         #parray v::dname
         #parray v::prows
-        ::vfs::filesystem mount $local [list ::vfs::mkcl::handler $db]
-        ::vfs::RegisterMount $local [list ::vfs::mkcl::Unmount $db]
+        ::vfs::filesystem mount $local [namespace code "handler $db"]
+        ::vfs::RegisterMount $local [namespace code "Unmount $db"]
         return $db
     }
     
@@ -48,14 +48,14 @@ namespace eval ::vfs::mkcl {
     proc handler {db cmd root path actual args} {
         #puts [list MKCL $db <$cmd> r: $root p: $path a: $actual $args]
         switch $cmd {
-            matchindirectory { eval [linsert $args 0 $cmd $db $path $actual] }
-            fileattributes   { eval [linsert $args 0 $cmd $db $root $path] } 
-            default          { eval [linsert $args 0 $cmd $db $path] }
+            matchindirectory { $cmd $db $path $actual {*}$args }
+            fileattributes   { $cmd $db $root $path {*}$args } 
+            default          { $cmd $db $path {*}$args }
         }
     }
     
     proc fail {code} {
-        ::vfs::filesystem posixerror $::vfs::posix($code)
+        ::vfs::filesystem posixerror [::vfs::posixError $code]
     }
     
     proc lookUp {db path} {
@@ -92,29 +92,22 @@ namespace eval ::vfs::mkcl {
         expr {[llength $tag] == 4}
     }
     
-    if {$::tcl_version eq "8.4"} {
-            proc apply {cmd args} { eval [concat $cmd $args] }
-    } else {
-            proc apply {cmd args} { {*}$cmd {*}$args }
-    }
-    
 # methods
 
     proc matchindirectory {db path actual pattern type} {
         set o {}
         if {$type == 0} { set type 20 }
-        if {[catch {set tag [lookUp $db $path]} err]} { return {} }
+        set tag [lookUp $db $path]
         if {$pattern ne ""} {
             set c {}
             if {[isDir $tag]} {
                 # collect file names
                 if {$type & 16} {
-                    set c [apply $tag * 0]
+                    set c [{*}$tag * 0]
                 }
                 # collect directory names
                 if {$type & 4} {
-                    foreach r [lsearch -exact -int -all $v::prows($db) \
-                                                            [lindex $tag 2]] {
+                    foreach r [lsearch -exact -int -all $v::prows($db) [lindex $tag 2]] {
                         lappend c [lindex $v::dname($db) $r]
                     }
                 }
@@ -143,7 +136,7 @@ namespace eval ::vfs::mkcl {
         if {$mode ne "" && $mode ne "r"} { fail EROFS }
         set tag [lookUp $db $file]
         if {[isDir $tag]} { fail ENOENT }
-        foreach {name size date contents} [apply $tag *] break
+        foreach {name size date contents} [{*}$tag *] break
         if {[string length $contents] != $size} {
             set contents [::vfs::zip -mode decompress $contents]
         }
@@ -168,12 +161,11 @@ namespace eval ::vfs::mkcl {
             set s 0
             set d 0
             set c ""
-            incr l [apply $tag #]
-            incr l [llength [lsearch -exact -int -all $v::prows($db) \
-                                                        [lindex $tag 2]]]
+            incr l [{*}$tag #]
+            incr l [llength [lsearch -exact -int -all $v::prows($db) [lindex $tag 2]]]
         } else {
             set t file
-            foreach {n s d c} [apply $tag *] break
+            foreach {n s d c} [{*}$tag *] break
         }
         list type $t size $s atime $d ctime $d mtime $d nlink $l \
                     csize [string length $c] gid 0 uid 0 ino 0 mode 0777

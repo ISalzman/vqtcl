@@ -4,34 +4,29 @@
 # 0.4 adjusted for vlerq 4
 # 0.5 support "mk::file open" (no other args) and more mk::select options
 
-package provide mklite 0.5
+package provide mklite 0.6
 
 package require vlerq
 
 namespace eval mklite {
-    variable mkdb   ;# the mkdb array maps open db handles to view references
+    variable mkdb   ;# array, maps open db handles to view references
 
 # call emulateMk4tcl to define compatibility aliases in a specific namespace
-# if the MKLITE_DEBUG env var is defined, all calls and returns will be traced
 
     proc emulateMk4tcl {{ns ::mk}} {
         foreach x {channel cursor file get loop select view} {
             # NOTE: clobbers existing mk::* cmds, may want to rename 'em first?
-            if {[info exists ::env(MKLITE_DEBUG)]} {
-                interp alias {} ${ns}::$x {} ::mklite::debug ::mklite::$x
-            } else {
-                interp alias {} ${ns}::$x {} ::mklite::$x
-            }
+            interp alias {} ${ns}::$x {} [namespace current]::$x
         }
     }
 
-    proc debug {args} {
-        puts ">>> [list $args]"
-        set r [uplevel 1 $args]
-        set s [regsub -all {[^ -~]} $r ?]
-        puts " << [string length $r]: [string range $s 0 49]"
-        return $r
-    }
+    #proc debug {args} {
+    #    puts ">>> [list $args]"
+    #    set r [uplevel 1 $args]
+    #    set s [regsub -all {[^ -~]} $r ?]
+    #    puts " << [string length $r]: [string range $s 0 49]"
+    #    return $r
+    #}
 
     proc mk_obj {path} {
         variable mkdb
@@ -173,10 +168,10 @@ namespace eval mklite {
         set last [lindex $args 1]
         switch [llength $args] {
             1 { set first 0
-                    set limit [vlerq get [mk_obj $path] #]
-                    set step 1 }
+                set limit [vlerq get [mk_obj $path] #]
+                set step 1 }
             2 { set limit [vlerq get [mk_obj $path] #]
-                    set step 1 }
+                set step 1 }
             3 { set step 1 }
             4 { set step [lindex $args 2] }
             default { error "mkloop arg count?" }
@@ -193,15 +188,6 @@ namespace eval mklite {
             }
         }
     }
-
-    # from http://wiki.tcl.tk/43
-    proc _lreverse L {
-         set res {}
-         set i [llength $L]
-         #while {[incr i -1]>=0} {lappend res [lindex $L $i]}
-         while {$i} {lappend res [lindex $L [incr i -1]]} ;# rmax
-         set res
-    } ;# RS, tuned 10% faster by [rmax]
 
     proc select {path args} {
         set vw [mk_obj $path]
@@ -241,9 +227,9 @@ namespace eval mklite {
             set r $r2
         }
         if {[llength $sorts]} {
-            foreach x [_lreverse $sorts] {
+            foreach x [lreverse $sorts] {
                 if {$x eq "-"} {
-                    set r [_lreverse $r]
+                    set r [lreverse $r]
                 } else {
                     set v [vlerq remap [vlerq tag [vlerq colmap $vw $x] N] $r]
                     set r [vlerq get [vlerq sort $v] * N]
@@ -262,7 +248,7 @@ namespace eval mklite {
     proc channel {path name mode} {
         package require vfs ;# TODO: needs vfs, could use "chan create" in 8.5
         if {$mode ne "r"} { error "mkchannel? mode $mode" }
-        set fd [vfs::memchan]
+        set fd [::vfs::memchan]
         fconfigure $fd -translation binary
         puts -nonewline $fd [get $path $name]
         seek $fd 0

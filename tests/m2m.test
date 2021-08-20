@@ -14,7 +14,7 @@ test 1 {load m2mvfs package} vfs {
       source library/m2mvfs.tcl
     }
     package require vfs::m2m
-} 1.8
+} 1.9
 
 test 2 {} vfs {
     vfs::m2m::Mount "" mem
